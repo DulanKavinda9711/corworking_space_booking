@@ -1,0 +1,1348 @@
+<template>
+  <AdminLayout>
+    <div class="space-y-6">
+      
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-card">
+        <div class="border-b border-gray-200">
+          <nav class="flex space-x-8 px-6" aria-label="Tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              :class="[
+                activeTab === tab.id
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+              ]"
+            >
+              {{ tab.name }}
+              <span :class="[
+                activeTab === tab.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-900',
+                'ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium'
+              ]">
+                {{ getTabCount(tab.id) }}
+              </span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Filters -->
+        <div class="p-6 border-b border-gray-200">
+          <div :class="[
+            'grid grid-cols-1 gap-6',
+            activeTab === 'subscriptions' ? 'md:grid-cols-6' : 'md:grid-cols-5'
+          ]">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+              <input
+                type="text"
+                v-model="dateRangeDisplay"
+                @click="showDatePicker = !showDatePicker"
+                readonly
+                class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
+                placeholder="Select Date"
+              />
+              <!-- Booking.com Style Date Range Picker -->
+              <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
+                <div class="flex justify-between items-center mb-4">
+                  <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                  </button>
+                  <span class="font-medium">{{ currentMonthYear }}</span>
+                  <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                  </button>
+                </div>
+                
+                <!-- Calendar Grid -->
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                  <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
+                    {{ day }}
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-1">
+                  <div
+                    v-for="date in calendarDates"
+                    :key="date.dateString"
+                    @click="selectDate(date)"
+                    :class="[
+                      'text-sm text-center py-2 cursor-pointer rounded',
+                      !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
+                      isDateSelected(date) ? 'bg-primary-600 text-white' : '',
+                      isDateInRange(date) ? 'bg-primary-100' : '',
+                      'hover:bg-primary-50'
+                    ]"
+                  >
+                    {{ date.day }}
+                  </div>
+                </div>
+
+                <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
+                  <div class="flex space-x-2">
+                    <button
+                      @click="clearDateRange"
+                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      @click="showDatePicker = false"
+                      :disabled="!filters.startDate"
+                      class="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+                <option value="">All Locations</option>
+                <option value="main-branch">Main Branch</option>
+                <option value="tech-hub">Tech Hub</option>
+                <option value="business-center">Business Center</option>
+              </select>
+            </div>
+            <!-- Show Product Type filter for bookings and history tabs -->
+            <div v-if="activeTab !== 'subscriptions'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+              <select v-model="filters.productType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+                <option value="">All Types</option>
+                <option value="Meeting Room">Meeting Room</option>
+                <option value="Hot Desk">Hot Desk</option>
+                <option value="Dedicated Desk">Dedicated Desk</option>
+              </select>
+            </div>
+            <!-- Show Subscription Type filter for subscriptions tab -->
+            <div v-if="activeTab === 'subscriptions'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
+              <select v-model="filters.subscriptionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+                <option value="">All Periods</option>
+                <option value="monthly">Monthly</option>
+                <option value="annually">Annually</option>
+              </select>
+            </div>
+            <!-- Show Subscription Status filter for subscriptions tab -->
+            <div v-if="activeTab === 'subscriptions'" class="md:col-span-1">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <select v-model="filters.subscriptionStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+                <option value="">All Status</option>
+                <option value="confirmed">Active</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
+              <select v-model="filters.userType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+                <option value="">All Users</option>
+                <option value="registered">Registered</option>
+                <option value="guest">Guest</option>
+              </select>
+            </div>
+          <div class="flex items-end justify-end">
+            <button
+              @click="resetFilters"
+              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
+            >
+              Reset Filters
+            </button>
+          </div>
+          
+          </div>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {{ activeTab === 'subscriptions' ? 'Subscription ID' : 'Booking ID' }}
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Product
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {{ activeTab === 'subscriptions' ? 'Subscribed Date' : 'Date & Time' }}
+                </th>
+                <th v-if="activeTab !== 'subscriptions' && activeTab !== 'history'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Duration
+                </th>
+                <th v-if="activeTab !== 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Price
+                </th>
+                <th v-if="activeTab === 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Monthly Price
+                </th>
+                <th v-if="activeTab === 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Next Billing
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8">
+                      <div class="h-8 w-8 rounded-lg bg-primary-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiCalendar" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900">{{ booking.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <img class="h-10 w-10 rounded-lg object-cover" :src="booking.productImage" :alt="booking.productType">
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">{{ booking.productName || booking.productType }}</div>
+                      <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-500">{{ booking.subscriptionType }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ booking.locationName }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ booking.customerName }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-900">{{ booking.subscribedDate }}</div>
+                  <div v-else>
+                    <div class="text-sm text-gray-900">{{ booking.date }}</div>
+                    <div class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
+                  </div>
+                </td>
+                <td v-if="activeTab !== 'subscriptions' && activeTab !== 'history'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ booking.duration }}
+                </td>
+                <td v-if="activeTab !== 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${{ booking.totalPrice }}
+                </td>
+                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${{ booking.totalPrice }}
+                </td>
+                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}</div>
+                  <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">
+                    <template v-if="activeTab === 'subscriptions'">
+                      {{ booking.status === 'confirmed' ? 'Active' : booking.status === 'cancelled' ? 'Cancelled' : booking.status }}
+                    </template>
+                    <template v-else>
+                      {{ booking.status }}
+                    </template>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex items-center space-x-3">
+                    <!-- View Details Link -->
+                    <router-link :to="viewBookingDetails(booking)" class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiEye" />
+                      </svg>
+                    </router-link>
+                    
+                    <!-- Cancel subscription action for active subscriptions -->
+                    <router-link
+                      v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
+                      :to="`/subscriptions/${booking.id}/cancel`"
+                      class="text-orange-600 hover:text-orange-900 flex items-center space-x-1"
+                      title="Cancel Subscription"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiCancel" />
+                      </svg>
+                    </router-link>
+                    
+                    <!-- Cancel booking action for confirmed bookings -->
+                    <router-link
+                      v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
+                      :to="`/bookings/${booking.id}/cancel`"
+                      class="text-orange-600 hover:text-orange-900 flex items-center space-x-1"
+                      title="Cancel Booking"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiCancel" />
+                      </svg>
+                    </router-link>
+                    
+                    <!-- Actions for history bookings -->
+                    <button v-if="activeTab === 'history'" @click="confirmDeleteBooking(booking)" class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Booking">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiDelete" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button @click="previousPage" :disabled="currentPage === 1"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                Previous
+              </button>
+              <button @click="nextPage" :disabled="currentPage === totalPages"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                Next
+              </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Showing {{ startItem }} to {{ endItem }} of {{ filteredBookings.length }} results
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                  <button @click="previousPage" :disabled="currentPage === 1"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
+                    page === currentPage
+                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                  ]">
+                    {{ page }}
+                  </button>
+                  <button @click="nextPage" :disabled="currentPage === totalPages"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="filteredBookings.length === 0" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
+          <p class="mt-1 text-sm text-gray-500">No bookings match the current filters.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeDeleteModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Delete Booking</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">
+              Are you sure you want to delete this booking permanently? This action cannot be undone.
+            </p>
+            <div v-if="bookingToDelete" class="mt-4 p-3 bg-gray-50 rounded-lg text-gray-900">
+              <div class="text-sm space-y-1">
+                <div><strong>Booking ID:</strong> {{ bookingToDelete.id }}</div>
+                <div><strong>Customer:</strong> {{ bookingToDelete.customerName }}</div>
+                <div><strong>Product:</strong> {{ bookingToDelete.productName }}</div>
+                <div><strong>Date:</strong> {{ bookingToDelete.date }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center pt-4 space-x-4">
+            <button
+              @click="closeDeleteModal"
+              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="deleteBooking"
+              :disabled="isDeleting"
+              class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isDeleting ? 'Deleting...' : 'Delete' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </AdminLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { mdiEye, mdiPencil, mdiDelete, mdiCancel, mdiCalendar } from '@mdi/js'
+
+// Router
+const route = useRoute()
+
+// State
+const activeTab = ref('bookings')
+const showDatePicker = ref(false)
+const currentDate = ref(new Date())
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const bookingToDelete = ref<any>(null)
+const isDeleting = ref(false)
+
+// Tabs
+const tabs = [
+  { id: 'bookings', name: 'Bookings' },
+  { id: 'subscriptions', name: 'Subscriptions' },
+  { id: 'history', name: 'History' }
+]
+
+// Filters
+const filters = ref({
+  startDate: '',
+  endDate: '',
+  location: '',
+  productType: '',
+  userType: '',
+  subscriptionType: '',
+  subscriptionStatus: ''
+})
+
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+// Computed property for date range display
+const dateRangeDisplay = computed(() => {
+  if (filters.value.startDate && filters.value.endDate) {
+    // Parse YYYY-MM-DD format and create dates with explicit local timezone
+    const startParts = filters.value.startDate.split('-')
+    const endParts = filters.value.endDate.split('-')
+    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
+    const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
+    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+  } else if (filters.value.startDate) {
+    const startParts = filters.value.startDate.split('-')
+    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
+    
+    return `${startDate.toLocaleDateString()}`
+  }
+  return ''
+})
+
+// Calendar computed properties
+const currentMonthYear = computed(() => {
+  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+})
+
+const calendarDates = computed(() => {
+  const year = currentDate.value.getFullYear()
+  const month = currentDate.value.getMonth()
+  
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const startCalendar = new Date(firstDay)
+  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
+  
+  const dates = []
+  const current = new Date(startCalendar)
+  
+  for (let i = 0; i < 42; i++) {
+    const currentDate = new Date(current)
+    const year = currentDate.getFullYear()
+    const monthStr = (currentDate.getMonth() + 1).toString().padStart(2, '0')
+    const day = currentDate.getDate().toString().padStart(2, '0')
+    const dateString = `${year}-${monthStr}-${day}`
+    
+    dates.push({
+      day: currentDate.getDate(),
+      dateString: dateString,
+      isCurrentMonth: currentDate.getMonth() === month,
+      date: currentDate
+    })
+    current.setDate(current.getDate() + 1)
+  }
+  
+  return dates
+})
+
+
+// Sample bookings data - Using actual product details
+const allBookings = ref([
+  // Confirmed Bookings (Active)
+  {
+    id: 'BR-2034',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'John Doe',
+    userType: 'registered',
+    date: '2025-08-20',
+    startTime: '10:00 AM',
+    endTime: '12:00 PM',
+    duration: '2 hours',
+    totalPrice: 100, // $50/hour * 2 hours
+    status: 'confirmed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2035',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Michael Brown',
+    userType: 'guest',
+    date: '2025-08-21',
+    startTime: '9:00 AM',
+    endTime: '5:00 PM',
+    duration: '8 hours',
+    totalPrice: 64, // $8/hour * 8 hours
+    status: 'confirmed',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+  {
+    id: 'BR-2036',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Sarah Wilson',
+    userType: 'registered',
+    date: '2025-08-22',
+    startTime: '2:00 PM',
+    endTime: '4:00 PM',
+    duration: '2 hours',
+    totalPrice: 100, // $50/hour * 2 hours
+    status: 'confirmed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2037',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Jane Smith',
+    userType: 'registered',
+    date: '2025-08-23',
+    startTime: '8:00 AM',
+    endTime: '12:00 PM',
+    duration: '4 hours',
+    totalPrice: 32, // $8/hour * 4 hours
+    status: 'confirmed',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+  {
+    id: 'BR-2039',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'John Doe',
+    userType: 'registered',
+    date: '2025-08-25',
+    startTime: '1:00 PM',
+    endTime: '3:00 PM',
+    duration: '2 hours',
+    totalPrice: 100, // $50/hour * 2 hours
+    status: 'confirmed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2040',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Sarah Wilson',
+    userType: 'registered',
+    date: '2025-08-26',
+    startTime: '10:00 AM',
+    endTime: '6:00 PM',
+    duration: '8 hours',
+    totalPrice: 64, // $8/hour * 8 hours
+    status: 'confirmed',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+
+  // Completed Bookings (History)
+  {
+    id: 'BR-2020',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Jane Smith',
+    userType: 'registered',
+    date: '2025-08-15',
+    startTime: '9:00 AM',
+    endTime: '11:00 AM',
+    duration: '2 hours',
+    totalPrice: 100, // $50/hour * 2 hours
+    status: 'completed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2021',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'John Doe',
+    userType: 'registered',
+    date: '2025-08-16',
+    startTime: '8:00 AM',
+    endTime: '4:00 PM',
+    duration: '8 hours',
+    totalPrice: 64, // $8/hour * 8 hours
+    status: 'completed',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+  {
+    id: 'BR-2023',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Sarah Wilson',
+    userType: 'registered',
+    date: '2025-08-18',
+    startTime: '1:00 PM',
+    endTime: '4:00 PM',
+    duration: '3 hours',
+    totalPrice: 150, // $50/hour * 3 hours
+    status: 'completed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2024',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'David Miller',
+    userType: 'guest',
+    date: '2025-08-14',
+    startTime: '9:00 AM',
+    endTime: '1:00 PM',
+    duration: '4 hours',
+    totalPrice: 32, // $8/hour * 4 hours
+    status: 'completed',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+
+  // Cancelled Bookings (History)
+  {
+    id: 'BR-2010',
+    productName: 'Meeting Room',
+    productType: 'Meeting Room',
+    productId: 'PROD001',
+    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Jennifer Wilson',
+    userType: 'guest',
+    date: '2025-08-12',
+    startTime: '3:00 PM',
+    endTime: '5:00 PM',
+    duration: '2 hours',
+    totalPrice: 100, // $50/hour * 2 hours
+    status: 'cancelled',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.'
+  },
+  {
+    id: 'BR-2011',
+    productName: 'Hot Desk',
+    productType: 'Hot Desk',
+    productId: 'PROD002',
+    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Kevin Martinez',
+    userType: 'guest',
+    date: '2025-08-11',
+    startTime: '10:00 AM',
+    endTime: '2:00 PM',
+    duration: '4 hours',
+    totalPrice: 32, // $8/hour * 4 hours
+    status: 'cancelled',
+    location: 'tech-hub',
+    locationName: 'Tech Hub',
+    companyName: 'Tech Innovations Ltd.'
+  },
+
+  // Subscription Data
+  {
+    id: 'SUB-3001',
+    productName: 'Dedicated Desk',
+    productType: 'Subscription',
+    productId: 'SUB001',
+    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
+    customerName: 'John Doe',
+    userType: 'registered',
+    subscriptionType: 'monthly',
+    subscribedDate: '2025-08-01',
+    nextBillingDate: '2025-09-01',
+    totalPrice: 800,
+    basePrice: 750,
+    additionalFacilities: 50,
+    status: 'confirmed',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.',
+    capacity: 1,
+    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
+  },
+  {
+    id: 'SUB-3003',
+    productName: 'Dedicated Desk',
+    productType: 'Subscription',
+    productId: 'SUB003',
+    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Sarah Wilson',
+    userType: 'registered',
+    subscriptionType: 'annually',
+    subscribedDate: '2025-01-01',
+    nextBillingDate: '2026-01-01',
+    totalPrice: 8000,
+    basePrice: 7500,
+    additionalFacilities: 500,
+    status: 'confirmed',
+    location: 'business-center',
+    locationName: 'Business Center',
+    companyName: 'Global Solutions Inc.',
+    capacity: 1,
+    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line', '24/7 Access']
+  },
+  {
+    id: 'SUB-3004',
+    productName: 'Dedicated Desk',
+    productType: 'Subscription',
+    productId: 'SUB001',
+    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
+    customerName: 'Michael Brown',
+    userType: 'guest',
+    subscriptionType: 'monthly',
+    subscribedDate: '2025-07-15',
+    nextBillingDate: '2025-08-15',
+    totalPrice: 850,
+    basePrice: 800,
+    additionalFacilities: 50,
+    status: 'cancelled',
+    location: 'main-branch',
+    locationName: 'Main Branch',
+    companyName: 'Premium Co-working Ltd.',
+    capacity: 1,
+    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp']
+  }
+])
+
+// Computed properties
+const filteredBookings = computed(() => {
+  let bookings = allBookings.value
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+
+  // Filter by tab
+  if (activeTab.value === 'bookings') {
+    bookings = bookings.filter(b => {
+      // Only show confirmed bookings that are not subscriptions
+      if (b.status !== 'confirmed' || b.productType === 'Subscription') {
+        return false
+      }
+      
+      // Only show bookings for today and future dates
+      if (b.date) {
+        return b.date >= todayStr
+      }
+      
+      return false
+    })
+  } else if (activeTab.value === 'subscriptions') {
+    // Show only active (not cancelled) subscriptions
+    bookings = bookings.filter(b => b.productType === 'Subscription' && b.status !== 'cancelled')
+  } else {
+    // History tab includes:
+    // 1. Past confirmed bookings (before today)
+    // 2. Completed bookings
+    // 3. Cancelled bookings
+    // 4. Cancelled subscriptions
+    bookings = bookings.filter(b => {
+      // Include cancelled subscriptions
+      if (b.productType === 'Subscription' && b.status === 'cancelled') {
+        return true
+      }
+      
+      // Include completed or cancelled regular bookings
+      if (b.productType !== 'Subscription' && (b.status === 'completed' || b.status === 'cancelled')) {
+        return true
+      }
+      
+      // Include past confirmed bookings (confirmed bookings before today)
+      if (b.status === 'confirmed' && b.productType !== 'Subscription' && b.date && b.date < todayStr) {
+        return true
+      }
+      
+      return false
+    })
+  }
+
+  // Apply date range filter
+  if (filters.value.startDate && filters.value.endDate) {
+    bookings = bookings.filter(b => {
+      const bookingDate = b.date || b.subscribedDate
+      if (!bookingDate) return false
+      
+      // Ensure date comparison works correctly
+      const bookingDateStr = bookingDate.toString()
+      const startDateStr = filters.value.startDate.toString()
+      const endDateStr = filters.value.endDate.toString()
+      
+      return bookingDateStr >= startDateStr && bookingDateStr <= endDateStr
+    })
+  } else if (filters.value.startDate) {
+    // Single date filter - show only bookings on the exact selected date
+    bookings = bookings.filter(b => {
+      const bookingDate = b.date || b.subscribedDate
+      if (!bookingDate) return false
+      
+      const bookingDateStr = bookingDate.toString()
+      const startDateStr = filters.value.startDate.toString()
+      
+      // For single date selection, match exactly
+      return bookingDateStr === startDateStr
+    })
+  }
+
+  // Apply other filters
+  if (filters.value.location) {
+    bookings = bookings.filter(b => b.location === filters.value.location)
+  }
+  if (filters.value.productType) {
+    bookings = bookings.filter(b => b.productType === filters.value.productType)
+  }
+  if (filters.value.subscriptionType) {
+    bookings = bookings.filter(b => b.subscriptionType === filters.value.subscriptionType)
+  }
+  if (filters.value.subscriptionStatus) {
+    bookings = bookings.filter(b => b.status === filters.value.subscriptionStatus)
+  }
+  if (filters.value.userType) {
+    bookings = bookings.filter(b => b.userType === filters.value.userType)
+  }
+
+  return bookings
+})
+
+const totalPages = computed(() => Math.ceil(filteredBookings.value.length / itemsPerPage))
+
+const paginatedBookings = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredBookings.value.slice(start, end)
+})
+
+const startItem = computed(() => {
+  if (filteredBookings.value.length === 0) return 0
+  return (currentPage.value - 1) * itemsPerPage + 1
+})
+
+const endItem = computed(() => {
+  const end = currentPage.value * itemsPerPage
+  return Math.min(end, filteredBookings.value.length)
+})
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
+})
+
+// Public function to view booking details
+const viewBookingDetails = (booking: any) => {
+  // This is a public function that can be called to view booking details
+  console.log('Viewing booking details for:', booking.id, booking)
+  
+  // Log the view action for analytics/audit purposes
+  const viewLogs = JSON.parse(localStorage.getItem('bookingViewLogs') || '[]')
+  viewLogs.push({
+    bookingId: booking.id,
+    viewedAt: new Date().toISOString(),
+    viewedBy: 'Admin', // In real app, get from auth context
+    bookingDetails: {
+      customerName: booking.customerName,
+      productName: booking.productName,
+      status: booking.status,
+      date: booking.date || booking.subscribedDate
+    }
+  })
+  localStorage.setItem('bookingViewLogs', JSON.stringify(viewLogs))
+  
+  // Return the appropriate route path for navigation
+  if (booking.productType === 'Subscription') {
+    return `/subscriptions/${booking.id}`
+  }
+  return `/bookings/${booking.id}`
+}
+
+// Public function to get all booking details
+const getAllBookingDetails = () => {
+  // Return all bookings with full details for external access
+  console.log('Getting all booking details, total bookings:', allBookings.value.length)
+  return allBookings.value.map(booking => ({
+    ...booking,
+    // Add computed fields for better detail view
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : 'N/A',
+    timeSlot: `${booking.startTime} - ${booking.endTime}`,
+    statusColor: getStatusClass(booking.status),
+    isUpcoming: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
+    isPast: booking.status === 'completed' || booking.status === 'cancelled' || (booking.date && new Date(booking.date) < new Date())
+  }))
+}
+
+// Public function to get specific booking details by ID
+const getBookingById = (bookingId: string) => {
+  const booking = allBookings.value.find(b => b.id === bookingId)
+  if (!booking) {
+    console.warn('Booking not found:', bookingId)
+    return null
+  }
+  
+  // Return booking with enhanced details
+  return {
+    ...booking,
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    }) : 'N/A',
+    timeSlot: `${booking.startTime} - ${booking.endTime}`,
+    statusColor: getStatusClass(booking.status),
+    isUpcoming: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
+    isPast: booking.status === 'completed' || booking.status === 'cancelled' || (booking.date && new Date(booking.date) < new Date()),
+    canBeCancelled: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
+    canBeDeleted: booking.status === 'completed' || booking.status === 'cancelled'
+  }
+}
+
+// Public function to add new booking and ensure it's viewable
+const addNewBooking = (newBookingData: any) => {
+  // Generate new booking ID
+  const maxId = Math.max(...allBookings.value.map(b => parseInt(b.id.split('-')[1])))
+  const newId = `BR-${(maxId + 1).toString().padStart(4, '0')}`
+  
+  const newBooking = {
+    id: newId,
+    ...newBookingData,
+    status: 'confirmed', // New bookings are confirmed by default
+    // Ensure all required fields are present
+    productImage: newBookingData.productImage || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center'
+  }
+  
+  // Add to bookings array
+  allBookings.value.unshift(newBooking) // Add at beginning for recent bookings to show first
+  
+  // Save to localStorage for persistence
+  localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+  
+  // Log the addition
+  const additionLogs = JSON.parse(localStorage.getItem('bookingAdditionLogs') || '[]')
+  additionLogs.push({
+    bookingId: newId,
+    addedAt: new Date().toISOString(),
+    addedBy: 'Admin',
+    bookingData: newBooking
+  })
+  localStorage.setItem('bookingAdditionLogs', JSON.stringify(additionLogs))
+  
+  console.log('New booking added:', newId, newBooking)
+  
+  // Return the new booking details
+  return getBookingById(newId)
+}
+
+// Methods
+const getTabCount = (tabId: string) => {
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  
+  if (tabId === 'bookings') {
+    // Count only confirmed bookings (not subscriptions) for today and future dates
+    return allBookings.value.filter(b => 
+      b.status === 'confirmed' && 
+      b.productType !== 'Subscription' && 
+      b.date && 
+      b.date >= todayStr
+    ).length
+  } else if (tabId === 'subscriptions') {
+    // Count only current (active) subscriptions, not cancelled ones
+    return allBookings.value.filter(b => b.productType === 'Subscription' && b.status === 'confirmed').length
+  } else {
+    // History includes:
+    // 1. Past confirmed bookings (before today)
+    // 2. Completed bookings
+    // 3. Cancelled bookings
+    // 4. Cancelled subscriptions
+    return allBookings.value.filter(b => {
+      // Include cancelled subscriptions
+      if (b.productType === 'Subscription' && b.status === 'cancelled') {
+        return true
+      }
+      
+      // Include completed or cancelled regular bookings
+      if (b.productType !== 'Subscription' && (b.status === 'completed' || b.status === 'cancelled')) {
+        return true
+      }
+      
+      // Include past confirmed bookings (confirmed bookings before today)
+      if (b.status === 'confirmed' && b.productType !== 'Subscription' && b.date && b.date < todayStr) {
+        return true
+      }
+      
+      return false
+    }).length
+  }
+}
+
+const getStatusClass = (status: string) => {
+  switch (status) {
+    case 'confirmed':
+      return 'bg-green-100 text-green-800'
+    case 'completed':
+      return 'bg-gray-100 text-gray-800'
+    case 'cancelled':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const applyFilters = () => {
+  // Filters are automatically applied through computed property
+  console.log('Filters applied:', filters.value)
+}
+
+const resetFilters = () => {
+  filters.value = {
+    startDate: '',
+    endDate: '',
+    location: '',
+    productType: '',
+    userType: '',
+    subscriptionType: '',
+    subscriptionStatus: ''
+  }
+  currentPage.value = 1
+}
+
+// Pagination methods
+const goToPage = (page: number) => {
+  currentPage.value = page
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+  }
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const clearDateRange = () => {
+  filters.value.startDate = ''
+  filters.value.endDate = ''
+  currentPage.value = 1
+}
+
+// Calendar methods
+const previousMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+}
+
+const nextMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+}
+
+const selectDate = (date: any) => {
+  if (!date.isCurrentMonth) return
+  
+  // Use the properly formatted date string to avoid timezone issues
+  const selectedDate = date.dateString
+  
+  if (!filters.value.startDate || (filters.value.startDate && filters.value.endDate)) {
+    // Start new selection
+    filters.value.startDate = selectedDate
+    filters.value.endDate = ''
+  } else if (filters.value.startDate && !filters.value.endDate) {
+    // Select end date - compare as strings since they're in YYYY-MM-DD format
+    if (selectedDate >= filters.value.startDate) {
+      filters.value.endDate = selectedDate
+    } else {
+      // If selected date is before start date, make it the new start date
+      filters.value.endDate = filters.value.startDate
+      filters.value.startDate = selectedDate
+    }
+  }
+  
+  // Reset pagination when filter changes
+  currentPage.value = 1
+}
+
+const isDateSelected = (date: any) => {
+  return date.dateString === filters.value.startDate || date.dateString === filters.value.endDate
+}
+
+const isDateInRange = (date: any) => {
+  if (!filters.value.startDate || !filters.value.endDate) return false
+  
+  // Compare date strings directly since they're in YYYY-MM-DD format
+  const dateString = date.dateString
+  
+  return dateString > filters.value.startDate && dateString < filters.value.endDate
+}
+
+// Delete booking functions
+const confirmDeleteBooking = (booking: any) => {
+  bookingToDelete.value = booking
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  bookingToDelete.value = null
+  isDeleting.value = false
+}
+
+const deleteBooking = async () => {
+  if (!bookingToDelete.value) return
+  
+  isDeleting.value = true
+  
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Remove booking from the array
+    const index = allBookings.value.findIndex(b => b.id === bookingToDelete.value.id)
+    if (index > -1) {
+      allBookings.value.splice(index, 1)
+    }
+    
+    // Save to localStorage for persistence
+  localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+    
+    // Log the deletion
+    const deletedBookings = JSON.parse(localStorage.getItem('deletedBookings') || '[]')
+    deletedBookings.push({
+      ...bookingToDelete.value,
+      deletedAt: new Date().toISOString(),
+      deletedBy: 'Admin' // In real app, get from auth context
+    })
+    localStorage.setItem('deletedBookings', JSON.stringify(deletedBookings))
+    
+    closeDeleteModal()
+    
+    // Show success message (you could replace this with a toast notification)
+    console.log('Booking deleted successfully:', bookingToDelete.value.id)
+    
+  } catch (error) {
+    console.error('Error deleting booking:', error)
+    // Handle error (show toast notification, etc.)
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+// Click outside handler
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const datePickerContainer = target.closest('.date-picker-container')
+  const dateInput = target.closest('.date-input')
+  
+  if (!datePickerContainer && !dateInput && showDatePicker.value) {
+    showDatePicker.value = false
+  }
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  
+  // Check for tab query parameter and set active tab
+  const tabParam = route.query.tab as string
+  if (tabParam && ['bookings', 'subscriptions', 'history'].includes(tabParam)) {
+    activeTab.value = tabParam
+  }
+  
+  // Load bookings from localStorage if available (for persistence across sessions)
+  const savedBookings = localStorage.getItem('allBookings')
+  if (savedBookings) {
+    try {
+      const parsedBookings = JSON.parse(savedBookings)
+      if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
+        allBookings.value = parsedBookings
+        console.log('Loaded bookings from localStorage:', parsedBookings.length)
+      }
+    } catch (error) {
+      console.warn('Error loading bookings from localStorage:', error)
+    }
+  }
+  
+  // If there are no bookings in localStorage yet, persist the initial sample data so
+  // other views (like CancelBookingView) can load the 'actual' data by ID.
+  if (!savedBookings) {
+    try {
+      localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+      console.log('Seeded initial sample bookings to localStorage:', allBookings.value.length)
+    } catch (err) {
+      console.warn('Failed to seed bookings to localStorage:', err)
+    }
+  }
+  
+  // Update booking statuses from localStorage (simulate real-time updates)
+  const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
+  allBookings.value.forEach(booking => {
+    if (bookingStatuses[booking.id]) {
+      booking.status = bookingStatuses[booking.id]
+    }
+  })
+  
+  console.log('BookingsView mounted with', allBookings.value.length, 'total bookings')
+})
+
+// Watch for filter changes to reset pagination
+// Watch for route changes to update active tab
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && typeof newTab === 'string' && ['bookings', 'subscriptions', 'history'].includes(newTab)) {
+    activeTab.value = newTab
+  }
+})
+
+// Reset page when filters or active tab change
+watch([() => filters.value, activeTab], () => {
+  currentPage.value = 1
+}, { deep: true })
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// Watch for tab changes to update status of past confirmed bookings
+watch(activeTab, (newTab) => {
+  if (newTab === 'history') {
+    const todayStr = new Date().toISOString().split('T')[0]
+    allBookings.value.forEach(booking => {
+      if (
+        booking.status === 'confirmed' &&
+        booking.productType !== 'Subscription' &&
+        booking.date &&
+        booking.date < todayStr
+      ) {
+        booking.status = 'completed'
+      }
+    })
+    // Persist status changes to localStorage
+    localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+  }
+})
+
+// Expose public functions for external access
+// These functions can be called from parent components or other parts of the application
+defineExpose({
+  viewBookingDetails,
+  getAllBookingDetails,
+  getBookingById,
+  addNewBooking,
+  // Expose filtered bookings for external components
+  getCurrentBookings: () => filteredBookings.value,
+  // Expose booking management functions
+  confirmDeleteBooking
+})
+</script>
