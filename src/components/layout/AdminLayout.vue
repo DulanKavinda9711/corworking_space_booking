@@ -207,6 +207,16 @@ const notificationCount = computed(() => notifications.value.length)
 
 // Get current page name based on route
 const currentPageName = computed(() => {
+  // Special case for profile page
+  if (route.path === '/profile') {
+    return 'Admin Profile'
+  }
+  
+  // Special case for settings page
+  if (route.path === '/settings') {
+    return 'Settings'
+  }
+  
   const currentItem = menuItems.find(item => isActive(item.path))
   return currentItem ? currentItem.name : 'Dashboard'
 })

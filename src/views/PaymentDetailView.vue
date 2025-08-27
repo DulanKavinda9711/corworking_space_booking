@@ -148,19 +148,36 @@
 
         <!-- Commission Information -->
         <div class="mt-6 pt-6 border-t border-gray-200">
-          <h3 class="text-sm font-medium text-gray-900 mb-3">PayMedia Commission Details</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div>
-              <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Rate</label>
-              <p class="text-gray-900 mt-1">10.0%</p>
+          <h3 class="text-sm font-medium text-gray-900 mb-3">Commission Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- PayMedia Commission -->
+            <div class="bg-blue-50 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-blue-900 mb-3">PayMedia Commission</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-blue-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-blue-900">{{ payMediaCommissionRate }}%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-blue-700">Commission Amount</span>
+                  <span class="text-sm font-semibold text-green-600">${{ payMediaCommissionAmount }}</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Amount</label>
-              <p class="text-green-600 font-semibold mt-1">$15.00</p>
-            </div>
-            <div>
-              <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Net Amount to Partner</label>
-              <p class="text-gray-900 mt-1">$135.00</p>
+
+            <!-- Ceylinco Commission -->
+            <div class="bg-purple-50 rounded-lg p-4">
+              <h4 class="text-sm font-medium text-purple-900 mb-3">Ceylinco Commission</h4>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-sm text-purple-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-purple-900">{{ ceylincoCommissionRate }}%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-purple-700">Commission Amount</span>
+                  <span class="text-sm font-semibold text-green-600">${{ ceylincoCommissionAmount }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -202,8 +219,12 @@ const payment = ref({
     { name: 'Catering', price: 10 }
   ],
   totalAmount: 150,
-  commission: 15.00,
-  commissionRate: 10.0,
+  // Updated commission structure
+  payMediaCommission: 75.00,
+  payMediaRate: 50.0,
+  ceylincoCommission: 75.00,
+  ceylincoRate: 50.0,
+  totalCommission: 150.00,
   status: 'paid',
   date: '2024-08-15',
   time: '10:30 AM'
@@ -215,6 +236,47 @@ const additionalFacilitiesTotal = computed(() => {
     return 0
   }
   return payment.value.additionalFacilities.reduce((total, facility) => total + facility.price, 0)
+})
+
+// Commission calculations - Load from localStorage or use defaults
+const loadCommissionSettings = () => {
+  const savedSettings = localStorage.getItem('commissionSettings')
+  if (savedSettings) {
+    try {
+      return JSON.parse(savedSettings)
+    } catch (error) {
+      console.error('Error loading commission settings:', error)
+    }
+  }
+  // Default settings if nothing saved
+  return {
+    payMediaRate: 50.0,
+    payMediaFixedFee: 0.00,
+    ceylincoRate: 50.0,
+    ceylincoFixedFee: 0.00
+  }
+}
+
+const commissionSettings = loadCommissionSettings()
+
+const payMediaCommissionRate = computed(() => commissionSettings.payMediaRate)
+const ceylincoCommissionRate = computed(() => commissionSettings.ceylincoRate)
+const totalCommissionRate = computed(() => payMediaCommissionRate.value + ceylincoCommissionRate.value)
+
+const payMediaCommissionAmount = computed(() => {
+  const rate = payMediaCommissionRate.value / 100
+  return (payment.value.totalAmount * rate).toFixed(2)
+})
+
+const ceylincoCommissionAmount = computed(() => {
+  const rate = ceylincoCommissionRate.value / 100
+  return (payment.value.totalAmount * rate).toFixed(2)
+})
+
+const netAmountToPartner = computed(() => {
+  const payMediaAmount = parseFloat(payMediaCommissionAmount.value)
+  const ceylincoAmount = parseFloat(ceylincoCommissionAmount.value)
+  return (payment.value.totalAmount - payMediaAmount - ceylincoAmount).toFixed(2)
 })
 
 // Methods
@@ -274,8 +336,10 @@ const downloadInvoice = () => {
         </div>
         <div class="section">
           <div class="row"><strong>Total Amount</strong><span>$${p.totalAmount}</span></div>
-          <div class="row"><strong>Commission</strong><span>$${p.commission} (${p.commissionRate}%)</span></div>
-          <div class="row"><strong>Net to Partner</strong><span>$${(p.totalAmount - p.commission).toFixed(2)}</span></div>
+          <div class="row"><strong>PayMedia Commission</strong><span>$${p.payMediaCommission} (${p.payMediaRate}%)</span></div>
+          <div class="row"><strong>Ceylinco Commission</strong><span>$${p.ceylincoCommission} (${p.ceylincoRate}%)</span></div>
+          <div class="row"><strong>Total Commission</strong><span>$${p.totalCommission} (${p.payMediaRate + p.ceylincoRate}%)</span></div>
+          <div class="row"><strong>Net to Partner</strong><span>$${(p.totalAmount - p.totalCommission).toFixed(2)}</span></div>
         </div>
     ` + printScript + `
       </body>
@@ -312,8 +376,12 @@ onMounted(() => {
         { name: 'Catering', price: 10 }
       ],
       totalAmount: 150,
-      commission: 15.00,
-      commissionRate: 10.0,
+      // Updated commission structure
+      payMediaCommission: 75.00,
+      payMediaRate: 50.0,
+      ceylincoCommission: 75.00,
+      ceylincoRate: 50.0,
+      totalCommission: 150.00,
       status: 'paid',
       date: '2024-08-15',
       time: '10:30 AM'
@@ -332,8 +400,12 @@ onMounted(() => {
         { name: 'Monitor', price: 10 }
       ],
       totalAmount: 60,
-      commission: 7.50,
-      commissionRate: 12.5,
+      // Updated commission structure
+      payMediaCommission: 30.00,
+      payMediaRate: 50.0,
+      ceylincoCommission: 30.00,
+      ceylincoRate: 50.0,
+      totalCommission: 60.00,
       status: 'paid',
       date: '2024-08-15',
       time: '2:15 PM'

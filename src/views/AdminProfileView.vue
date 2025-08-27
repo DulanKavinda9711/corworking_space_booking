@@ -1,26 +1,99 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6">
-      <!-- Page Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">Admin Profile</h1>
-          <p class="text-gray-600">Manage your account settings and preferences</p>
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Profile Card -->
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <!-- Profile Overview Card -->
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+          <!-- Avatar Section -->
+          <div class="flex-shrink-0 text-center">
+            <div class="relative">
+              <img
+                class="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+                :src="profile.avatar"
+                :alt="profile.name"
+              />
+              <button
+                v-if="editMode"
+                @click="changeAvatar"
+                class="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiCamera" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Profile Information -->
+          <div class="flex-1 space-y-4">
+            <!-- Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input
+                v-if="editMode"
+                type="text"
+                v-model="profile.name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p v-else class="text-xl font-semibold text-gray-900">{{ profile.name }}</p>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input
+                v-if="editMode"
+                type="email"
+                v-model="profile.email"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p v-else class="text-gray-600">{{ profile.email }}</p>
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                v-if="editMode"
+                type="tel"
+                v-model="profile.phone"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p v-else class="text-gray-600">{{ profile.phone }}</p>
+            </div>
+
+            <!-- Role -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <span :class="getRoleClass(profile.roleKey)" class="px-3 py-1 text-sm font-medium rounded-full">
+                {{ profile.role }}
+              </span>
+            </div>
+
+            <!-- Account Info -->
+            <div class="pt-4 border-t border-gray-200 space-y-2">
+              <div class="flex items-center space-x-2 text-sm text-gray-500">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiClockOutline" />
+                </svg>
+                <span>Last login: {{ formatDate(profile.lastLogin) }}</span>
+              </div>
+              <div class="flex items-center space-x-2 text-sm text-gray-500">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiCalendarPlus" />
+                </svg>
+                <span>Joined: {{ formatDate(profile.joinDate) }}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center space-x-3">
+
+        <!-- Save Button (shown only in edit mode) -->
+        <div v-if="editMode" class="mt-8 flex justify-center">
           <button
-            @click="editMode = !editMode"
-            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="editMode ? mdiClose : mdiPencil" />
-            </svg>
-            <span>{{ editMode ? 'Cancel' : 'Edit Profile' }}</span>
-          </button>
-          <button
-            v-if="editMode"
             @click="saveProfile"
-            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
           >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiContentSave" />
@@ -30,98 +103,17 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Profile Overview Card -->
-        <div class="lg:col-span-1">
-          <div class="bg-white rounded-xl shadow-card p-6">
-            <div class="text-center">
-              <div class="relative inline-block">
-                <img 
-                  class="h-24 w-24 rounded-full object-cover mx-auto"
-                  :src="profile.avatar"
-                  :alt="profile.name"
-                />
-                <button 
-                  v-if="editMode"
-                  class="absolute bottom-0 right-0 bg-primary-600 text-white rounded-full p-2 hover:bg-primary-700 transition-colors"
-                  @click="changeAvatar"
-                >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiCamera" />
-                  </svg>
-                </button>
-              </div>
-              <h3 class="mt-4 text-lg font-semibold text-gray-900">{{ profile.name }}</h3>
-              <p class="text-gray-600">{{ profile.role }}</p>
-              <p class="text-sm text-gray-500 mt-1">{{ profile.email }}</p>
-              
-              <div class="mt-6 pt-6 border-t border-gray-200">
-                <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiClockOutline" />
-                  </svg>
-                  <span>Last login: {{ formatDate(profile.lastLogin) }}</span>
-                </div>
-                <div class="flex items-center justify-center space-x-2 text-sm text-gray-600 mt-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiCalendarPlus" />
-                  </svg>
-                  <span>Joined: {{ formatDate(profile.joinDate) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Profile Details -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Personal Information -->
-          <div class="bg-white rounded-xl shadow-card p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                <input
-                  v-if="editMode"
-                  type="text"
-                  v-model="profile.name"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
-                />
-                <p v-else class="text-gray-900">{{ profile.name }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input
-                  v-if="editMode"
-                  type="email"
-                  v-model="profile.email"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
-                />
-                <p v-else class="text-gray-900">{{ profile.email }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  v-if="editMode"
-                  type="tel"
-                  v-model="profile.phone"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
-                />
-                <p v-else class="text-gray-900">{{ profile.phone }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <p class="text-gray-900 flex items-center">
-                  <span :class="getRoleClass(profile.roleKey)" class="px-2 py-1 text-xs font-medium rounded-full mr-2">
-                    {{ profile.role }}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-        </div>
+      <!-- Header with Edit Button -->
+      <div class="flex justify-end">
+        <button
+          @click="editMode = !editMode"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="editMode ? mdiClose : mdiPencil" />
+          </svg>
+          <span>{{ editMode ? 'Cancel' : 'Edit Profile' }}</span>
+        </button>
       </div>
 
     </div>

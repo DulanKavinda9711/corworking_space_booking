@@ -43,15 +43,21 @@
             <div class="flex space-x-2">
               <button
                 @click="viewPromotion(promotion)"
-                class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
               >
-                View
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiEye" />
+                </svg>
+                <span>View</span>
               </button>
               <button
                 @click="confirmDeletePromotion(promotion)"
-                class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
               >
-                Delete
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiDelete" />
+                </svg>
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -110,21 +116,31 @@
                 @change="onImageSelected"
                 class="hidden"
               />
-              <div v-if="!newPromotion.image" @click="triggerImageInput" class="cursor-pointer">
+              <div v-if="!newPromotion.image && !isImageLoading" @click="triggerImageInput" class="cursor-pointer">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p class="mt-2 text-sm text-gray-600">Click to upload image</p>
                 <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
               </div>
+              <div v-else-if="isImageLoading" class="flex flex-col items-center">
+                <svg class="animate-spin h-12 w-12 text-primary-500" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">Loading image...</p>
+              </div>
               <div v-else class="space-y-2">
                 <img :src="newPromotion.image" class="max-h-32 mx-auto rounded" />
                 <button
                   type="button"
                   @click="removeImage"
-                  class="text-sm text-red-600 hover:text-red-800"
+                  class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                  title="Remove image"
                 >
-                  Remove image
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiDelete" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -140,14 +156,14 @@
             </button>
             <button
               type="submit"
-              :disabled="!newPromotion.name || !newPromotion.image || isCreating"
+              :disabled="!newPromotion.name.trim() || !newPromotion.image || isCreating || isImageLoading"
               class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
             >
               <svg v-if="isCreating" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isCreating ? 'Creating...' : 'Create Promotion' }}</span>
+              <span>{{ isCreating ? 'Creating...' : isImageLoading ? 'Loading image...' : 'Create Promotion' }}</span>
             </button>
           </div>
         </form>
@@ -269,7 +285,9 @@ import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import {
     mdiBullhorn,
-  mdiPlus
+  mdiPlus,
+  mdiDelete,
+  mdiEye
 } from '@mdi/js'
 
 // Types
@@ -298,6 +316,7 @@ const newPromotion = ref({
   name: '',
   image: ''
 })
+const isImageLoading = ref(false)
 
 // Template ref for image input
 const imageInput = ref<HTMLInputElement>()
@@ -306,9 +325,27 @@ const imageInput = ref<HTMLInputElement>()
 const onImageSelected = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image file size must be less than 10MB')
+      return
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file')
+      return
+    }
+
+    isImageLoading.value = true
     const reader = new FileReader()
     reader.onload = (e) => {
       newPromotion.value.image = e.target?.result as string
+      isImageLoading.value = false
+    }
+    reader.onerror = () => {
+      alert('Error reading image file')
+      isImageLoading.value = false
     }
     reader.readAsDataURL(file)
   }
@@ -322,13 +359,31 @@ const triggerImageInput = () => {
 
 const removeImage = () => {
   newPromotion.value.image = ''
+  isImageLoading.value = false
   if (imageInput.value) {
     imageInput.value.value = ''
   }
 }
 
 const confirmCreate = async () => {
-  if (!newPromotion.value.name || !newPromotion.value.image) {
+  // Enhanced validation
+  if (!newPromotion.value.name.trim()) {
+    alert('Please enter a promotion name')
+    return
+  }
+
+  if (!newPromotion.value.image) {
+    alert('Please select an image')
+    return
+  }
+
+  if (isImageLoading.value) {
+    alert('Please wait for the image to finish loading')
+    return
+  }
+
+  // Prevent multiple submissions
+  if (isCreating.value) {
     return
   }
 
@@ -338,20 +393,31 @@ const confirmCreate = async () => {
     // Simulate creation delay
     await new Promise(resolve => setTimeout(resolve, 1000))
 
+    // Create promotion with trimmed name and unique ID
+    const timestamp = Date.now()
+    const randomSuffix = Math.random().toString(36).substr(2, 9)
     const promotion: Promotion = {
-      id: 'PROMO-' + Date.now(),
-      name: newPromotion.value.name,
+      id: `PROMO-${timestamp}-${randomSuffix}`,
+      name: newPromotion.value.name.trim(),
       image: newPromotion.value.image,
       createdAt: new Date().toISOString()
     }
 
-    promotions.value.push(promotion)
-    
-    // Close create modal first
-    closeCreateModal()
-    
-    // Then show success modal
+    // Add to promotions array using spread operator for better reactivity
+    promotions.value = [...promotions.value, promotion]
+
+    // Reset form immediately after successful creation
+    newPromotion.value = { name: '', image: '' }
+    isImageLoading.value = false
+    if (imageInput.value) {
+      imageInput.value.value = ''
+    }
+
+    // Close modal and show success
+    showCreateModal.value = false
     showSuccessModal.value = true
+
+    console.log('Promotion created successfully:', promotion)
   } catch (error) {
     console.error('Error creating promotion:', error)
     alert('Failed to create promotion. Please try again.')
@@ -362,7 +428,7 @@ const confirmCreate = async () => {
 
 const closeCreateModal = () => {
   showCreateModal.value = false
-  newPromotion.value = { name: '', image: '' }
+  // Don't reset form here anymore - handled in confirmCreate
   if (imageInput.value) {
     imageInput.value.value = ''
   }
@@ -370,6 +436,12 @@ const closeCreateModal = () => {
 
 const closeSuccessModal = () => {
   showSuccessModal.value = false
+  // Ensure form is completely reset when success modal closes
+  newPromotion.value = { name: '', image: '' }
+  isImageLoading.value = false
+  if (imageInput.value) {
+    imageInput.value.value = ''
+  }
 }
 
 const viewPromotion = (promotion: Promotion) => {
@@ -437,6 +509,10 @@ onMounted(() => {
 
 // Save to localStorage whenever promotions change
 watch(promotions, (newPromotions) => {
-  localStorage.setItem('promotions', JSON.stringify(newPromotions))
-}, { deep: true })
+  try {
+    localStorage.setItem('promotions', JSON.stringify(newPromotions))
+  } catch (error) {
+    console.error('Error saving to localStorage:', error)
+  }
+}, { deep: true, immediate: false })
 </script>

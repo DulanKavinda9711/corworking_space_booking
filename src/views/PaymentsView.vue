@@ -23,7 +23,7 @@
             <span>Export CSV</span>
           </button>
           <button
-            @click="showCommissionModal = true"
+            @click="goToCommissionSetup"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -219,11 +219,10 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-semibold text-gray-900">${{ payment.totalAmount }}</div>
-                  
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-green-600">${{ payment.commission }}</div>
-                  <div class="text-sm text-gray-500">{{ payment.commissionRate }}%</div>
+                  <div class="text-sm font-semibold text-blue-600">${{ payment.payMediaCommission }}</div>
+                  <div class="text-sm text-gray-500">{{ payment.payMediaRate }}%</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span 
@@ -264,115 +263,6 @@
       </div>
     </div>
 
-    <!-- Commission Setup Modal -->
-    <div v-if="showCommissionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-900">Commission Setup</h2>
-            <button @click="showCommissionModal = false" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <form @submit.prevent="saveCommissionSettings" class="p-6 space-y-6">
-          <div>
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Location-based Commission Rates</h3>
-            
-            <div v-for="location in commissionSettings" :key="location.id" class="border border-gray-200 rounded-lg p-4 mb-4">
-              <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-medium text-gray-900">{{ location.name }}</h4>
-                <span class="text-sm text-gray-500">{{ location.company }}</span>
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Commission Rate (%)</label>
-                  <input
-                    type="number"
-                    v-model="location.commissionRate"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="0.0"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Fixed Fee ($)</label>
-                  <input
-                    type="number"
-                    v-model="location.fixedFee"
-                    min="0"
-                    step="0.01"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              
-              <div class="mt-3">
-                <label class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    v-model="location.isActive"
-                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">Active commission for this location</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Global Settings</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Default Commission Rate (%)</label>
-                <input
-                  type="number"
-                  v-model="globalSettings.defaultCommissionRate"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Processing Fee (%)</label>
-                <input
-                  type="number"
-                  v-model="globalSettings.processingFee"
-                  min="0"
-                  max="10"
-                  step="0.01"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              @click="showCommissionModal = false"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              Save Settings
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 
@@ -387,9 +277,6 @@ import {
 } from '@mdi/js'
 
 // State
-const showCommissionModal = ref(false)
-
-// Date Picker State
 const showDatePicker = ref(false)
 const currentDate = ref(new Date())
 
@@ -504,41 +391,7 @@ onUnmounted(() => {
 const sortBy = ref('date')
 const sortOrder = ref('desc')
 
-// Commission settings
-const commissionSettings = ref([
-  {
-    id: 'LC-001',
-    name: 'Main Branch - Downtown',
-    company: 'WorkHub Co.',
-    commissionRate: 10.0,
-    fixedFee: 5.00,
-    isActive: true
-  },
-  {
-    id: 'LC-002',
-    name: 'Tech Hub - Silicon Valley',
-    company: 'FlexSpace Inc.',
-    commissionRate: 12.5,
-    fixedFee: 3.00,
-    isActive: true
-  },
-  {
-    id: 'LC-003',
-    name: 'Creative Quarter',
-    company: 'Creative Spaces LLC',
-    commissionRate: 8.0,
-    fixedFee: 7.50,
-    isActive: false
-  }
-])
-
-// Global settings
-const globalSettings = ref({
-  defaultCommissionRate: 10.0,
-  processingFee: 2.9
-})
-
-// Sample payments data with new structure
+// Sample payments data with new commission structure
 const payments = ref([
   {
     id: 'PAY-001',
@@ -554,8 +407,12 @@ const payments = ref([
       { name: 'Catering', price: 10 }
     ],
     totalAmount: 150,
-    commission: 15.00,
-    commissionRate: 10.0,
+    // Updated commission structure
+    payMediaCommission: 75.00,
+    payMediaRate: 50.0,
+    ceylincoCommission: 75.00,
+    ceylincoRate: 50.0,
+    totalCommission: 150.00,
     status: 'paid',
     date: '2024-08-15',
     time: '10:30 AM'
@@ -573,8 +430,12 @@ const payments = ref([
       { name: 'Monitor', price: 10 }
     ],
     totalAmount: 60,
-    commission: 7.50,
-    commissionRate: 10.0,
+    // Updated commission structure
+    payMediaCommission: 30.00,
+    payMediaRate: 50.0,
+    ceylincoCommission: 30.00,
+    ceylincoRate: 50.0,
+    totalCommission: 60.00,
     status: 'paid',
     date: '2024-08-15',
     time: '2:15 PM'
@@ -593,8 +454,12 @@ const payments = ref([
       { name: 'Phone Line', price: 25 }
     ],
     totalAmount: 400,
-    commission: 40.00,
-    commissionRate: 10.0,
+    // Updated commission structure
+    payMediaCommission: 200.00,
+    payMediaRate: 50.0,
+    ceylincoCommission: 200.00,
+    ceylincoRate: 50.0,
+    totalCommission: 400.00,
     status: 'pending',
     date: '2024-08-14',
     time: '9:45 AM'
@@ -610,8 +475,12 @@ const payments = ref([
     baseAmount: 50,
     additionalFacilities: [],
     totalAmount: 50,
-    commission: 4.00,
-    commissionRate: 10.0,
+    // Updated commission structure
+    payMediaCommission: 25.00,
+    payMediaRate: 50.0,
+    ceylincoCommission: 25.00,
+    ceylincoRate: 50.0,
+    totalCommission: 50.00,
     status: 'paid',
     date: '2024-08-14',
     time: '3:20 PM'
@@ -629,8 +498,12 @@ const payments = ref([
       { name: 'Video Conference', price: 30 }
     ],
     totalAmount: 180,
-    commission: 22.50,
-    commissionRate: 10.0,
+    // Updated commission structure
+    payMediaCommission: 90.00,
+    payMediaRate: 50.0,
+    ceylincoCommission: 90.00,
+    ceylincoRate: 50.0,
+    totalCommission: 180.00,
     status: 'pending',
     date: '2024-08-13',
     time: '11:00 AM'
@@ -702,8 +575,8 @@ const sortedPayments = computed(() => {
         bVal = b.bookingId
         break
       case 'commission':
-        aVal = a.commission
-        bVal = b.commission
+        aVal = a.payMediaCommission
+        bVal = b.payMediaCommission
         break
       case 'subscriptions':
         aVal = a.status === 'pending' ? 1 : 0
@@ -765,8 +638,8 @@ const exportToCSV = () => {
     product: payment.productType,
     additionalFacilities: payment.additionalFacilities.map((f: any) => f.name).join('; '),
     totalAmount: payment.totalAmount,
-    commission: payment.commission,
-    commissionRate: payment.commissionRate,
+    payMediaCommission: payment.payMediaCommission,
+    payMediaRate: payment.payMediaRate,
     status: payment.status,
     date: payment.date,
     time: payment.time
@@ -793,11 +666,8 @@ const exportToCSV = () => {
   URL.revokeObjectURL(url)
 }
 
-const saveCommissionSettings = () => {
-  // In a real app, this would save to the backend
-  console.log('Saving commission settings:', commissionSettings.value)
-  console.log('Global settings:', globalSettings.value)
-  showCommissionModal.value = false
-  alert('Commission settings saved successfully!')
+const goToCommissionSetup = () => {
+  // Navigate to the commission setup page
+  window.location.href = '/payments/commission-setup'
 }
 </script>

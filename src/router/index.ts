@@ -42,6 +42,7 @@ import EditLocationView from '@/views/locations/EditLocationView.vue'
 // Payments
 import PaymentsView from '@/views/PaymentsView.vue'
 import PaymentDetailView from '@/views/PaymentDetailView.vue'
+import CommissionSetupView from '@/views/CommissionSetupView.vue'
 
 // User Management
 import UserManagementView from '@/views/UserManagementView.vue'
@@ -215,6 +216,12 @@ const routes: RouteRecordRaw[] = [
     path: '/payments/:id',
     name: 'PaymentDetail',
     component: PaymentDetailView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/payments/commission-setup',
+    name: 'CommissionSetup',
+    component: CommissionSetupView,
     meta: { requiresAuth: true }
   },
   {

@@ -3,10 +3,16 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">Activity Log</h1>
-          <p class="text-gray-600">Monitor all system activities and user actions</p>
-        </div>
+        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="mdiHistory" />
+            </svg>
+            <span class="text-sm font-medium text-primary-700">
+              Total Activities:
+              <span class="font-bold text-primary-800">{{ activities.length }}</span>
+            </span>
+          </div>
+        
         <div class="flex items-center space-x-3">
           <button
             @click="exportActivityLog"
@@ -26,75 +32,18 @@
             </svg>
             <span>Refresh</span>
           </button>
-          <div class="text-sm text-gray-500">
-            {{ filteredActivities.length }} activities
-          </div>
+          
         </div>
       </div>
 
 
       <!-- Filters -->
-      <div class="bg-white rounded-xl shadow-card p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Activity Filters</h2>
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search by user, action, or description..."
-                v-model="searchQuery"
-                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
-              />
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
-            <select v-model="filters.activityType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="">All Types</option>
-              <option value="user">User Action</option>
-              <option value="booking">Booking</option>
-              <option value="payment">Payment</option>
-              <option value="system">System</option>
-              <option value="security">Security</option>
-              <option value="audit">Audit</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
-            <select v-model="filters.user" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="">All Users</option>
-              <option value="john.admin">John Administrator</option>
-              <option value="sarah.manager">Sarah Manager</option>
-              <option value="mike.operator">Mike Operator</option>
-              <option value="system">System</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
-            <input
-              type="date"
-              v-model="filters.dateFrom"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <div class="flex items-end">
-            <button
-              @click="resetFilters"
-              class="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Reset Filters
-            </button>
-          </div>
-        </div>
-      </div>
+            <!-- Filters -->
+      
 
       <!-- Activity Log Table -->
       <div class="bg-white rounded-xl shadow-card overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <!-- <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900">All Activities ({{ filteredActivities.length }})</h2>
           <div class="flex items-center space-x-2">
             <span class="text-sm text-gray-500">Auto-refresh:</span>
@@ -108,8 +57,122 @@
               <span class="ml-2 text-sm text-gray-700">On</span>
             </label>
           </div>
-        </div>
+        </div> -->
         <div class="overflow-x-auto">
+          <div class="bg-white border-b shadow-card p-6">
+        <div class="flex flex-col  md:flex-row md:items-end md:space-x-4 gap-4 relative">
+          <div class="relative md:w-64">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by user, action, or description..."
+                v-model="searchQuery"
+                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
+              />
+            </div>
+          </div>
+          <div class="md:w-40">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
+            <select v-model="filters.activityType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
+              <option value="">All Types</option>
+              <option value="user">User Action</option>
+              <option value="booking">Booking</option>
+              <option value="payment">Payment</option>
+              <option value="system">System</option>
+              <option value="security">Security</option>
+              <option value="audit">Audit</option>
+            </select>
+          </div>
+          <div class="md:w-48">
+            <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
+            <select v-model="filters.user" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
+              <option value="">All Users</option>
+              <option value="john.admin">John Administrator</option>
+              <option value="sarah.manager">Sarah Manager</option>
+              <option value="mike.operator">Mike Operator</option>
+              <option value="system">System</option>
+            </select>
+          </div>
+          <div class="relative md:w-64">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <input
+              type="text"
+              v-model="dateRangeDisplay"
+              @click="showDatePicker = !showDatePicker"
+              readonly
+              class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
+              placeholder="Select Date"
+            />
+            <!-- Booking.com Style Date Range Picker -->
+            <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
+              <div class="flex justify-between items-center mb-4">
+                <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                  </svg>
+                </button>
+                <span class="font-medium">{{ currentMonthYear }}</span>
+                <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                  </svg>
+                </button>
+              </div>
+              <!-- Calendar Grid -->
+              <div class="grid grid-cols-7 gap-1 mb-2">
+                <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
+                  {{ day }}
+                </div>
+              </div>
+              <div class="grid grid-cols-7 gap-1">
+                <div
+                  v-for="date in calendarDates"
+                  :key="date.dateString"
+                  @click="selectDate(date)"
+                  :class="[
+                    'text-sm text-center py-2 cursor-pointer rounded',
+                    !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
+                    isDateSelected(date) ? 'bg-primary-600 text-white' : '',
+                    isDateInRange(date) ? 'bg-primary-100' : '',
+                    'hover:bg-primary-50'
+                  ]"
+                >
+                  {{ date.day }}
+                </div>
+              </div>
+              <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
+                <div class="flex space-x-2">
+                  <button
+                    @click="clearDateRange"
+                    class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    @click="showDatePicker = false"
+                    :disabled="!filters.dateFrom"
+                    class="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-end md:absolute md:right-0 md:top-6">
+            <button
+              @click="resetFilters"
+              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
+      </div>
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -269,7 +332,8 @@ import {
   mdiDownload,
   mdiRefresh,
   mdiAccount,
-  mdiCog
+  mdiCog,
+  mdiHistory
 } from '@mdi/js'
 
 // State
@@ -278,12 +342,15 @@ const currentPage = ref(1)
 const itemsPerPage = 20
 const autoRefresh = ref(false)
 const refreshInterval = ref<ReturnType<typeof setTimeout> | null>(null)
+const showDatePicker = ref(false)
+const currentDate = ref(new Date())
 
 // Filters
 const filters = ref({
   activityType: '',
   user: '',
-  dateFrom: ''
+  dateFrom: '',
+  dateTo: ''
 })
 
 
@@ -468,7 +535,10 @@ const filteredActivities = computed(() => {
 
   // Apply date filter
   if (filters.value.dateFrom) {
-    filtered = filtered.filter(activity => activity.timestamp >= filters.value.dateFrom)
+    filtered = filtered.filter(activity => activity.timestamp >= filters.value.dateFrom + 'T00:00:00Z')
+  }
+  if (filters.value.dateTo) {
+    filtered = filtered.filter(activity => activity.timestamp <= filters.value.dateTo + 'T23:59:59Z')
   }
 
   return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -500,6 +570,52 @@ const visiblePages = computed(() => {
   }
   
   return pages
+})
+
+// Computed property for date range display
+const dateRangeDisplay = computed(() => {
+  if (filters.value.dateFrom && filters.value.dateTo) {
+    const startParts = filters.value.dateFrom.split('-')
+    const endParts = filters.value.dateTo.split('-')
+    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
+    const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
+    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+  } else if (filters.value.dateFrom) {
+    const startParts = filters.value.dateFrom.split('-')
+    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
+    return `${startDate.toLocaleDateString()}`
+  }
+  return ''
+})
+
+// Calendar computed properties
+const currentMonthYear = computed(() => {
+  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+})
+
+const calendarDates = computed(() => {
+  const year = currentDate.value.getFullYear()
+  const month = currentDate.value.getMonth()
+  const firstDay = new Date(year, month, 1)
+  const startCalendar = new Date(firstDay)
+  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
+  const dates = []
+  const current = new Date(startCalendar)
+  for (let i = 0; i < 42; i++) {
+    const currentDateObj = new Date(current)
+    const year = currentDateObj.getFullYear()
+    const monthStr = (currentDateObj.getMonth() + 1).toString().padStart(2, '0')
+    const day = currentDateObj.getDate().toString().padStart(2, '0')
+    const dateString = `${year}-${monthStr}-${day}`
+    dates.push({
+      day: currentDateObj.getDate(),
+      dateString: dateString,
+      isCurrentMonth: currentDateObj.getMonth() === month,
+      date: currentDateObj
+    })
+    current.setDate(current.getDate() + 1)
+  }
+  return dates
 })
 
 // Methods
@@ -582,7 +698,8 @@ const resetFilters = () => {
   filters.value = {
     activityType: '',
     user: '',
-    dateFrom: ''
+    dateFrom: '',
+    dateTo: ''
   }
   currentPage.value = 1
 }
@@ -626,16 +743,63 @@ const goToPage = (page: number) => {
   currentPage.value = page
 }
 
+const previousMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+}
+
+const nextMonth = () => {
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+}
+
+const selectDate = (date: any) => {
+  if (!date.isCurrentMonth) return
+  const selectedDate = date.dateString
+  if (!filters.value.dateFrom || (filters.value.dateFrom && filters.value.dateTo)) {
+    filters.value.dateFrom = selectedDate
+    filters.value.dateTo = ''
+  } else if (filters.value.dateFrom && !filters.value.dateTo) {
+    if (selectedDate >= filters.value.dateFrom) {
+      filters.value.dateTo = selectedDate
+    } else {
+      filters.value.dateTo = filters.value.dateFrom
+      filters.value.dateFrom = selectedDate
+    }
+  }
+}
+
+const isDateSelected = (date: any) => {
+  return date.dateString === filters.value.dateFrom || date.dateString === filters.value.dateTo
+}
+
+const isDateInRange = (date: any) => {
+  if (!filters.value.dateFrom || !filters.value.dateTo) return false
+  const dateString = date.dateString
+  return dateString > filters.value.dateFrom && dateString < filters.value.dateTo
+}
+
+const clearDateRange = () => {
+  filters.value.dateFrom = ''
+  filters.value.dateTo = ''
+}
+
 onMounted(() => {
-  // Set default date filter (last 7 days)
-  const today = new Date()
-  const sevenDaysAgo = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000))
-  filters.value.dateFrom = sevenDaysAgo.toISOString().split('T')[0]
+  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   if (refreshInterval.value) {
     clearInterval(refreshInterval.value)
   }
+  document.removeEventListener('click', handleClickOutside)
 })
+
+// Click outside handler for closing date picker
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const datePickerContainer = target.closest('.date-picker-container')
+  const dateInput = target.closest('.date-input')
+  if (!datePickerContainer && !dateInput && showDatePicker.value) {
+    showDatePicker.value = false
+  }
+}
 </script>
