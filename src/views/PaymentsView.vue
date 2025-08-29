@@ -38,8 +38,8 @@
       
 
       <!-- Payments Table -->
-      <div class="bg-white rounded-xl shadow-card">
-        <div class="bg-white border-b  shadow-card p-6">
+       <div class="bg-white rounded-xl shadow-card overflow-hidden">
+        <div class="bg-white shadow-card p-6 border-b">
         <div class="flex flex-col md:flex-row md:items-end md:space-x-1 gap-4 relative">
           <div class="relative md:w-48">
             <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
@@ -414,7 +414,7 @@ const payments = ref([
     ceylincoRate: 50.0,
     totalCommission: 150.00,
     status: 'paid',
-    date: '2024-08-15',
+    date: '2025-08-15',
     time: '10:30 AM'
   },
   {
@@ -437,7 +437,7 @@ const payments = ref([
     ceylincoRate: 50.0,
     totalCommission: 60.00,
     status: 'paid',
-    date: '2024-08-15',
+    date: '2025-08-15',
     time: '2:15 PM'
   },
   {
@@ -461,7 +461,7 @@ const payments = ref([
     ceylincoRate: 50.0,
     totalCommission: 400.00,
     status: 'pending',
-    date: '2024-08-14',
+    date: '2025-08-14',
     time: '9:45 AM'
   },
   {
@@ -482,7 +482,7 @@ const payments = ref([
     ceylincoRate: 50.0,
     totalCommission: 50.00,
     status: 'paid',
-    date: '2024-08-14',
+    date: '2025-08-14',
     time: '3:20 PM'
   },
   {
@@ -505,7 +505,7 @@ const payments = ref([
     ceylincoRate: 50.0,
     totalCommission: 180.00,
     status: 'pending',
-    date: '2024-08-13',
+    date: '2025-08-13',
     time: '11:00 AM'
   }
 ])

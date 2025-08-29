@@ -87,18 +87,8 @@ import {
 
 const route = useRoute()
 
-// Sample location data
-const location = ref({
-  id: 'LC-001',
-  name: 'Main Branch - Downtown',
-  address: '123 Business Street, Suite 100',
-  city: 'New York',
-  country: 'United States',
-  status: 'active',
-  mapUrl: 'https://maps.google.com/example1',
-  contactPersonName: 'John Smith',
-  contactPhone: '+1 (555) 123-4567'
-})
+// Sample location data - REMOVED: Mock data has been removed
+const location = ref<any>(null)
 
 // Methods
 const getStatusClass = (status: string) => {

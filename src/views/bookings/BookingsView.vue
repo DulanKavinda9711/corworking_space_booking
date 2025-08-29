@@ -13,14 +13,14 @@
               @click="activeTab = tab.id"
               :class="[
                 activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-green-500 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
               ]"
             >
               {{ tab.name }}
               <span :class="[
-                activeTab === tab.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-900',
+                activeTab === tab.id ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-900',
                 'ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium'
               ]">
                 {{ getTabCount(tab.id) }}
@@ -42,7 +42,7 @@
                 v-model="dateRangeDisplay"
                 @click="showDatePicker = !showDatePicker"
                 readonly
-                class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
+                class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
                 placeholder="Select Date"
               />
               <!-- Booking.com Style Date Range Picker -->
@@ -76,9 +76,9 @@
                     :class="[
                       'text-sm text-center py-2 cursor-pointer rounded',
                       !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                      isDateSelected(date) ? 'bg-primary-600 text-white' : '',
-                      isDateInRange(date) ? 'bg-primary-100' : '',
-                      'hover:bg-primary-50'
+                      isDateSelected(date) ? 'bg-green-600 text-white' : '',
+                      isDateInRange(date) ? 'bg-green-100' : '',
+                      'hover:bg-green-50'
                     ]"
                   >
                     {{ date.day }}
@@ -96,7 +96,7 @@
                     <button
                       @click="showDatePicker = false"
                       :disabled="!filters.startDate"
-                      class="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Apply
                     </button>
@@ -106,7 +106,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-              <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+              <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
                 <option value="">All Locations</option>
                 <option value="main-branch">Main Branch</option>
                 <option value="tech-hub">Tech Hub</option>
@@ -116,7 +116,7 @@
             <!-- Show Product Type filter for bookings and history tabs -->
             <div v-if="activeTab !== 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-              <select v-model="filters.productType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+              <select v-model="filters.productType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
                 <option value="">All Types</option>
                 <option value="Meeting Room">Meeting Room</option>
                 <option value="Hot Desk">Hot Desk</option>
@@ -126,7 +126,7 @@
             <!-- Show Subscription Type filter for subscriptions tab -->
             <div v-if="activeTab === 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
-              <select v-model="filters.subscriptionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+              <select v-model="filters.subscriptionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
                 <option value="">All Periods</option>
                 <option value="monthly">Monthly</option>
                 <option value="annually">Annually</option>
@@ -135,7 +135,7 @@
             <!-- Show Subscription Status filter for subscriptions tab -->
             <div v-if="activeTab === 'subscriptions'" class="md:col-span-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select v-model="filters.subscriptionStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+              <select v-model="filters.subscriptionStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
                 <option value="">All Status</option>
                 <option value="confirmed">Active</option>
                 <option value="cancelled">Cancelled</option>
@@ -143,7 +143,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
-              <select v-model="filters.userType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
+              <select v-model="filters.userType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
                 <option value="">All Users</option>
                 <option value="registered">Registered</option>
                 <option value="guest">Guest</option>
@@ -206,8 +206,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
-                      <div class="h-8 w-8 rounded-lg bg-primary-100 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                      <div class="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="mdiCalendar" />
                         </svg>
                       </div>
@@ -267,7 +267,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <!-- View Details Link -->
-                    <router-link :to="viewBookingDetails(booking)" class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
+                    <router-link :to="viewBookingDetails(booking)" class="text-green-600 hover:text-green-900 flex items-center space-x-1" title="View Details">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path :d="mdiEye" />
                       </svg>
@@ -341,7 +341,7 @@
                   </button>
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     page === currentPage
-                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                      ? 'z-10 bg-green-50 border-green-500 text-green-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                   ]">

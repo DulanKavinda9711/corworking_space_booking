@@ -133,6 +133,7 @@ export interface Facility {
   amenities: string[]
   images: string[]
   bookings?: number
+  Icon?: string
 }
 
 export interface Product {
@@ -214,6 +215,58 @@ export interface DashboardStats {
 // ============================================================================
 // MOCK DATA STORAGE
 // ============================================================================
+
+// ============================================================================
+// API UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Simulate API delay for realistic testing
+ */
+const delay = (ms: number = 1000): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Create successful API response
+ */
+const successResponse = <T>(data: T, message?: string): ApiResponse<T> => {
+  return {
+    success: true,
+    data,
+    message
+  }
+}
+
+/**
+ * Create error API response
+ */
+const errorResponse = (message: string, errors?: string[]): ApiResponse => {
+  return {
+    success: false,
+    message,
+    errors
+  }
+}
+
+/**
+ * Paginate array data
+ */
+const paginate = <T>(data: T[], page: number = 1, limit: number = 10) => {
+  const startIndex = (page - 1) * limit
+  const endIndex = startIndex + limit
+  const paginatedData = data.slice(startIndex, endIndex)
+  
+  return {
+    data: paginatedData,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(data.length / limit),
+      totalItems: data.length,
+      itemsPerPage: limit
+    }
+  }
+}
 
 // Mock data for development - replace with real API calls
 class MockDataStore {
@@ -324,23 +377,7 @@ class MockDataStore {
     }
   ]
 
-  private mockLocations: Location[] = [
-    {
-      id: 'LOC-001',
-      name: 'Main Branch',
-      address: '123 Business Avenue, Downtown',
-      city: 'New York',
-      country: 'USA',
-      phone: '+1 (555) 123-4567',
-      email: 'main@example.com',
-      manager: 'John Smith',
-      totalSpaces: 50,
-      availableSpaces: 23,
-      facilities: ['WiFi', 'Parking', 'Kitchen', 'Meeting Rooms'],
-      mapUrl: 'https://maps.google.com/example1',
-      status: 'active'
-    }
-  ]
+  // Mock locations data - REMOVED: Mock data has been removed
 
   private mockFacilities: Facility[] = [
     {
@@ -448,7 +485,7 @@ class MockDataStore {
   getBookings() { return [...this.mockBookings] }
   getCustomers() { return [...this.mockCustomers] }
   getCompanies() { return [...this.mockCompanies] }
-  getLocations() { return [...this.mockLocations] }
+  getLocations() { return [] }
   getFacilities() { return [...this.mockFacilities] }
   getProducts() { return [...this.mockProducts] }
   getPayments() { return [...this.mockPayments] }
@@ -464,57 +501,10 @@ class MockDataStore {
     this.mockCustomers = customers
     this.saveToLocalStorage('customers', customers)
   }
-}
 
-// ============================================================================
-// API UTILITY FUNCTIONS
-// ============================================================================
-
-/**
- * Simulate API delay for realistic testing
- */
-const delay = (ms: number = 1000): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-/**
- * Create successful API response
- */
-const successResponse = <T>(data: T, message?: string): ApiResponse<T> => {
-  return {
-    success: true,
-    data,
-    message
-  }
-}
-
-/**
- * Create error API response
- */
-const errorResponse = (message: string, errors?: string[]): ApiResponse => {
-  return {
-    success: false,
-    message,
-    errors
-  }
-}
-
-/**
- * Paginate array data
- */
-const paginate = <T>(data: T[], page: number = 1, limit: number = 10) => {
-  const startIndex = (page - 1) * limit
-  const endIndex = startIndex + limit
-  const paginatedData = data.slice(startIndex, endIndex)
-  
-  return {
-    data: paginatedData,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(data.length / limit),
-      totalItems: data.length,
-      itemsPerPage: limit
-    }
+  updateFacilities(facilities: Facility[]) {
+    this.mockFacilities = facilities
+    this.saveToLocalStorage('facilities', facilities)
   }
 }
 
@@ -1613,10 +1603,46 @@ export const locationApi = {
    * Get all locations
    */
   async getAllLocations(): Promise<ApiResponse<Location[]>> {
-    await delay(600)
+    try {
+      const response = await fetch('http://192.168.2.10:9011/api/locations/get-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    const locations = MockDataStore.getInstance().getLocations()
-    return successResponse(locations)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        // Transform API response to match our Location interface
+        const locations: Location[] = data.data.map((location: any) => ({
+          id: location.id.toString(),
+          name: location.name || '',
+          address: location.address || '',
+          city: location.city || '',
+          country: location.country || '',
+          phone: location.phone || '',
+          email: location.email || '',
+          manager: location.manager || '',
+          totalSpaces: location.total_spaces || 0,
+          availableSpaces: location.available_spaces || 0,
+          facilities: location.facilities || [],
+          mapUrl: location.map_url || '',
+          status: location.is_active ? 'active' : 'inactive'
+        }))
+
+        return successResponse(locations, data.message || 'Locations retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to load locations')
+      }
+    } catch (error) {
+      console.error('Get locations error:', error)
+      return errorResponse('Network error while loading locations', [(error as Error).message])
+    }
   },
 
   /**
@@ -1625,13 +1651,54 @@ export const locationApi = {
   async getLocationById(id: string): Promise<ApiResponse<Location>> {
     await delay(500)
 
-    const location = MockDataStore.getInstance().getLocations().find(l => l.id === id)
+    // TODO: Implement API call to fetch location by ID
+    // const location = MockDataStore.getInstance().getLocations().find(l => l.id === id)
 
-    if (location) {
-      return successResponse(location)
-    }
-
+    // For now, return not found since mock data is removed
     return errorResponse('Location not found')
+  },
+
+  /**
+   * Create a new location
+   */
+  async createLocation(locationData: {
+    Name: string
+    Address: string
+    Url: string
+    ContactName: string
+    ContactEmail: string
+    ContactPhone: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Create FormData as required by the API
+      const formData = new FormData()
+      formData.append('Name', locationData.Name)
+      formData.append('Address', locationData.Address)
+      formData.append('Url', locationData.Url)
+      formData.append('ContactName', locationData.ContactName)
+      formData.append('ContactEmail', locationData.ContactEmail)
+      formData.append('ContactPhone', locationData.ContactPhone)
+
+      const response = await fetch('http://192.168.2.10:9011/api/locations/create', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Location created successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create location')
+      }
+    } catch (error) {
+      console.error('Create location error:', error)
+      return errorResponse('Network error while creating location', [(error as Error).message])
+    }
   }
 }
 
@@ -1644,10 +1711,44 @@ export const facilityApi = {
    * Get all facilities
    */
   async getAllFacilities(): Promise<ApiResponse<Facility[]>> {
-    await delay(600)
+    try {
+      const response = await fetch('http://192.168.2.10:9011/api/facility-type/get-facility-type-list', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    const facilities = MockDataStore.getInstance().getFacilities()
-    return successResponse(facilities)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        // Transform API response to match our Facility interface
+        const facilities: Facility[] = data.data.map((facility: any) => ({
+          id: facility.id.toString(),
+          name: facility.facility_name || '',
+          description: '',
+          type: 'General',
+          location: '',
+          capacity: 1,
+          pricePerHour: 0,
+          status: facility.is_active ? 'active' : 'inactive',
+          amenities: [],
+          images: [],
+          Icon: facility.Icon || facility.icon || '' // Include the Icon field from backend
+        }))
+
+        return successResponse(facilities, data.message || 'Facilities retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to load facilities')
+      }
+    } catch (error) {
+      console.error('Get facilities error:', error)
+      return errorResponse('Network error while loading facilities', [(error as Error).message])
+    }
   },
 
   /**
@@ -1663,6 +1764,149 @@ export const facilityApi = {
     }
 
     return errorResponse('Facility not found')
+  },
+
+  /**
+   * Create a new facility
+   */
+  async createFacility(facilityData: { FacilityName: string; IsActive: boolean; Icon?: string; }): Promise<ApiResponse<null>> {
+    try {
+      // Create FormData as required by the API
+      const formData = new FormData()
+      formData.append('FacilityName', facilityData.FacilityName)
+      formData.append('IsActive', facilityData.IsActive.toString())
+
+      // Add Icon if provided
+      if (facilityData.Icon) {
+        formData.append('Icon', facilityData.Icon)
+      }
+
+      const response = await fetch('http://192.168.2.10:9011/api/facility-type/create-facility-type', {
+        method: 'POST',
+        body: formData
+        // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        // Update local storage for immediate UI updates
+        const facilities = MockDataStore.getInstance().getFacilities()
+        const newFacility: Facility = {
+          id: `FC-${Date.now()}`,
+          name: facilityData.FacilityName,
+          description: '',
+          type: 'General',
+          location: '',
+          capacity: 1,
+          pricePerHour: 0,
+          status: facilityData.IsActive ? 'active' : 'inactive',
+          amenities: [],
+          images: []
+        }
+        facilities.push(newFacility)
+        MockDataStore.getInstance().updateFacilities(facilities)
+
+        return successResponse(null, data.message || 'Facility created successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create facility')
+      }
+    } catch (error) {
+      console.error('Create facility error:', error)
+      return errorResponse('Network error while creating facility', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Update an existing facility
+   */
+  async updateFacility(id: string, facilityData: { FacilityName: string; IsActive: boolean; Icon?: string; }): Promise<ApiResponse<null>> {
+    try {
+      // Create FormData as required by the API and include Id field per backend requirements
+      const formData = new FormData()
+      formData.append('Id', id)
+      formData.append('FacilityName', facilityData.FacilityName)
+      formData.append('IsActive', facilityData.IsActive.toString())
+
+      // Add Icon if provided
+      if (facilityData.Icon) {
+        formData.append('Icon', facilityData.Icon)
+      }
+
+      // POST to endpoint (backend expects Id in form-data rather than URL param)
+      const response = await fetch('http://192.168.2.10:9011/api/facility-type/update-facility-type', {
+        method: 'POST',
+        body: formData
+        // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        // Update local storage for immediate UI updates
+        const facilities = MockDataStore.getInstance().getFacilities()
+        const facilityIndex = facilities.findIndex(f => f.id === id)
+        if (facilityIndex !== -1) {
+          facilities[facilityIndex] = {
+            ...facilities[facilityIndex],
+            name: facilityData.FacilityName,
+            status: facilityData.IsActive ? 'active' : 'inactive'
+          }
+          MockDataStore.getInstance().updateFacilities(facilities)
+        }
+
+        return successResponse(null, data.message || 'Facility updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update facility')
+      }
+    } catch (error) {
+      console.error('Update facility error:', error)
+      return errorResponse('Network error while updating facility', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Delete an existing facility
+   */
+  async deleteFacility(id: string): Promise<ApiResponse<null>> {
+    try {
+      // Send JSON body per backend API expectation: { id: number }
+      const response = await fetch('http://192.168.2.10:9011/api/facility-type/delete-facility-type', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: parseInt(id, 10) })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        // Update local storage for immediate UI updates
+        const facilities = MockDataStore.getInstance().getFacilities()
+        const updatedFacilities = facilities.filter(f => f.id !== id)
+        MockDataStore.getInstance().updateFacilities(updatedFacilities)
+
+        return successResponse(null, data.message || 'Facility deleted successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to delete facility')
+      }
+    } catch (error) {
+      console.error('Delete facility error:', error)
+      return errorResponse('Network error while deleting facility', [(error as Error).message])
+    }
   }
 }
 
@@ -1768,12 +2012,11 @@ export const messageApi = {
       status: 'sent'
     }
 
-    // Store message for audit
-    const sentMessages = JSON.parse(localStorage.getItem('sentCustomerMessages') || '[]')
-    sentMessages.push(message)
-    localStorage.setItem('sentCustomerMessages', JSON.stringify(sentMessages))
-
-    return successResponse(message, 'Message sent successfully')
+  // Store message for audit
+  const sentMessages = JSON.parse(localStorage.getItem('sentCustomerMessages') || '[]')
+  sentMessages.push(message)
+  localStorage.setItem('sentCustomerMessages', JSON.stringify(sentMessages))
+  return successResponse(message, 'Message sent successfully')
   },
 
   /**
@@ -1787,6 +2030,7 @@ export const messageApi = {
   }
 }
 
+// ============================================================================
 // ============================================================================
 // DASHBOARD STATS API
 // ============================================================================
@@ -1855,11 +2099,15 @@ export const dashboardApi = {
         c.contactPerson.toLowerCase().includes(searchTerm)
       )
 
-    const locations = MockDataStore.getInstance().getLocations()
-      .filter(l => 
-        l.name.toLowerCase().includes(searchTerm) ||
-        l.city.toLowerCase().includes(searchTerm)
-      )
+    // TODO: Implement API call to fetch and filter locations
+    // const locations = MockDataStore.getInstance().getLocations()
+    //   .filter(l => 
+    //     l.name.toLowerCase().includes(searchTerm) ||
+    //     l.city.toLowerCase().includes(searchTerm)
+    //   )
+
+    // For now, return empty array since mock data is removed
+    const locations: Location[] = []
 
     return successResponse({
       bookings,
@@ -1947,6 +2195,8 @@ export const API_CONFIG = {
 // ============================================================================
 // DEFAULT EXPORT
 // ============================================================================
+
+// Export will be added at the end of the file after all APIs are defined
 
 export default {
   auth: authApi,

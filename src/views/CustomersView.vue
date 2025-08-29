@@ -4,13 +4,13 @@
       <!-- Page Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2">
-            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+          <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiAccount" />
             </svg>
-            <span class="text-sm font-medium text-primary-700">
+            <span class="text-sm font-medium text-green-700">
               Total Customers:
-              <span class="font-bold text-primary-800">{{ filteredCustomers.length }}</span>
+              <span class="font-bold text-green-800">{{ filteredCustomers.length }}</span>
             </span>
           </div>
         </div>
@@ -32,13 +32,13 @@
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input type="text" placeholder="Search by name, email, or phone..." v-model="searchQuery"
-                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black" />
+                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-black" />
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select v-model="filters.status"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900">
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -86,8 +86,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                      <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="mdiAccount" />
                         </svg>
                       </div>
@@ -120,7 +120,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <router-link :to="`/customers/${customer.id}`"
-                      class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
+                      class="text-green-600 hover:text-green-900 flex items-center space-x-1" title="View Details">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path :d="mdiEye" />
                       </svg>
@@ -172,7 +172,7 @@
                   </button>
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     page === currentPage
-                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                      ? 'z-10 bg-green-50 border-green-500 text-green-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                   ]">
@@ -220,11 +220,11 @@
             <p class="text-sm text-gray-500 text-center">
               Are you sure you want to {{ customerToToggle?.status === 'blocked' ? 'unblock' : 'block' }} this customer?
             </p>
-            <div v-if="customerToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div v-if="customerToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg">
               <div class="text-sm space-y-1">
                 <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                  <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiAccount" />
                     </svg>
                   </div>
@@ -347,7 +347,7 @@ const visiblePages = computed(() => {
 // Methods
 const getCustomerTypeClass = (type: string) => {
   return type === 'registered'
-    ? 'bg-blue-100 text-blue-800'
+    ? 'bg-green-100 text-green-800'
     : 'bg-gray-100 text-gray-800'
 }
 

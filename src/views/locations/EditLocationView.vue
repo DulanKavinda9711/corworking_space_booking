@@ -149,17 +149,7 @@ const form = ref({
   contactEmail: ''
 })
 
-// Sample location data - in real app, this would come from API
-const sampleLocation = {
-  id: 'LOC001',
-  name: 'Main Branch',
-  address: '123 Business Street, Commercial District',
-  mapUrl: 'https://maps.google.com/sample',
-  location: 'New York, NY',
-  contactPersonName: 'John Smith',
-  contactPhone: '+1-555-0123',
-  contactEmail: 'john@abccorp.com'
-}
+// Sample location data - REMOVED: Mock data has been removed
 
 // Computed properties
 const isFormValid = computed(() => {
@@ -175,8 +165,8 @@ function loadLocationData() {
   // In a real app, this would fetch data based on route.params.id
   const locationId = route.params.id
   
-  // For demo, we'll use sample data
-  Object.assign(form.value, sampleLocation)
+  // TODO: Implement API call to fetch location data
+  console.log('Loading location data for:', locationId)
 }
 
 function updateLocation() {

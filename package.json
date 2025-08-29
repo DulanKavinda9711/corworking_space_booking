@@ -14,9 +14,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-  "@mdi/js": "^7.4.47",
-  "vue": "^3.5.17",
-  "vue-router": "^4.5.1"
+    "@mdi/js": "^7.4.47",
+    "apexcharts": "^5.3.4",
+    "vue": "^3.5.17",
+    "vue-router": "^4.5.1",
+    "vue3-apexcharts": "^1.8.0"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.2",

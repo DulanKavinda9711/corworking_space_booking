@@ -1,8 +1,8 @@
 <template>
   <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar-bg transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
-      <div class="flex items-center justify-center h-16 px-4 bg-sidebar-bg border-b border-gray-700">
+    <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-700" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
+      <div class="flex items-center justify-center h-16 px-4 bg-gray-900 border-b border-gray-700">
         <h1 class="text-xl font-bold text-white">CoWork Admin</h1>
       </div>
       
@@ -12,11 +12,11 @@
             v-for="item in menuItems"
             :key="item.name"
             :to="item.path"
-            class="flex items-center px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-sidebar-hover hover:text-white transition-colors"
-            :class="{ 'bg-sidebar-active text-white': isActive(item.path) }"
+            class="flex items-center px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+            :class="{ 'bg-green-600 text-white border-r-2 border-green-400': isActive(item.path) }"
             @click="closeSidebarOnMobile"
           >
-            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 mr-3 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path :d="item.icon" />
             </svg>
             {{ item.name }}
@@ -31,25 +31,25 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
       <!-- Top Bar -->
-      <header class="bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm border-b border-blue-100">
+      <header class="bg-white shadow-sm border-b border-gray-200">
         <div class="flex items-center justify-between px-4 py-3">
           <div class="flex items-center">
             <button
               @click="toggleSidebar"
-              class="p-2 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-100 lg:hidden transition-colors"
+              class="p-2 rounded-md text-green-600 hover:text-green-800 hover:bg-green-100 lg:hidden transition-colors"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 class="text-2xl font-bold text-blue-900 ml-4">{{ currentPageName }}</h1>
+            <h1 class="text-2xl font-bold text-green-900 ml-4">{{ currentPageName }}</h1>
           </div>
 
           <div class="flex items-center space-x-4">
             <!-- Notifications -->
             <div class="relative">
-              <button @click="showNotifications = !showNotifications" class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg relative transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="showNotifications = !showNotifications" class="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg relative transition-colors">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiIcons.mdiBell" />
                 </svg>
                 <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -84,16 +84,18 @@
             </div>
 
             <!-- Settings -->
-            <router-link to="/settings" class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors">
-              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+            <router-link to="/settings" class="p-2 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-lg transition-colors">
+              <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="mdiIcons.mdiCog" />
               </svg>
             </router-link>
 
+           
+
             <!-- User Menu -->
             <div class="relative">
-              <button @click="showUserMenu = !showUserMenu" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:ring-2 hover:ring-blue-300 transition-all">
-                <img class="h-8 w-8 rounded-full border-2 border-blue-200" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+              <button @click="showUserMenu = !showUserMenu" class="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 hover:ring-2 hover:ring-green-300 transition-all">
+                <img class="h-8 w-8 rounded-full border-2 border-green-200" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
               </button>
               
               <!-- User Dropdown -->
@@ -112,7 +114,7 @@
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto p-6 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm border-b border-green-100">
         <slot />
       </main>
     </div>
@@ -169,18 +171,18 @@ const mdiIcons = {
 
 // Menu items
 const menuItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard },
-  { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck },
-  { name: 'Customers', path: '/customers', icon: mdiAccountGroup },
-  { name: 'Facilities', path: '/facilities', icon: mdiSeat},
-  { name: 'Products', path: '/products', icon: mdiBookOpen },
-  { name: 'Locations', path: '/locations', icon: mdiMapMarker },
-  { name: 'Payments', path: '/payments', icon: mdiCreditCard },
-  { name: 'Promotions', path: '/promotions', icon: mdiBullhorn },
-  { name: 'User Management', path: '/user-management', icon: mdiAccountSettings },
-  { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck },
-  { name: 'Reports', path: '/reports', icon: mdiChartLine },
-  { name: 'Activity Log', path: '/activity-log', icon: mdiHistory }
+  { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard, color: 'text-green-600' },
+  { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck, color: 'text-green-600' },
+  { name: 'Customers', path: '/customers', icon: mdiAccountGroup, color: 'text-purple-600' },
+  { name: 'Facilities', path: '/facilities', icon: mdiSeat, color: 'text-orange-600' },
+  { name: 'Products', path: '/products', icon: mdiBookOpen, color: 'text-indigo-600' },
+  { name: 'Locations', path: '/locations', icon: mdiMapMarker, color: 'text-red-600' },
+  { name: 'Payments', path: '/payments', icon: mdiCreditCard, color: 'text-teal-600' },
+  { name: 'Promotions', path: '/promotions', icon: mdiBullhorn, color: 'text-pink-600' },
+  { name: 'User Management', path: '/user-management', icon: mdiAccountSettings, color: 'text-yellow-600' },
+  { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600' },
+  { name: 'Reports', path: '/reports', icon: mdiChartLine, color: 'text-cyan-600' },
+  { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600' }
 ]
 
 // Notifications
@@ -204,6 +206,38 @@ const notifications = ref([
 ])
 
 const notificationCount = computed(() => notifications.value.length)
+
+// Theme (light / dark) - persisted to localStorage and applied to document element
+let _initialTheme: 'light' | 'dark' = 'light'
+try {
+  const saved = localStorage.getItem('theme')
+  if (saved === 'dark') _initialTheme = 'dark'
+} catch (e) {
+  // ignore
+}
+const theme = ref<'light' | 'dark'>(_initialTheme)
+
+const applyTheme = (t: 'light' | 'dark') => {
+  try {
+    if (t === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  } catch (e) {
+    // ignore (server-side rendering etc.)
+  }
+}
+
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  try {
+    localStorage.setItem('theme', theme.value)
+  } catch (e) {
+    // ignore
+  }
+  applyTheme(theme.value)
+}
 
 // Get current page name based on route
 const currentPageName = computed(() => {
@@ -284,6 +318,8 @@ const handleClickOutside = (event: Event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  // apply stored theme on mount
+  applyTheme(theme.value)
 })
 
 onUnmounted(() => {

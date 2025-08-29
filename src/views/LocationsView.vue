@@ -21,8 +21,29 @@
         </router-link>
       </div>
 
-      <!-- Search and Filters -->
-      
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-red-800">{{ errorMessage }}</span>
+          <button @click="fetchLocations" class="ml-auto text-red-600 hover:text-red-800 font-medium">
+            Retry
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
+        <div class="flex items-center justify-center">
+          <svg class="animate-spin h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="ml-3 text-gray-600">Loading locations...</span>
+        </div>
+      </div>
 
       <!-- Locations Table -->
       <div class="bg-white rounded-xl shadow-card overflow-hidden">
@@ -278,13 +299,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { locationApi } from '@/services/api'
 import { mdiMapMarker, mdiEye, mdiPencil, mdiDelete } from '@mdi/js'
 
 // State
 const searchQuery = ref('')
 const showAddModal = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
 // Filters
 const filters = ref({
@@ -306,79 +330,8 @@ const form = ref({
   status: 'active' as 'active' | 'inactive'
 })
 
-// Sample locations data
-const locations = ref([
-  {
-    id: 'LC-001',
-    name: 'Main Branch - Downtown',
-    address: '123 Business Street, Suite 100',
-    city: 'New York',
-    country: 'United States',
-    companyName: 'WorkHub Co.',
-    companyId: '1',
-    totalSpaces: 15,
-    status: 'active',
-    mapUrl: 'https://maps.google.com/example1',
-    contactPersonName: 'John Smith',
-    contactPhone: '+1 (555) 123-4567'
-  },
-  {
-    id: 'LC-002',
-    name: 'Tech Hub - Silicon Valley',
-    address: '456 Innovation Avenue, Floor 8',
-    city: 'San Francisco',
-    country: 'United States',
-    companyName: 'FlexSpace Inc.',
-    companyId: '2',
-    totalSpaces: 22,
-    status: 'active',
-    mapUrl: 'https://maps.google.com/example2',
-    contactPersonName: 'Sarah Johnson',
-    contactPhone: '+1 (555) 987-6543'
-  },
-  {
-    id: 'LC-003',
-    name: 'Creative Quarter',
-    address: '789 Design Boulevard, Building A',
-    city: 'Austin',
-    country: 'United States',
-    companyName: 'Creative Spaces LLC',
-    companyId: '3',
-    totalSpaces: 8,
-    status: 'active',
-    mapUrl: 'https://maps.google.com/example3',
-    contactPersonName: 'Mike Davis',
-    contactPhone: '+1 (555) 456-7890'
-  },
-  {
-    id: 'LC-004',
-    name: 'Business Park East',
-    address: '321 Enterprise Drive, Complex B',
-    city: 'Boston',
-    country: 'United States',
-    companyName: 'WorkHub Co.',
-    companyId: '1',
-    totalSpaces: 12,
-    status: 'inactive',
-    mapUrl: 'https://maps.google.com/example4',
-    contactPersonName: 'Emily Chen',
-    contactPhone: '+1 (555) 234-5678'
-  },
-  {
-    id: 'LC-005',
-    name: 'Startup Incubator',
-    address: '654 Venture Street, 3rd Floor',
-    city: 'Seattle',
-    country: 'United States',
-    companyName: 'FlexSpace Inc.',
-    companyId: '2',
-    totalSpaces: 18,
-    status: 'active',
-    mapUrl: 'https://maps.google.com/example5',
-    contactPersonName: 'Robert Wilson',
-    contactPhone: '+1 (555) 345-6789'
-  }
-])
+// Locations data from API
+const locations = ref<any[]>([])
 
 // Computed properties
 const filteredLocations = computed(() => {
@@ -488,4 +441,30 @@ const saveLocation = () => {
   }
   closeModal()
 }
+
+// Fetch locations from API
+const fetchLocations = async () => {
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await locationApi.getAllLocations()
+
+    if (response.success && response.data) {
+      locations.value = response.data
+    } else {
+      errorMessage.value = response.message || 'Failed to load locations'
+    }
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+    errorMessage.value = 'An unexpected error occurred while loading locations'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  fetchLocations()
+})
 </script>

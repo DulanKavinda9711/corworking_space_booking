@@ -645,14 +645,8 @@ const router = useRouter()
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 // Sample locations data
-const locations = ref([
-  { id: 'LOC001', name: 'Downtown Office', address: '123 Business St' },
-  { id: 'LOC002', name: 'Tech Hub', address: '456 Innovation Ave' },
-  { id: 'LOC003', name: 'Business Center', address: '789 Corporate Blvd' },
-  { id: 'LOC004', name: 'Innovation Park', address: '321 Future Dr' },
-  { id: 'LOC005', name: 'Startup Hub', address: '654 Enterprise St' },
-  { id: 'LOC006', name: 'Creative Space', address: '987 Design Ave' }
-])
+// Available locations - REMOVED: Mock data has been removed
+const locations = ref<any[]>([])
 
 // Available facilities from FacilitiesView
 const availableFacilities = ref([

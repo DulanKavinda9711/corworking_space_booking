@@ -1,31 +1,26 @@
 <template>
   <AdminLayout>
     <div class="space-y-6">
-      <!-- Page Header -->
-      <!-- <div class="flex items-end justify-end ">
-        <div class="text-sm text-gray-500 ">
-          Last updated: {{ currentTime }}
-        </div>
-      </div> -->
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        
 
-      <!-- Search Section -->
-      <div class="bg-white rounded-xl shadow-card p-6">
-        <div class="flex flex-col gap-4">
+        <!-- Search (keeps existing behavior) -->
+        <div class="w-full md:w-1/3">
           <div class="relative">
             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="text"
-              placeholder="Search by booking ID, name, or email..."
+              placeholder="Search bookings by ID, name, or email"
               v-model="searchQuery"
               @input="handleSearchInput"
               @focus="showSearchResults = true"
-              class="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
+              class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-gray-800"
             />
-            
-            <!-- Search Results Dropdown -->
-            <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+
+            <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
               <div
                 v-for="result in filteredResults"
                 :key="result.id"
@@ -33,7 +28,7 @@
                 class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
               >
                 <div class="flex items-center space-x-3">
-                  <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                  <div class="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiCalendarCheck" />
                     </svg>
@@ -49,9 +44,8 @@
                 </span>
               </div>
             </div>
-            
-            <!-- No Results -->
-            <div v-if="showSearchResults && searchQuery && filteredResults.length === 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
+
+            <div v-if="showSearchResults && searchQuery && filteredResults.length === 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
               <div class="text-center text-gray-500">
                 <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -63,156 +57,169 @@
         </div>
       </div>
 
-      <!-- Stats Widgets -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <!-- Today's Bookings -->
-        <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl shadow-card p-4 hover:shadow-card-hover transition-shadow">
-          <div class="text-center">
-            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiCalendarCheck" />
-              </svg>
+      <!-- Key Metrics -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Card: Today's Bookings (white card with icon) -->
+        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Today's Bookings</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.todayBookings }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ stats.todayBookings }} new bookings today</p>
             </div>
-            <h3 class="text-xs font-medium text-blue-600 mb-1">Today's Bookings</h3>
-            <p class="text-xl font-bold text-blue-900 mb-1">{{ stats.todayBookings }}</p>
-            <p class="text-xs text-blue-700">{{ stats.todayBookings }} new bookings today</p>
+            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
+              <svg class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarCheck"/></svg>
+            </div>
           </div>
         </div>
 
-        <!-- Upcoming Bookings -->
-        <div class="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl shadow-card p-4 hover:shadow-card-hover transition-shadow">
-          <div class="text-center">
-            <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiCalendarClock" />
-              </svg>
+        <!-- Card: Upcoming Bookings (white card with icon) -->
+        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Upcoming (7d)</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.upcomingBookings }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ stats.upcomingBookings }} bookings for the next 7 days</p>
             </div>
-            <h3 class="text-xs font-medium text-purple-600 mb-1">Upcoming Bookings</h3>
-            <p class="text-xl font-bold text-purple-900 mb-1">{{ stats.upcomingBookings }}</p>
-            <p class="text-xs text-purple-700">{{ stats.upcomingBookings }} bookings for the next 7 days</p>
+            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center border border-green-100">
+              <svg class="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarClock"/></svg>
+            </div>
           </div>
         </div>
 
-        <!-- PayMedia Commission -->
-        <div class="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl shadow-card p-4 hover:shadow-card-hover transition-shadow">
-          <div class="text-center">
-            <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiCashMultiple" />
-              </svg>
+        <!-- Card: Revenue Today (white card with icon & percent) -->
+        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Total Revenue Today</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">${{ stats.todayRevenue.toLocaleString() }}</p>
+              <p class="text-xs text-green-600 mt-1 font-medium">+55% since yesterday</p>
             </div>
-            <h3 class="text-xs font-medium text-teal-600 mb-1">PayMedia Commission</h3>
-            <p class="text-xl font-bold text-teal-900 mb-1">${{ stats.payMediaCommission.toLocaleString() }}</p>
-            <p class="text-xs text-teal-700">{{ stats.payMediaPeriod }}</p>
+            <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center border border-orange-100">
+              <svg class="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCurrencyUsd"/></svg>
+            </div>
           </div>
         </div>
 
-        <!-- Total Revenue Today -->
-        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-card p-4 hover:shadow-card-hover transition-shadow">
-          <div class="text-center">
-            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiCurrencyUsd" />
-              </svg>
+        <!-- Card: Cancellations (white card with icon) -->
+        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Cancellations</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.cancellations }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ stats.cancellations }} cancelled today</p>
             </div>
-            <h3 class="text-xs font-medium text-green-600 mb-1">Total Revenue Today</h3>
-            <p class="text-xl font-bold text-green-900 mb-1">${{ stats.todayRevenue.toLocaleString() }}</p>
-            <p class="text-xs text-green-700">Revenue earned today</p>
+            <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center border border-red-100">
+              <svg class="w-7 h-7 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCancel"/></svg>
+            </div>
           </div>
         </div>
 
-        <!-- Cancellations -->
-        <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl shadow-card p-4 hover:shadow-card-hover transition-shadow">
-          <div class="text-center">
-            <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiCancel" />
-              </svg>
+        <!-- Card: PayMedia Commission (white card with icon) -->
+        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm text-gray-500">PayMedia Commission</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">${{ stats.payMediaCommission.toLocaleString() }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ stats.payMediaPeriod }}</p>
             </div>
-            <h3 class="text-xs font-medium text-orange-600 mb-1">Cancellations</h3>
-            <p class="text-xl font-bold text-orange-900 mb-1">{{ stats.cancellations }}</p>
-            <p class="text-xs text-orange-700">{{ stats.cancellations }} cancelled today</p>
+            <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center border border-yellow-100">
+              <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCashMultiple"/></svg>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Recent Activity -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent Bookings -->
-        <div class="bg-white rounded-xl shadow-card p-6">
+      <!-- Main content: charts + lists -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Chart area -->
+        <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-semibold text-gray-900">Recent Bookings</h2>
-            <router-link to="/bookings" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-              View all
-            </router-link>
-          </div>
-          <div class="space-y-4">
-            <div v-for="booking in recentBookings" :key="booking.id" class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                  <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiCalendarCheck" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-900">{{ booking.id }}</p>
-                  <p class="text-xs text-gray-500">{{ booking.customer }} • {{ booking.product }}</p>
-                  <p class="text-xs text-gray-400">{{ booking.date }}</p>
-                </div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Bookings — Last 30 days</h2>
+              <p class="text-sm text-gray-500 mt-1">Daily booking trends and patterns</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-1">
+                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span class="text-sm text-gray-600">Bookings</span>
               </div>
-              <div class="flex items-center space-x-3">
-                <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                  {{ booking.status }}
-                </span>
-                <router-link :to="`/bookings/${booking.id}`" class="text-primary-600 hover:text-primary-900" title="View Details">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiEye" />
-                  </svg>
-                </router-link>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-gray-900">{{ chartSeries[0].data.slice(-1)[0] }}</div>
+                <div class="text-xs text-green-600 flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiTrendingUp"/></svg>
+                  +12% from last week
+                </div>
               </div>
             </div>
           </div>
+          <div class="relative">
+            <apexchart
+              type="area"
+              :options="chartOptions"
+              :series="chartSeries"
+              height="280"
+              class="apex-chart"
+            />
+          </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-xl shadow-card p-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <router-link to="/companies" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
-              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiOfficeBuilding" />
-                </svg>
+        <!-- Right column: Recent & Actions -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-md font-medium text-gray-900">Recent Bookings</h3>
+              <router-link to="/bookings" class="text-sm text-green-600">View all</router-link>
+            </div>
+            <div class="space-y-3">
+              <div v-for="booking in recentBookings" :key="booking.id" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarCheck"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ booking.id }} — {{ booking.customer }}</p>
+                    <p class="text-xs text-gray-500">{{ booking.product }} · {{ booking.date }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">{{ booking.status }}</span>
+                  <router-link :to="`/bookings/${booking.id}`" class="text-green-600 hover:text-green-900">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiEye"/></svg>
+                  </router-link>
+                </div>
               </div>
-              <p class="text-sm font-medium text-gray-900">Add Company</p>
-            </router-link>
-            
-            <router-link to="/bookings" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
-              <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiCalendarPlus" />
-                </svg>
-              </div>
-              <p class="text-sm font-medium text-gray-900">New Booking</p>
-            </router-link>
-            
-            <router-link to="/locations" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
-              <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiMapMarker" />
-                </svg>
-              </div>
-              <p class="text-sm font-medium text-gray-900">Add Location</p>
-            </router-link>
-            
-            <router-link to="/reports" class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-center">
-              <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiChartLine" />
-                </svg>
-              </div>
-              <p class="text-sm font-medium text-gray-900">View Reports</p>
-            </router-link>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <h3 class="text-md font-medium text-gray-900 mb-3">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <router-link to="/companies" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+                <div class="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center mb-2">
+                  <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiOfficeBuilding"/></svg>
+                </div>
+                <p class="text-xs text-gray-700">Add Company</p>
+              </router-link>
+              <router-link to="/bookings" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+                <div class="w-8 h-8 bg-green-50 rounded-md flex items-center justify-center mb-2">
+                  <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarPlus"/></svg>
+                </div>
+                <p class="text-xs text-gray-700">New Booking</p>
+              </router-link>
+              <router-link to="/locations" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+                <div class="w-8 h-8 bg-purple-50 rounded-md flex items-center justify-center mb-2">
+                  <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiMapMarker"/></svg>
+                </div>
+                <p class="text-xs text-gray-700">Add Location</p>
+              </router-link>
+              <router-link to="/reports" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+                <div class="w-8 h-8 bg-yellow-50 rounded-md flex items-center justify-center mb-2">
+                  <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiChartLine"/></svg>
+                </div>
+                <p class="text-xs text-gray-700">View Reports</p>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -224,6 +231,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import VueApexCharts from 'vue3-apexcharts'
 import {
   mdiEmail,
   mdiCalendarCheck,
@@ -240,6 +248,127 @@ import {
 } from '@mdi/js'
 
 const router = useRouter()
+
+// Chart data and options
+const chartOptions = ref({
+  chart: {
+    type: 'area',
+    height: 280,
+    toolbar: {
+      show: false
+    },
+    animations: {
+      enabled: true,
+      easing: 'easeinout',
+      speed: 800,
+      animateGradually: {
+        enabled: true,
+        delay: 150
+      },
+      dynamicAnimation: {
+        enabled: true,
+        speed: 350
+      }
+    }
+  },
+  colors: ['#10b981', '#059669'],
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shade: 'light',
+      type: 'vertical',
+      shadeIntensity: 0.25,
+      gradientToColors: undefined,
+      inverseColors: false,
+      opacityFrom: 0.85,
+      opacityTo: 0.25,
+      stops: [0, 100]
+    }
+  },
+  dataLabels: {
+    enabled: false
+  },
+  stroke: {
+    curve: 'smooth',
+    width: 3
+  },
+  grid: {
+    show: true,
+    borderColor: '#f1f5f9',
+    strokeDashArray: 3,
+    position: 'back',
+    xaxis: {
+      lines: {
+        show: false
+      }
+    },
+    yaxis: {
+      lines: {
+        show: true
+      }
+    }
+  },
+  xaxis: {
+    categories: [
+      'Aug 1', 'Aug 2', 'Aug 3', 'Aug 4', 'Aug 5', 'Aug 6', 'Aug 7',
+      'Aug 8', 'Aug 9', 'Aug 10', 'Aug 11', 'Aug 12', 'Aug 13', 'Aug 14',
+      'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20', 'Aug 21',
+      'Aug 22', 'Aug 23', 'Aug 24', 'Aug 25', 'Aug 26', 'Aug 27', 'Aug 28'
+    ],
+    axisBorder: {
+      show: false
+    },
+    axisTicks: {
+      show: false
+    },
+    labels: {
+      style: {
+        colors: '#64748b',
+        fontSize: '12px'
+      }
+    }
+  },
+  yaxis: {
+    labels: {
+      style: {
+        colors: '#64748b',
+        fontSize: '12px'
+      }
+    }
+  },
+  tooltip: {
+    theme: 'light',
+    x: {
+      format: 'MMM dd, yyyy'
+    },
+    y: {
+      formatter: function(value: number) {
+        return value + ' bookings'
+      }
+    }
+  },
+  responsive: [{
+    breakpoint: 640,
+    options: {
+      chart: {
+        height: 200
+      },
+      xaxis: {
+        labels: {
+          rotate: -45,
+          style: {
+            fontSize: '10px'
+          }
+        }
+      }
+    }
+  }]
+})
+
+const chartSeries = ref([{
+  name: 'Bookings',
+  data: [12, 19, 15, 25, 22, 18, 14, 21, 28, 24, 31, 27, 23, 19, 26, 33, 29, 24, 21, 28, 35, 31, 27, 22, 18, 25, 32, 29]
+}])
 
 // Search state
 const searchQuery = ref('')

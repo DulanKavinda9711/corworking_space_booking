@@ -15,6 +15,16 @@
         </div>
       </div>
 
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-red-800">{{ errorMessage }}</span>
+        </div>
+      </div>
+
       <!-- Form Content -->
       <div class="max-w-6xl mx-auto">
         <form @submit.prevent="saveLocation" class="space-y-6">
@@ -142,11 +152,15 @@
                   Cancel
                 </router-link>
                 <button type="submit"
-                  class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  :disabled="isLoading"
+                  class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2">
+                  <svg v-if="isLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Create Location</span>
+                  <span>{{ isLoading ? 'Creating...' : 'Create Location' }}</span>
                 </button>
               </div>
             </div>
@@ -161,6 +175,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { locationApi } from '@/services/api'
 import { mdiMapMarker, mdiAccount } from '@mdi/js'
 
 const router = useRouter()
@@ -170,7 +185,6 @@ const form = ref({
   name: '',
   address: '',
   mapUrl: '',
-  location: '',
   contactPersonName: '',
   contactPhone: '',
   contactEmail: ''
@@ -179,31 +193,58 @@ const form = ref({
 // Validation state for custom error display
 const showValidation = ref(false)
 
+// Loading state
+const isLoading = ref(false)
+
+// Error message
+const errorMessage = ref('')
+
 // Form validation
 const isFormValid = computed(() => {
   return form.value.name.trim() !== '' &&
          form.value.address.trim() !== '' &&
          form.value.mapUrl.trim() !== '' &&
-         form.value.location.trim() !== '' &&
          form.value.contactPersonName.trim() !== '' &&
          form.value.contactPhone.trim() !== '' &&
          form.value.contactEmail.trim() !== ''
 })
 
 // Methods
-const saveLocation = () => {
+const saveLocation = async () => {
   showValidation.value = true
+  errorMessage.value = ''
+
   if (!isFormValid.value) {
     return
   }
 
-  // Here you would typically send the data to your API
-  console.log('Creating location:', form.value)
-  
-  // Show success message
-  alert('Location created successfully!')
-  
-  // Navigate back to locations list
-  router.push('/locations')
+  isLoading.value = true
+
+  try {
+    const response = await locationApi.createLocation({
+      Name: form.value.name,
+      Address: form.value.address,
+      Url: form.value.mapUrl,
+      ContactName: form.value.contactPersonName,
+      ContactEmail: form.value.contactEmail,
+      ContactPhone: form.value.contactPhone
+    })
+
+    if (response.success) {
+      // Show success message
+      alert(response.message || 'Location created successfully!')
+
+      // Navigate back to locations list
+      router.push('/locations')
+    } else {
+      // Show error message
+      errorMessage.value = response.message || 'Failed to create location'
+    }
+  } catch (error) {
+    console.error('Error creating location:', error)
+    errorMessage.value = 'An unexpected error occurred while creating the location'
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>

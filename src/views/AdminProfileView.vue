@@ -90,7 +90,7 @@
         </div>
 
         <!-- Save Button (shown only in edit mode) -->
-        <div v-if="editMode" class="mt-8 flex justify-center">
+        <div v-if="editMode" class="mt-8 flex justify-end">
           <button
             @click="saveProfile"
             class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
