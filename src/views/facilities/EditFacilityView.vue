@@ -292,35 +292,57 @@ onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
 
   const facilityId = route.params.id as string
+  console.log('EditFacilityView - Route params ID:', facilityId)
+  
   if (facilityId) {
     try {
+      console.log('EditFacilityView - Fetching all facilities...')
       // Fetch facility data from API
       const response = await facilityApi.getAllFacilities()
+      console.log('EditFacilityView - API response:', response)
+      
       if (response.success && response.data) {
-        const facility = response.data.find(f => f.id === facilityId)
+        console.log('EditFacilityView - Facilities data:', response.data)
+        console.log('EditFacilityView - Looking for facility with ID:', facilityId)
+        
+        // Ensure consistent string comparison
+        const facility = response.data.find(f => String(f.id) === String(facilityId))
+        console.log('EditFacilityView - Found facility:', facility)
+        
         if (facility) {
+          console.log('EditFacilityView - Setting form data:', facility)
           form.value = {
-            id: facility.id,
+            id: String(facility.id), // Ensure ID is always a string
             name: facility.name,
             status: facility.status as 'active' | 'inactive',
             selectedIcon: getIconValueFromSVG(facility.Icon || '') // Map stored SVG back to icon value
           }
+          console.log('EditFacilityView - Form data set successfully:', form.value)
         } else {
+          console.error('EditFacilityView - Facility not found. Available facilities:', response.data.map(f => ({ id: f.id, name: f.name })))
           alert('Facility not found')
           router.push('/facilities')
         }
+      } else {
+        console.error('EditFacilityView - Failed to load facilities:', response.message)
+        alert('Failed to load facility data')
+        router.push('/facilities')
       }
     } catch (error) {
-      console.error('Error loading facility:', error)
+      console.error('EditFacilityView - Error loading facility:', error)
       alert('Error loading facility data')
       router.push('/facilities')
     }
+  } else {
+    console.error('EditFacilityView - No facility ID provided in route params')
+    alert('No facility ID provided')
+    router.push('/facilities')
   }
 })
 
 // Methods
 const goBackToDetail = () => {
-  router.push(`/facilities/${form.value.id}`)
+  router.push(`/facilities`)
 }
 
 const updateFacility = async () => {
@@ -330,13 +352,27 @@ const updateFacility = async () => {
   }
 
   try {
+    console.log('EditFacilityView - Form data before update:', form.value)
+
+    // Validate the facility ID is present
+    if (!form.value.id) {
+      console.error('EditFacilityView - Missing facility ID. Cannot update facility without ID.')
+      modalMessage.value = 'Error: Missing facility ID. Cannot update facility.'
+      showErrorModal.value = true
+      return
+    }
+
     const facilityData = {
       FacilityName: form.value.name.trim(),
       Icon: getSelectedIconSVG(),
       IsActive: form.value.status === 'active'
     }
 
+    console.log('EditFacilityView - Submitting facility update with ID:', form.value.id)
+    console.log('EditFacilityView - Facility data to update:', facilityData)
+    
     const response = await facilityApi.updateFacility(form.value.id, facilityData)
+    console.log('EditFacilityView - Update response:', response)
 
     if (response.success) {
       modalMessage.value = response.message || 'Facility updated successfully!'
@@ -346,8 +382,15 @@ const updateFacility = async () => {
       showErrorModal.value = true
     }
   } catch (error) {
-    console.error('Error updating facility:', error)
-    modalMessage.value = 'Network error while updating facility. Please try again.'
+    console.error('EditFacilityView - Error updating facility:', error)
+    
+    // More detailed error message
+    if (error instanceof Error) {
+      modalMessage.value = `Error updating facility: ${error.message}`;
+    } else {
+      modalMessage.value = 'Network error while updating facility. Please try again.';
+    }
+    
     showErrorModal.value = true
   }
 }

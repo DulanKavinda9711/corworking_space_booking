@@ -82,7 +82,9 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="customer in paginatedCustomers" :key="customer.id" class="hover:bg-gray-50">
+              <tr v-for="customer in paginatedCustomers" :key="customer.id" 
+                  class="hover:bg-gray-50 cursor-pointer"
+                  @click="viewCustomerDetails(customer.id)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -119,21 +121,17 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
-                    <router-link :to="`/customers/${customer.id}`"
-                      class="text-green-600 hover:text-green-900 flex items-center space-x-1" title="View Details">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiEye" />
-                      </svg>
-                    </router-link>
-                    <button @click="confirmToggleStatus(customer)"
-                      :class="customer.status === 'blocked' ? 'text-green-600 hover:text-green-900' : 'text-orange-600 hover:text-orange-900'"
-                      class="flex items-center space-x-1"
+                    <button @click.stop="confirmToggleStatus(customer)"
+                      :class="customer.status === 'blocked' 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : 'bg-orange-600 hover:bg-orange-700 text-white'"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1"
                       :title="customer.status === 'blocked' ? 'Unblock Customer' : 'Block Customer'">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <!-- <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                         <path :d="customer.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
-                      </svg>
+                      </svg> -->
+                      <span>{{ customer.status === 'blocked' ? 'Unblock' : 'Block' }}</span>
                     </button>
-
                   </div>
                 </td>
               </tr>
@@ -271,9 +269,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers } from '@/composables/useCustomers'
 import { mdiAccount, mdiEye, mdiAccountCheck, mdiAccountCancel, mdiKeyVariant } from '@mdi/js'
+
+// Use router for navigation
+const router = useRouter()
 
 // Use shared customers data
 const { customers, toggleCustomerStatus: toggleStatus, loadPersistedStatuses } = useCustomers()
@@ -370,6 +372,11 @@ const resetFilters = () => {
   }
   searchQuery.value = ''
   currentPage.value = 1
+}
+
+// View customer details method
+const viewCustomerDetails = (customerId: string) => {
+  router.push(`/customers/${customerId}`)
 }
 
 // Modal functions

@@ -202,7 +202,9 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
+              <tr v-for="booking in paginatedBookings" :key="booking.id" 
+                  class="hover:bg-gray-50 cursor-pointer"
+                  @click="navigateToBookingDetails(booking)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
@@ -266,42 +268,31 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
-                    <!-- View Details Link -->
-                    <router-link :to="viewBookingDetails(booking)" class="text-green-600 hover:text-green-900 flex items-center space-x-1" title="View Details">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiEye" />
-                      </svg>
-                    </router-link>
-                    
-                    <!-- Cancel subscription action for active subscriptions -->
-                    <router-link
+                    <!-- Cancel subscription button for active subscriptions -->
+                    <button
                       v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
-                      :to="`/subscriptions/${booking.id}/cancel`"
-                      class="text-orange-600 hover:text-orange-900 flex items-center space-x-1"
-                      title="Cancel Subscription"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiCancel" />
-                      </svg>
-                    </router-link>
+                      @click.stop="cancelSubscription(booking)"
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-orange-600 hover:bg-orange-700 text-white flex items-center space-x-1"
+                      title="Cancel Subscription">
+                      <span>Cancel</span>
+                    </button>
                     
-                    <!-- Cancel booking action for confirmed bookings -->
-                    <router-link
+                    <!-- Cancel booking button for confirmed bookings -->
+                    <button
                       v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
-                      :to="`/bookings/${booking.id}/cancel`"
-                      class="text-orange-600 hover:text-orange-900 flex items-center space-x-1"
-                      title="Cancel Booking"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiCancel" />
-                      </svg>
-                    </router-link>
+                      @click.stop="cancelBooking(booking)"
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-orange-600 hover:bg-orange-700 text-white flex items-center space-x-1"
+                      title="Cancel Booking">
+                      <span>Cancel</span>
+                    </button>
                     
-                    <!-- Actions for history bookings -->
-                    <button v-if="activeTab === 'history'" @click="confirmDeleteBooking(booking)" class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Booking">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
-                      </svg>
+                    <!-- Delete booking button for history bookings -->
+                    <button 
+                      v-if="activeTab === 'history'" 
+                      @click.stop="confirmDeleteBooking(booking)" 
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center space-x-1" 
+                      title="Delete Booking">
+                      <span>Delete</span>
                     </button>
                   </div>
                 </td>
@@ -423,12 +414,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { mdiEye, mdiPencil, mdiDelete, mdiCancel, mdiCalendar } from '@mdi/js'
 
 // Router
 const route = useRoute()
+const router = useRouter()
 
 // State
 const activeTab = ref('bookings')
@@ -955,11 +947,12 @@ const viewBookingDetails = (booking: any) => {
   })
   localStorage.setItem('bookingViewLogs', JSON.stringify(viewLogs))
   
-  // Return the appropriate route path for navigation
-  if (booking.productType === 'Subscription') {
-    return `/subscriptions/${booking.id}`
-  }
-  return `/bookings/${booking.id}`
+  // Navigate to the appropriate route
+  const routePath = booking.productType === 'Subscription' 
+    ? `/subscriptions/${booking.id}` 
+    : `/bookings/${booking.id}`
+  
+  router.push(routePath)
 }
 
 // Public function to get all booking details
@@ -1098,6 +1091,28 @@ const getStatusClass = (status: string) => {
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+// Row click handler to view booking details
+const navigateToBookingDetails = (booking: any) => {
+  const routePath = booking.productType === 'Subscription' 
+    ? `/subscriptions/${booking.id}` 
+    : `/bookings/${booking.id}`
+  
+  // Use router to navigate to the booking details page
+  router.push(routePath)
+}
+
+// Cancel subscription handler
+const cancelSubscription = (booking: any) => {
+  const routePath = `/subscriptions/${booking.id}/cancel`
+  router.push(routePath)
+}
+
+// Cancel booking handler
+const cancelBooking = (booking: any) => {
+  const routePath = `/bookings/${booking.id}/cancel`
+  router.push(routePath)
 }
 
 const applyFilters = () => {
@@ -1337,6 +1352,9 @@ watch(activeTab, (newTab) => {
 // These functions can be called from parent components or other parts of the application
 defineExpose({
   viewBookingDetails,
+  navigateToBookingDetails,
+  cancelSubscription,
+  cancelBooking,
   getAllBookingDetails,
   getBookingById,
   addNewBooking,

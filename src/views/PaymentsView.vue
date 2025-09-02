@@ -3,13 +3,13 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-  <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
-            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+  <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiWallet" />
             </svg>
-            <span class="text-sm font-medium text-primary-700">
+            <span class="text-sm font-medium text-green-700">
               Total Payments:
-              <span class="font-bold text-primary-800">{{ filteredPayments.length }}</span>
+              <span class="font-bold text-green-800">{{ filteredPayments.length }}</span>
             </span>
           </div>
         <div class="flex items-center space-x-3">
@@ -183,13 +183,15 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="payment in sortedPayments" :key="payment.id" class="hover:bg-gray-50">
+              <tr 
+                v-for="payment in sortedPayments" 
+                :key="payment.id" 
+                @click="navigateToPaymentDetail(payment.id)"
+                class="hover:bg-gray-50 cursor-pointer transition-colors"
+              >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900">{{ payment.bookingId }}</div>
                  
@@ -236,17 +238,6 @@
                   <div class="text-sm text-gray-600">{{ payment.date }}</div>
                   <div class="text-sm text-gray-500">{{ payment.time }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <router-link 
-                    :to="`/payments/${payment.id}`" 
-                    class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" 
-                    title="View Payment Details"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiEye" />
-                    </svg>
-                  </router-link>
-                </td>
               </tr>
             </tbody>
           </table>
@@ -268,6 +259,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { 
   mdiCog, 
@@ -275,6 +267,8 @@ import {
   mdiEye,
   mdiWallet
 } from '@mdi/js'
+
+const router = useRouter()
 
 // State
 const showDatePicker = ref(false)
@@ -668,6 +662,11 @@ const exportToCSV = () => {
 
 const goToCommissionSetup = () => {
   // Navigate to the commission setup page
-  window.location.href = '/payments/commission-setup'
+  router.push('/payments/commission-setup')
+}
+
+const navigateToPaymentDetail = (paymentId: string) => {
+  // Navigate to the payment detail page
+  router.push(`/payments/${paymentId}`)
 }
 </script>

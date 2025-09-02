@@ -3,17 +3,17 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2">
-          <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
+          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
             <path :d="mdiBookOpen" />
           </svg>
-          <span class="text-sm font-medium text-primary-700">
+          <span class="text-sm font-medium text-green-700">
             Total Products:
-            <span class="font-bold text-primary-800">{{ filteredProducts.length }}</span>
+            <span class="font-bold text-green-800">{{ filteredProducts.length }}</span>
           </span>
         </div>
         <router-link to="/products/add"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
@@ -22,8 +22,13 @@
       </div>
 
       <!-- Search and Filters -->
-      <div class="bg-white rounded-xl shadow-card p-6">
-        
+      
+
+      <!-- Products Table -->
+       
+      <div class="bg-white rounded-xl shadow-card overflow-hidden">
+        <div class="bg-white border-b shadow-card p-6">
+
         <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
           <div class="md:col-span-1">
             <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -71,9 +76,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Products Table -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -93,12 +95,14 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="product in filteredProducts" :key="product.id" class="hover:bg-gray-50">
+              <tr v-for="product in filteredProducts" :key="product.id" 
+                  class="hover:bg-gray-50 cursor-pointer"
+                  @click="viewProductDetails(product.id)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                      <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="getProductIcon(product.type)" />
                         </svg>
                       </div>
@@ -119,20 +123,20 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
-                    <router-link :to="`/products/${product.id}`" class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiEye" />
-                      </svg>
-                    </router-link>
-                    <router-link :to="`/products/${product.id}/edit`" class="text-blue-600 hover:text-blue-900 flex items-center space-x-1" title="Edit Product">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiPencil" />
-                      </svg>
-                    </router-link>
-                    <button @click="confirmDeleteProduct(product)" class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Product">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
-                      </svg>
+                    <!-- <button @click.stop="viewProductDetails(product.id)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-600 hover:bg-green-700 text-white flex items-center justify-center space-x-1"
+                      title="View Details">
+                      <span>View</span>
+                    </button> -->
+                    <button @click.stop="editProduct(product.id)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
+                      title="Edit Product">
+                      <span>Edit</span>
+                    </button>
+                    <button @click.stop="confirmDeleteProduct(product)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
+                      title="Delete Product">
+                      <span>Delete</span>
                     </button>
                   </div>
                 </td>
@@ -149,7 +153,7 @@
           <h3 class="mt-2 text-sm font-medium text-gray-900">No products found</h3>
           <p class="mt-1 text-sm text-gray-500">Get started by creating a new product.</p>
           <div class="mt-6">
-            <router-link to="/products/add" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+            <router-link to="/products/add" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
@@ -367,6 +371,18 @@ const getStatusClass = (status: string) => {
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+// Row click handler to view product details
+const viewProductDetails = (productId: string) => {
+  // Navigate to product details page
+  window.location.href = `/products/${productId}`
+}
+
+// Edit product handler
+const editProduct = (productId: string) => {
+  // Navigate to product edit page
+  window.location.href = `/products/${productId}/edit`
 }
 
 const confirmDeleteProduct = (product: any) => {

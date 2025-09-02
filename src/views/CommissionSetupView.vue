@@ -28,15 +28,15 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <!-- PayMedia Commission -->
-              <div class="border border-gray-200 rounded-lg p-6 bg-blue-50">
+              <div class="border border-gray-200 rounded-lg p-6 bg-green-50">
                 <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-lg font-medium text-blue-900">PayMedia Commission</h4>
-                  <span class="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">Primary Platform</span>
+                  <h4 class="text-lg font-medium text-green-900">PayMedia Commission</h4>
+                  <span class="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">Primary Platform</span>
                 </div>
 
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-blue-700 mb-2">Commission Rate (%)</label>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Commission Rate (%)</label>
                     <input
                       type="number"
                       v-model="commissionSettings.payMediaRate"
@@ -44,10 +44,10 @@
                       max="100"
                       step="0.1"
                       :disabled="!isEditing"
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="50.0"
                     />
-                    <p class="text-xs text-blue-600 mt-1">Percentage of total payment amount</p>
+                    <p class="text-xs text-green-600 mt-1">Percentage of total payment amount</p>
                   </div>
 
                   
@@ -55,15 +55,15 @@
               </div>
 
               <!-- Ceylinco Commission -->
-              <div class="border border-gray-200 rounded-lg p-6 bg-purple-50">
+              <div class="border border-gray-200 rounded-lg p-6 bg-emerald-50">
                 <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-lg font-medium text-purple-900">Ceylinco Commission</h4>
-                  <span class="text-sm text-purple-600 bg-purple-100 px-2 py-1 rounded-full">Partner Platform</span>
+                  <h4 class="text-lg font-medium text-emerald-900">Ceylinco Commission</h4>
+                  <span class="text-sm text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">Partner Platform</span>
                 </div>
 
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-purple-700 mb-2">Commission Rate (%)</label>
+                    <label class="block text-sm font-medium text-emerald-700 mb-2">Commission Rate (%)</label>
                     <input
                       type="number"
                       v-model="commissionSettings.ceylincoRate"
@@ -71,10 +71,10 @@
                       max="100"
                       step="0.1"
                       :disabled="!isEditing"
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="50.0"
                     />
-                    <p class="text-xs text-purple-600 mt-1">Percentage of total payment amount</p>
+                    <p class="text-xs text-emerald-600 mt-1">Percentage of total payment amount</p>
                   </div>
 
                   
@@ -86,19 +86,19 @@
           <!-- Commission Summary -->
           <div class="border-t border-gray-200 pt-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Commission Summary</h3>
-            <div class="bg-gray-50 rounded-lg p-6">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="text-center">
                   <label class="block text-sm font-medium text-gray-500 mb-2">PayMedia Rate</label>
-                  <span class="text-2xl font-bold text-blue-600">{{ commissionSettings.payMediaRate }}%</span>
+                  <span class="text-2xl font-bold text-green-600">{{ commissionSettings.payMediaRate }}%</span>
                 </div>
                 <div class="text-center">
                   <label class="block text-sm font-medium text-gray-500 mb-2">Ceylinco Rate</label>
-                  <span class="text-2xl font-bold text-purple-600">{{ commissionSettings.ceylincoRate }}%</span>
+                  <span class="text-2xl font-bold text-emerald-600">{{ commissionSettings.ceylincoRate }}%</span>
                 </div>
                 <div class="text-center">
                   <label class="block text-sm font-medium text-gray-500 mb-2">Total Rate</label>
-                  <span class="text-2xl font-bold text-primary-600">{{ totalCommissionRate }}%</span>
+                  <span class="text-2xl font-bold text-teal-600">{{ totalCommissionRate }}%</span>
                 </div>
               </div>
 
@@ -115,7 +115,7 @@
             <template v-if="!isEditing">
               <button
                 @click="startEditing"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 Edit Commission Settings
               </button>
@@ -130,7 +130,7 @@
               <button
                 @click="saveCommissionSettings"
                 :disabled="totalCommissionRate !== 100"
-                class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save Changes
               </button>

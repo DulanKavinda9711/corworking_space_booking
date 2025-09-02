@@ -41,8 +41,8 @@
                   Location Details
                 </h2>
                 
-                <!-- Form Fields -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Location Name Field -->
+                <div class="mb-8">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Location Name <span class="text-red-500">*</span>
@@ -57,35 +57,93 @@
                       Location name is required
                     </div>
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      Address <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" v-model="form.address"
-                      :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.address.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
-                      ]"
-                      placeholder="Enter full address" />
-                    <div v-if="showValidation && !form.address.trim()" class="mt-1 text-sm text-red-600">
-                      Address is required
-                    </div>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                      Map URL <span class="text-red-500">*</span>
-                    </label>
-                    <input type="url" v-model="form.mapUrl"
-                      :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.mapUrl.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
-                      ]"
-                      placeholder="https://maps.google.com/..." />
-                    <div v-if="showValidation && !form.mapUrl.trim()" class="mt-1 text-sm text-red-600">
-                      Map URL is required
-                    </div>
-                  </div>
+                </div>
+
+                <!-- Address Section -->
+                <div>
+                  <h3 class="text-sm font-medium text-gray-800 mb-4">Address</h3>
                   
+                  <!-- Address Form Fields -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Street <span class="text-red-500">*</span>
+                      </label>
+                      <input type="text" v-model="form.street"
+                        :class="[
+                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                          showValidation && !form.street.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        ]"
+                        placeholder="Enter street address" />
+                      <div v-if="showValidation && !form.street.trim()" class="mt-1 text-sm text-red-600">
+                        Street address is required
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Street 2
+                      </label>
+                      <input type="text" v-model="form.streetTwo"
+                        class="w-full rounded-lg px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-primary-500 text-gray-900 transition-colors"
+                        placeholder="Additional street address (optional)" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Postal Code <span class="text-red-500">*</span>
+                      </label>
+                      <input type="text" v-model="form.postalCode"
+                        :class="[
+                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                          showValidation && !form.postalCode.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        ]"
+                        placeholder="Enter postal code" />
+                      <div v-if="showValidation && !form.postalCode.trim()" class="mt-1 text-sm text-red-600">
+                        Postal code is required
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Town <span class="text-red-500">*</span>
+                      </label>
+                      <input type="text" v-model="form.town"
+                        :class="[
+                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                          showValidation && !form.town.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        ]"
+                        placeholder="Enter town/city" />
+                      <div v-if="showValidation && !form.town.trim()" class="mt-1 text-sm text-red-600">
+                        Town is required
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        District <span class="text-red-500">*</span>
+                      </label>
+                      <input type="text" v-model="form.district"
+                        :class="[
+                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                          showValidation && !form.district.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        ]"
+                        placeholder="Enter district" />
+                      <div v-if="showValidation && !form.district.trim()" class="mt-1 text-sm text-red-600">
+                        District is required
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Map URL <span class="text-red-500">*</span>
+                      </label>
+                      <input type="url" v-model="form.mapUrl"
+                        :class="[
+                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                          showValidation && !form.mapUrl.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        ]"
+                        placeholder="https://maps.google.com/..." />
+                      <div v-if="showValidation && !form.mapUrl.trim()" class="mt-1 text-sm text-red-600">
+                        Map URL is required
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -104,13 +162,13 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Contact Person Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" v-model="form.contactPersonName"
+                    <input type="text" v-model="form.contactName"
                       :class="[
                         'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.contactPersonName.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        showValidation && !form.contactName.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
                       ]"
                       placeholder="Enter contact person name" />
-                    <div v-if="showValidation && !form.contactPersonName.trim()" class="mt-1 text-sm text-red-600">
+                    <div v-if="showValidation && !form.contactName.trim()" class="mt-1 text-sm text-red-600">
                       Contact person name is required
                     </div>
                   </div>
@@ -153,7 +211,7 @@
                 </router-link>
                 <button type="submit"
                   :disabled="isLoading"
-                  class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2">
+                  class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2">
                   <svg v-if="isLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
@@ -183,9 +241,13 @@ const router = useRouter()
 // Form data
 const form = ref({
   name: '',
-  address: '',
+  street: '',
+  streetTwo: '',
+  postalCode: '',
+  town: '',
+  district: '',
   mapUrl: '',
-  contactPersonName: '',
+  contactName: '',
   contactPhone: '',
   contactEmail: ''
 })
@@ -202,9 +264,12 @@ const errorMessage = ref('')
 // Form validation
 const isFormValid = computed(() => {
   return form.value.name.trim() !== '' &&
-         form.value.address.trim() !== '' &&
+         form.value.street.trim() !== '' &&
+         form.value.postalCode.trim() !== '' &&
+         form.value.town.trim() !== '' &&
+         form.value.district.trim() !== '' &&
          form.value.mapUrl.trim() !== '' &&
-         form.value.contactPersonName.trim() !== '' &&
+         form.value.contactName.trim() !== '' &&
          form.value.contactPhone.trim() !== '' &&
          form.value.contactEmail.trim() !== ''
 })
@@ -221,11 +286,17 @@ const saveLocation = async () => {
   isLoading.value = true
 
   try {
+    // Build full address from individual fields
+
     const response = await locationApi.createLocation({
       Name: form.value.name,
-      Address: form.value.address,
+      Street: form.value.street,
+      StreetTwo: form.value.streetTwo,
+      PostalCode: form.value.postalCode,
+      Town: form.value.town,
       Url: form.value.mapUrl,
-      ContactName: form.value.contactPersonName,
+      District: form.value.district,
+      ContactName: form.value.contactName,
       ContactEmail: form.value.contactEmail,
       ContactPhone: form.value.contactPhone
     })

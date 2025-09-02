@@ -3,17 +3,17 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2">
-            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiMapMarker" />
             </svg>
-            <span class="text-sm font-medium text-primary-700">
+            <span class="text-sm font-medium text-green-700">
               Total Locations:
-              <span class="font-bold text-primary-800">{{ filteredLocations.length }}</span>
+              <span class="font-bold text-green-800">{{ filteredLocations.length }}</span>
             </span>
           </div>
         <router-link to="/locations/add"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
@@ -113,8 +113,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                        <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                      <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="mdiMapMarker" />
                         </svg>
                       </div>
@@ -125,8 +125,8 @@
                   </div>
                 </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900">{{ location.address }}</div>
-                  <div class="text-sm text-gray-500">{{ location.city }}, {{ location.country }}</div>
+                  <div class="text-sm text-gray-900">{{ getLocationAddress(location) }}</div>
+                  <!-- <div class="text-sm text-gray-500">{{ location.city || '' }}</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(location.status)" class="px-2 py-1 text-xs font-medium rounded-full">
@@ -340,11 +340,19 @@ const filteredLocations = computed(() => {
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(location =>
-      location.name.toLowerCase().includes(query) ||
-      location.address.toLowerCase().includes(query) ||
-      location.city.toLowerCase().includes(query)
-    )
+    filtered = filtered.filter(location => {
+      const name = (location.name || '').toLowerCase()
+      const street = (location.street || '').toLowerCase()
+      const town = (location.town || '').toLowerCase()
+      const city = (location.city || '').toLowerCase()
+      const district = (location.district || '').toLowerCase()
+      
+      return name.includes(query) ||
+             street.includes(query) ||
+             town.includes(query) ||
+             city.includes(query) ||
+             district.includes(query)
+    })
   }
 
   // Apply status filter
@@ -366,6 +374,18 @@ const filteredLocations = computed(() => {
 })
 
 // Methods
+const getLocationAddress = (location: any) => {
+  const addressParts = [
+    location.street,
+    location.street2,
+    location.town,
+    location.district,
+    location.postalCode
+  ].filter(part => part && part.trim()) // Remove null, undefined, and empty strings
+  
+  return addressParts.join(', ') || 'Address not available'
+}
+
 const getStatusClass = (status: string) => {
   return status === 'active' 
     ? 'bg-green-100 text-green-800' 

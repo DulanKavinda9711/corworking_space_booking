@@ -172,7 +172,9 @@
               <router-link to="/bookings" class="text-sm text-green-600">View all</router-link>
             </div>
             <div class="space-y-3">
-              <div v-for="booking in recentBookings" :key="booking.id" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
+              <div v-for="booking in recentBookings" :key="booking.id" 
+                   @click="viewBookingDetails(booking.id)"
+                   class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-green-100 rounded-md flex items-center justify-center">
                     <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarCheck"/></svg>
@@ -184,9 +186,6 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">{{ booking.status }}</span>
-                  <router-link :to="`/bookings/${booking.id}`" class="text-green-600 hover:text-green-900">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiEye"/></svg>
-                  </router-link>
                 </div>
               </div>
             </div>
@@ -550,11 +549,8 @@ const selectBooking = (booking: any) => {
   router.push(`/bookings/${booking.id}`)
 }
 
-const performSearch = () => {
-  // Legacy method - now handled by autocomplete
-  if (searchQuery.value) {
-    handleSearchInput()
-  }
+const viewBookingDetails = (bookingId: string) => {
+  router.push(`/bookings/${bookingId}`)
 }
 
 const getStatusClass = (status: string) => {

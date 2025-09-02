@@ -3,13 +3,13 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2">
-          <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
+          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
             <path :d="mdiSeat" />
           </svg>
-          <span class="text-sm font-medium text-primary-700">
+          <span class="text-sm font-medium text-green-700">
             Total Facilities:
-            <span class="font-bold text-primary-800">{{ filteredFacilities.length }}</span>
+            <span class="font-bold text-green-800">{{ filteredFacilities.length }}</span>
           </span>
         </div>
         <div class="flex items-center space-x-3">
@@ -25,7 +25,7 @@
             </svg>
           </button>
           <router-link to="/facilities/add"
-            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -93,8 +93,8 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                          <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                        <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                          <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                             <path :d="getFacilityIcon(facility)" />
                           </svg>
                         </div>
@@ -111,15 +111,15 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center space-x-3">
-                      <router-link :to="`/facilities/${facility.id}/edit`" class="text-blue-600 hover:text-blue-900 flex items-center space-x-1" title="Edit Facility">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path :d="mdiPencil" />
-                        </svg>
-                      </router-link>
-                      <button @click="confirmDeleteFacility(facility)" class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Facility">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path :d="mdiDelete" />
-                        </svg>
+                      <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
+                      title="Edit Facility">
+                      <span>Edit</span>
+                      </button>
+                      <button @click.stop="confirmDeleteFacility(facility)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
+                      title="Delete Facility">
+                      <span>Delete</span>
                       </button>
                     </div>
                   </td>
@@ -144,25 +144,25 @@
                   <div class="flex items-center space-x-4">
                     <!-- Modern icon container -->
                     <div class="relative">
-                      <div class="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
+                      <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
                         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="getFacilityIcon(facility)" />
                         </svg>
                       </div>
                       <!-- Subtle glow effect -->
-                      <div class="absolute inset-0 bg-primary-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                      <div class="absolute inset-0 bg-green-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                     </div>
 
                     <div class="flex-1 min-w-0">
-                      <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary-700 transition-colors duration-300 truncate">
+                      <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 truncate">
                         {{ facility.name }}
                       </h3>
-                      <div class="flex items-center mt-2 space-x-2">
+                      <!-- <div class="flex items-center mt-2 space-x-2">
                         <span :class="getStatusClass(facility.status)"
                           class="px-3 py-1 text-xs font-semibold rounded-full shadow-sm">
                           {{ facility.status }}
                         </span>
-                      </div>
+                      </div> -->
                     </div>
                   </div>
                 </div>
@@ -203,7 +203,7 @@
               </div>
 
               <!-- Subtle bottom accent -->
-              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 to-primary-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@
                   </button>
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     page === currentPage
-                      ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                      ? 'z-10 bg-green-50 border-green-500 text-green-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                   ]">
@@ -260,10 +260,15 @@
         </div>
 
         <!-- Loading State -->
-        <div v-if="isLoading" class="text-center py-12">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p class="mt-4 text-sm text-gray-500">Loading facilities...</p>
+        <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
+        <div class="flex items-center justify-center">
+          <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="ml-3 text-gray-600">Loading Facilities...</span>
         </div>
+      </div>
 
         <!-- Error State -->
         <div v-else-if="error" class="text-center py-12">
@@ -272,7 +277,7 @@
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading facilities</h3>
           <p class="mt-1 text-sm text-red-500">{{ error }}</p>
-          <button @click="loadFacilities" class="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
+          <button @click="loadFacilities" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
             Try Again
           </button>
         </div>
@@ -353,6 +358,49 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6 text-center">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100 mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Success!</h2>
+          <p class="text-gray-600 mb-6">{{ modalMessage || 'Facility deleted successfully!' }}</p>
+          <button
+            @click="closeSuccessModal"
+            type="button"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+        <div class="p-6 text-center">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100 mb-4">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Error</h2>
+          <p class="text-gray-600 mb-6">{{ modalMessage || 'An error occurred while deleting the facility.' }}</p>
+          <button
+            @click="closeErrorModal"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -381,6 +429,11 @@ const viewMode = ref<'tile' | 'table'>('tile') // Default to tile view
 const showDeleteModal = ref(false)
 const facilityToDelete = ref<any>(null)
 const isDeleting = ref(false)
+
+// Success and error modal state
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const modalMessage = ref('')
 
 // Pagination
 const currentPage = ref(1)
@@ -411,6 +464,7 @@ const filteredFacilities = computed(() => {
 const totalPages = computed(() => Math.ceil(filteredFacilities.value.length / itemsPerPage.value))
 
 const paginatedFacilities = computed(() => {
+  console.log('Paginating facilities:', filteredFacilities, 'itemsPerPage:', itemsPerPage.value, 'currentPage:', currentPage.value)
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredFacilities.value.slice(start, end)
@@ -611,8 +665,20 @@ const loadFacilities = async () => {
 
     if (response.success && response.data) {
       console.log('Facilities data:', response.data)
-      facilities.value = response.data
-      console.log('Facilities assigned to reactive array:', facilities.value)
+      
+      // Ensure each facility has a valid ID
+      facilities.value = response.data.map(facility => {
+        // Make sure ID is properly set and is a string
+        return {
+          ...facility,
+          id: facility.id ? facility.id.toString() : null
+        }
+      })
+      
+      // Log transformed facilities
+      console.log('Facilities processed and assigned to reactive array:', facilities.value)
+      // Log IDs to verify they exist
+      console.log('Facility IDs:', facilities.value.map(f => f.id))
     } else {
       console.error('API response not successful:', response.message)
       error.value = response.message || 'Failed to load facilities'
@@ -645,14 +711,30 @@ const createFacility = async (facilityData: { FacilityName: string; IsActive: bo
 
 // Modal functions
 const confirmDeleteFacility = (facility: any) => {
-  facilityToDelete.value = facility
+  console.log('Confirming delete for facility:', facility)
+  // Make sure we're capturing the facility id correctly
+  facilityToDelete.value = { 
+    ...facility,
+    id: facility.id ? facility.id.toString() : null
+  }
   showDeleteModal.value = true
+  console.log('facilityToDelete set to:', facilityToDelete.value)
 }
 
 const closeDeleteModal = () => {
   showDeleteModal.value = false
   facilityToDelete.value = null
   isDeleting.value = false
+}
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  modalMessage.value = ''
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  modalMessage.value = ''
 }
 
 const deleteFacility = async () => {
@@ -662,10 +744,25 @@ const deleteFacility = async () => {
 
   try {
     // Use the actual API call we implemented
+    console.log('Attempting to delete facility:', facilityToDelete.value)
+    
+    // Check if ID exists and is valid
+    if (!facilityToDelete.value.id) {
+      console.error('Cannot delete facility: ID is missing or invalid')
+      modalMessage.value = 'Cannot delete facility: ID is missing or invalid'
+      showErrorModal.value = true
+      isDeleting.value = false
+      return
+    }
+    
+    console.log('Deleting facility with ID:', facilityToDelete.value.id)
     const response = await facilityApi.deleteFacility(facilityToDelete.value.id)
 
     if (response.success) {
-      // Remove facility from local array (API already updated localStorage)
+      // Store facility name before clearing
+      const deletedFacilityName = facilityToDelete.value.name
+      
+      // Remove facility from local array
       const index = facilities.value.findIndex(f => f.id === facilityToDelete.value.id)
       if (index !== -1) {
         facilities.value.splice(index, 1)
@@ -674,18 +771,21 @@ const deleteFacility = async () => {
       closeDeleteModal()
 
       // Show success message
-      console.log('Facility deleted successfully:', facilityToDelete.value.name)
+      console.log('Facility deleted successfully:', deletedFacilityName)
       console.log('API Response:', response.message)
+      modalMessage.value = `Facility "${deletedFacilityName}" has been deleted successfully!`
+      showSuccessModal.value = true
 
     } else {
       console.error('Failed to delete facility:', response.message)
-      // You could show a toast notification here
-      alert(`Failed to delete facility: ${response.message}`)
+      modalMessage.value = response.message || 'Failed to delete facility'
+      showErrorModal.value = true
     }
 
   } catch (error) {
     console.error('Error deleting facility:', error)
-    alert('Network error while deleting facility. Please try again.')
+    modalMessage.value = 'Network error while deleting facility. Please try again.'
+    showErrorModal.value = true
   } finally {
     isDeleting.value = false
   }

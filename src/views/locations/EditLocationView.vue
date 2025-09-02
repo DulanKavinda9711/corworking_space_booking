@@ -43,11 +43,43 @@
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                      Address <span class="text-red-500">*</span>
+                      Street <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" v-model="form.address" required
+                    <input type="text" v-model="form.street" required
                       class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
-                      placeholder="Enter full address" />
+                      placeholder="Enter street address" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Street 2
+                    </label>
+                    <input type="text" v-model="form.street2"
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+                      placeholder="Additional street address (optional)" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Postal Code <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" v-model="form.postalCode" required
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+                      placeholder="Enter postal code" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Town <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" v-model="form.town" required
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+                      placeholder="Enter town/city" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      District <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" v-model="form.district" required
+                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+                      placeholder="Enter district" />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -141,7 +173,11 @@ const router = useRouter()
 const form = ref({
   id: '',
   name: '',
-  address: '',
+  street: '',
+  street2: '',
+  postalCode: '',
+  town: '',
+  district: '',
   mapUrl: '',
   location: '',
   contactPersonName: '',
@@ -154,7 +190,10 @@ const form = ref({
 // Computed properties
 const isFormValid = computed(() => {
   return form.value.name && 
-         form.value.address && 
+         form.value.street && 
+         form.value.postalCode && 
+         form.value.town && 
+         form.value.district && 
          form.value.contactPersonName && 
          form.value.contactPhone && 
          form.value.contactEmail
@@ -167,11 +206,60 @@ function loadLocationData() {
   
   // TODO: Implement API call to fetch location data
   console.log('Loading location data for:', locationId)
+  
+  // TODO: Implement actual API call to fetch location data
+  // Example implementation:
+  // try {
+  //   const location = await locationApi.getLocationById(locationId)
+  //   if (location && location.data) {
+  //     // Parse the address string back into individual fields
+  //     const addressParts = location.data.address.split(', ')
+  //     form.value = {
+  //       id: location.data.id,
+  //       name: location.data.name,
+  //       street: addressParts[0] || '',
+  //       street2: addressParts[1] || '',
+  //       postalCode: addressParts[2] || '',
+  //       town: addressParts[3] || '',
+  //       district: addressParts[4] || '',
+  //       mapUrl: location.data.mapUrl || '',
+  //       location: location.data.city || '',
+  //       contactPersonName: location.data.manager || '',
+  //       contactPhone: location.data.phone || '',
+  //       contactEmail: location.data.email || ''
+  //     }
+  //   }
+  // } catch (error) {
+  //   console.error('Failed to load location data:', error)
+  //   // Handle error (show toast, redirect, etc.)
+  // }
 }
 
 function updateLocation() {
+  // Build full address from individual fields
+  const fullAddress = [
+    form.value.street,
+    form.value.street2 ? form.value.street2 : '',
+    form.value.postalCode,
+    form.value.town,
+    form.value.district
+  ].filter(part => part.trim() !== '').join(', ')
+  
   // In a real app, this would make an API call to update the location
-  console.log('Updating location:', form.value)
+  console.log('Updating location:', {
+    ...form.value,
+    address: fullAddress
+  })
+  
+  // TODO: Implement API call to update location
+  // const response = await locationApi.updateLocation(form.value.id, {
+  //   Name: form.value.name,
+  //   Address: fullAddress,
+  //   Url: form.value.mapUrl,
+  //   ContactName: form.value.contactPersonName,
+  //   ContactEmail: form.value.contactEmail,
+  //   ContactPhone: form.value.contactPhone
+  // })
   
   // Simulate success and redirect
   router.push('/locations')

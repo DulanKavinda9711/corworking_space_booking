@@ -3,18 +3,18 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
-            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiBullhorn" />
             </svg>
-            <span class="text-sm font-medium text-primary-700">
+            <span class="text-sm font-medium text-green-700">
               Total Promotions:
-              <span class="font-bold text-primary-800">{{ promotions.length }}</span>
+              <span class="font-bold text-green-800">{{ promotions.length }}</span>
             </span>
           </div>
         <button
           @click="showCreateModal = true"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path :d="mdiPlus" />
@@ -45,18 +45,18 @@
                 @click="viewPromotion(promotion)"
                 class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <!-- <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiEye" />
-                </svg>
+                </svg> -->
                 <span>View</span>
               </button>
               <button
                 @click="confirmDeletePromotion(promotion)"
                 class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <!-- <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiDelete" />
-                </svg>
+                </svg> -->
                 <span>Delete</span>
               </button>
             </div>
@@ -83,9 +83,9 @@
     <!-- Create Promotion Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-900">Create Promotion</h2>
+        <div class="p-6 border-b border-gray-200 bg-green-100 rounded-t-xl">
+          <div class="flex items-center justify-between ">
+            <h2 class="text-xl font-semibold text-green-900">Create Promotion</h2>
             <button @click="closeCreateModal" class="text-gray-400 hover:text-gray-600">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -100,7 +100,7 @@
             <input
               type="text"
               v-model="newPromotion.name"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               placeholder="Enter promotion name"
               required
             />
@@ -108,7 +108,7 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-500 transition-colors">
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-green-500 transition-colors">
               <input
                 ref="imageInput"
                 type="file"
@@ -157,7 +157,7 @@
             <button
               type="submit"
               :disabled="!newPromotion.name.trim() || !newPromotion.image || isCreating || isImageLoading"
-              class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
             >
               <svg v-if="isCreating" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

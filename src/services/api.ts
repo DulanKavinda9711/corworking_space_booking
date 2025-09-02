@@ -108,31 +108,23 @@ export interface Company {
 export interface Location {
   id: string
   name: string
-  address: string
+  street?: string
+  street2?: string
+  postalCode?: string
+  town?: string
+  district?: string
   city: string
-  country: string
-  phone: string
-  email: string
-  manager: string
-  totalSpaces: number
-  availableSpaces: number
-  facilities: string[]
+  contactName?: string
+  contactEmail?: string
+  contactPhone?: string
   mapUrl?: string
   status: 'active' | 'inactive'
 }
 
 export interface Facility {
-  id: string
+  id: Number
   name: string
-  description: string
-  type: string
-  location: string
-  capacity: number
-  pricePerHour: number
   status: 'active' | 'inactive' | 'maintenance'
-  amenities: string[]
-  images: string[]
-  bookings?: number
   Icon?: string
 }
 
@@ -268,246 +260,6 @@ const paginate = <T>(data: T[], page: number = 1, limit: number = 10) => {
   }
 }
 
-// Mock data for development - replace with real API calls
-class MockDataStore {
-  private static instance: MockDataStore
-  
-  // Sample data
-  private mockBookings: Booking[] = [
-    {
-      id: 'BR-2034',
-      productName: 'Executive Meeting Room',
-      productType: 'Meeting Room',
-      productId: 'PROD001',
-      productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
-      customerName: 'John Doe',
-      customerEmail: 'john.doe@example.com',
-      customerPhone: '+1 (555) 123-4567',
-      userType: 'registered',
-      date: '2025-08-20',
-      startTime: '10:00 AM',
-      endTime: '12:00 PM',
-      duration: '2 hours',
-      totalPrice: 100,
-      basePrice: 100,
-      additionalFacilities: 0,
-      taxes: 0,
-      status: 'confirmed',
-      location: 'main-branch',
-      locationName: 'Main Branch',
-      companyName: 'Premium Co-working Ltd.',
-      capacity: 12,
-      facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-    },
-    {
-      id: 'SUB-3001',
-      productName: 'Monthly Dedicated Desk',
-      productType: 'Subscription',
-      productId: 'SUB001',
-      productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
-      customerName: 'Jane Smith',
-      customerEmail: 'jane.smith@example.com',
-      customerPhone: '+1 (555) 987-6543',
-      userType: 'registered',
-      date: '2025-08-01',
-      startTime: '8:00 AM',
-      endTime: '6:00 PM',
-      duration: 'Monthly',
-      totalPrice: 800,
-      basePrice: 750,
-      additionalFacilities: 50,
-      taxes: 0,
-      status: 'confirmed',
-      location: 'main-branch',
-      locationName: 'Main Branch',
-      companyName: 'Premium Co-working Ltd.',
-      subscriptionType: 'monthly',
-      subscribedDate: '2025-08-01',
-      nextBillingDate: '2025-09-01',
-      capacity: 1,
-      facilities: ['High-speed WiFi', 'Storage Locker', '24/7 Access', 'Printing Credits']
-    }
-  ]
-
-  private mockCustomers: Customer[] = [
-    {
-      id: 'CU-001',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+1 (555) 123-4567',
-      customerType: 'registered',
-      totalBookings: 15,
-      status: 'active',
-      dateJoined: '2024-01-15',
-      address: '123 Main St, New York, NY 10001',
-      city: 'New York',
-      country: 'USA',
-      totalSpent: 2850
-    },
-    {
-      id: 'CU-002',
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      phone: '+1 (555) 987-6543',
-      customerType: 'registered',
-      totalBookings: 8,
-      status: 'active',
-      dateJoined: '2024-02-20',
-      address: '456 Oak Ave, San Francisco, CA 94102',
-      city: 'San Francisco',
-      country: 'USA',
-      totalSpent: 1650
-    }
-  ]
-
-  private mockCompanies: Company[] = [
-    {
-      id: 1,
-      name: 'WorkHub Co.',
-      registrationNumber: 'REG-001-2024',
-      address: '123 Business St, New York, NY 10001',
-      city: 'New York',
-      country: 'USA',
-      contactPerson: 'John Smith',
-      email: 'john@workhub.com',
-      phone: '+1 (555) 123-4567',
-      totalSpaces: 15,
-      status: 'active',
-      logo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center'
-    }
-  ]
-
-  // Mock locations data - REMOVED: Mock data has been removed
-
-  private mockFacilities: Facility[] = [
-    {
-      id: 'FAC-001',
-      name: 'Conference Room A',
-      description: 'Large conference room with video conferencing capabilities',
-      type: 'Meeting Room',
-      location: 'main-branch',
-      capacity: 12,
-      pricePerHour: 50,
-      status: 'active',
-      amenities: ['Video Conference', 'Projector', 'Whiteboard', 'WiFi'],
-      images: ['https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&h=300&fit=crop'],
-      bookings: 8
-    }
-  ]
-
-  private mockProducts: Product[] = [
-    {
-      id: 'PROD001',
-      name: 'Executive Meeting Room',
-      type: 'Meeting Room',
-      description: 'Premium meeting room with all modern amenities',
-      pricePerHour: 50,
-      capacity: 12,
-      facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference'],
-      location: 'main-branch',
-      status: 'active',
-      images: ['https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&h=300&fit=crop'],
-      availability: {
-        '2025-08-21': true,
-        '2025-08-22': false,
-        '2025-08-23': true
-      }
-    }
-  ]
-
-  private mockPayments: Payment[] = [
-    {
-      id: 'PAY-001',
-      bookingId: 'BR-2034',
-      customerName: 'John Doe',
-      amount: 100,
-      status: 'paid',
-      paymentMethod: 'card',
-      transactionDate: '2025-08-20T10:30:00Z',
-      description: 'Executive Meeting Room - 2 hours',
-      receiptUrl: '/receipts/PAY-001.pdf'
-    }
-  ]
-
-  private mockUsers: User[] = [
-    {
-      id: 'USR-001',
-      name: 'Admin User',
-      email: 'admin@example.com',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2025-08-21T09:00:00Z',
-      permissions: ['read', 'write', 'delete', 'manage_users'],
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces'
-    }
-  ]
-
-  static getInstance(): MockDataStore {
-    if (!MockDataStore.instance) {
-      MockDataStore.instance = new MockDataStore()
-    }
-    return MockDataStore.instance
-  }
-
-  // Initialize data from localStorage if available
-  constructor() {
-    this.loadFromLocalStorage()
-  }
-
-  private loadFromLocalStorage() {
-    try {
-      const savedBookings = localStorage.getItem('allBookings')
-      if (savedBookings) {
-        this.mockBookings = JSON.parse(savedBookings)
-      }
-
-      const savedCustomers = localStorage.getItem('customers')
-      if (savedCustomers) {
-        this.mockCustomers = JSON.parse(savedCustomers)
-      }
-
-      // Load other data similarly if needed
-    } catch (error) {
-      console.warn('Error loading data from localStorage:', error)
-    }
-  }
-
-  // Save data to localStorage for persistence
-  private saveToLocalStorage(key: string, data: any) {
-    try {
-      localStorage.setItem(key, JSON.stringify(data))
-    } catch (error) {
-      console.warn('Error saving to localStorage:', error)
-    }
-  }
-
-  // Data getters
-  getBookings() { return [...this.mockBookings] }
-  getCustomers() { return [...this.mockCustomers] }
-  getCompanies() { return [...this.mockCompanies] }
-  getLocations() { return [] }
-  getFacilities() { return [...this.mockFacilities] }
-  getProducts() { return [...this.mockProducts] }
-  getPayments() { return [...this.mockPayments] }
-  getUsers() { return [...this.mockUsers] }
-
-  // Data setters
-  updateBookings(bookings: Booking[]) {
-    this.mockBookings = bookings
-    this.saveToLocalStorage('allBookings', bookings)
-  }
-
-  updateCustomers(customers: Customer[]) {
-    this.mockCustomers = customers
-    this.saveToLocalStorage('customers', customers)
-  }
-
-  updateFacilities(facilities: Facility[]) {
-    this.mockFacilities = facilities
-    this.saveToLocalStorage('facilities', facilities)
-  }
-}
-
 // ============================================================================
 // AUTHENTICATION API
 // ============================================================================
@@ -551,7 +303,16 @@ export const authApi = {
     
     // Mock authentication - remove when real API is implemented
     if (credentials.email === 'admin@example.com' && credentials.password === 'admin123') {
-      const user = MockDataStore.getInstance().getUsers()[0]
+      const user: User = {
+        id: 'USR-001',
+        name: 'Admin User',
+        email: 'admin@example.com',
+        role: 'admin',
+        status: 'active',
+        lastLogin: new Date().toISOString(),
+        permissions: ['read', 'write', 'delete', 'manage_users'],
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces'
+      }
       const token = 'mock-jwt-token-' + Date.now()
       
       // Store token in localStorage
@@ -754,26 +515,16 @@ export const bookingApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    let bookings = MockDataStore.getInstance().getBookings()
-
-    // Apply filters
-    if (filters?.status) {
-      bookings = bookings.filter(b => b.status === filters.status)
-    }
-    if (filters?.location) {
-      bookings = bookings.filter(b => b.location === filters.location)
-    }
-    if (filters?.customerType) {
-      bookings = bookings.filter(b => b.userType === filters.customerType)
-    }
-
-    // Apply pagination
-    const { data, pagination } = paginate(bookings, filters?.page, filters?.limit)
-
+    // For now, return empty data since MockDataStore is removed
     return {
       success: true,
-      data,
-      pagination
+      data: [],
+      pagination: {
+        currentPage: filters?.page || 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: filters?.limit || 10
+      }
     }
   },
 
@@ -814,12 +565,6 @@ export const bookingApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const booking = MockDataStore.getInstance().getBookings().find(b => b.id === id)
-
-    if (booking) {
-      return successResponse(booking)
-    }
-
     return errorResponse('Booking not found', [`Booking with ID ${id} does not exist`])
   },
 
@@ -863,17 +608,7 @@ export const bookingApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const newBooking: Booking = {
-      id: `BR-${Date.now()}`,
-      ...bookingData,
-      status: 'confirmed'
-    }
-
-    const bookings = MockDataStore.getInstance().getBookings()
-    bookings.push(newBooking)
-    MockDataStore.getInstance().updateBookings(bookings)
-
-    return successResponse(newBooking, 'Booking created successfully')
+    return errorResponse('Booking creation not implemented', ['Real API not yet implemented'])
   },
 
   /**
@@ -927,22 +662,7 @@ export const bookingApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const bookings = MockDataStore.getInstance().getBookings()
-    const bookingIndex = bookings.findIndex(b => b.id === id)
-
-    if (bookingIndex === -1) {
-      return errorResponse('Booking not found')
-    }
-
-    bookings[bookingIndex].status = status
-    MockDataStore.getInstance().updateBookings(bookings)
-
-    // Also update localStorage for immediate persistence
-    const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
-    bookingStatuses[id] = status
-    localStorage.setItem('bookingStatuses', JSON.stringify(bookingStatuses))
-
-    return successResponse(bookings[bookingIndex], 'Booking status updated successfully')
+    return errorResponse('Booking status update not implemented', ['Real API not yet implemented'])
   },
 
   /**
@@ -1051,26 +771,7 @@ export const bookingApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const bookings = MockDataStore.getInstance().getBookings()
-    const bookingIndex = bookings.findIndex(b => b.id === id)
-
-    if (bookingIndex === -1) {
-      return errorResponse('Booking not found')
-    }
-
-    const deletedBooking = bookings.splice(bookingIndex, 1)[0]
-    MockDataStore.getInstance().updateBookings(bookings)
-
-    // Log deletion for audit
-    const deletedBookings = JSON.parse(localStorage.getItem('deletedBookings') || '[]')
-    deletedBookings.push({
-      ...deletedBooking,
-      deletedAt: new Date().toISOString(),
-      deletedBy: 'Admin'
-    })
-    localStorage.setItem('deletedBookings', JSON.stringify(deletedBookings))
-
-    return successResponse(null, 'Booking deleted successfully')
+    return errorResponse('Booking deletion not implemented', ['Real API not yet implemented'])
   }
 }
 
@@ -1139,23 +840,15 @@ export const subscriptionApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    let subscriptions = MockDataStore.getInstance().getBookings()
-      .filter(b => b.productType === 'Subscription')
-
-    // Apply filters
-    if (filters?.status) {
-      subscriptions = subscriptions.filter(s => s.status === filters.status)
-    }
-    if (filters?.type) {
-      subscriptions = subscriptions.filter(s => s.subscriptionType === filters.type)
-    }
-
-    const { data, pagination } = paginate(subscriptions, filters?.page, filters?.limit)
-
     return {
       success: true,
-      data,
-      pagination
+      data: [],
+      pagination: {
+        currentPage: filters?.page || 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: filters?.limit || 10
+      }
     }
   },
 
@@ -1228,47 +921,7 @@ export const subscriptionApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    // Mock API call - replace with real implementation
-    // const formData = new FormData()
-    // formData.append('reason', cancellationData.reason)
-    // if (cancellationData.paymentSlipFile) {
-    //   formData.append('paymentSlip', cancellationData.paymentSlipFile)
-    // }
-    // const response = await fetch(`/api/subscriptions/${id}/cancel`, {
-    //   method: 'POST',
-    //   body: formData
-    // })
-
-    const subscription = MockDataStore.getInstance().getBookings().find(b => b.id === id)
-    
-    if (!subscription) {
-      return errorResponse('Subscription not found')
-    }
-
-    // Create cancellation request
-    const cancellationRequest: CancellationRequest = {
-      id: `CANCEL-${Date.now()}`,
-      bookingId: subscription.id,
-      subscriptionId: id,
-      customerName: subscription.customerName,
-      reason: cancellationData.reason,
-      additionalNotes: cancellationData.additionalNotes,
-      refundRequested: cancellationData.refundRequested,
-      paymentSlipUploaded: !!cancellationData.paymentSlipFile,
-      paymentSlipFile: cancellationData.paymentSlipFile,
-      requestDate: new Date().toISOString(),
-      status: 'pending'
-    }
-
-    // Update subscription status
-    await bookingApi.updateBookingStatus(id, 'cancelled')
-
-    // Store cancellation request
-    const cancellationRequests = JSON.parse(localStorage.getItem('cancellationRequests') || '[]')
-    cancellationRequests.push(cancellationRequest)
-    localStorage.setItem('cancellationRequests', JSON.stringify(cancellationRequests))
-
-    return successResponse(cancellationRequest, 'Subscription cancellation request submitted successfully')
+    return errorResponse('Subscription cancellation not implemented', ['Real API not yet implemented'])
   }
 }
 
@@ -1336,30 +989,15 @@ export const customerApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    let customers = MockDataStore.getInstance().getCustomers()
-
-    // Apply filters
-    if (filters?.status) {
-      customers = customers.filter(c => c.status === filters.status)
-    }
-    if (filters?.type) {
-      customers = customers.filter(c => c.customerType === filters.type)
-    }
-    if (filters?.search) {
-      const search = filters.search.toLowerCase()
-      customers = customers.filter(c => 
-        c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search) ||
-        c.phone.includes(search)
-      )
-    }
-
-    const { data, pagination } = paginate(customers, filters?.page, filters?.limit)
-
     return {
       success: true,
-      data,
-      pagination
+      data: [],
+      pagination: {
+        currentPage: filters?.page || 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: filters?.limit || 10
+      }
     }
   },
 
@@ -1403,12 +1041,6 @@ export const customerApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const customer = MockDataStore.getInstance().getCustomers().find(c => c.id === id)
-
-    if (customer) {
-      return successResponse(customer)
-    }
-
     return errorResponse('Customer not found')
   },
 
@@ -1461,17 +1093,7 @@ export const customerApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const customers = MockDataStore.getInstance().getCustomers()
-    const customerIndex = customers.findIndex(c => c.id === id)
-
-    if (customerIndex === -1) {
-      return errorResponse('Customer not found')
-    }
-
-    customers[customerIndex].status = status
-    MockDataStore.getInstance().updateCustomers(customers)
-
-    return successResponse(customers[customerIndex], 'Customer status updated successfully')
+    return errorResponse('Customer status update not implemented', ['Real API not yet implemented'])
   },
 
   /**
@@ -1514,15 +1136,7 @@ export const customerApi = {
     // }
 
     // Mock API call - remove when real API is implemented
-    const customer = MockDataStore.getInstance().getCustomers().find(c => c.id === customerId)
-    if (!customer) {
-      return errorResponse('Customer not found')
-    }
-
-    const bookings = MockDataStore.getInstance().getBookings()
-      .filter(b => b.customerEmail === customer.email || b.customerName === customer.name)
-
-    return successResponse(bookings, `Retrieved ${bookings.length} bookings for ${customer.name}`)
+    return errorResponse('Customer bookings retrieval not implemented', ['Real API not yet implemented'])
   }
 }
 
@@ -1537,8 +1151,7 @@ export const companyApi = {
   async getAllCompanies(): Promise<ApiResponse<Company[]>> {
     await delay(600)
 
-    const companies = MockDataStore.getInstance().getCompanies()
-    return successResponse(companies)
+    return successResponse([])
   },
 
   /**
@@ -1546,12 +1159,6 @@ export const companyApi = {
    */
   async getCompanyById(id: number): Promise<ApiResponse<Company>> {
     await delay(500)
-
-    const company = MockDataStore.getInstance().getCompanies().find(c => c.id === id)
-
-    if (company) {
-      return successResponse(company)
-    }
 
     return errorResponse('Company not found')
   },
@@ -1562,17 +1169,7 @@ export const companyApi = {
   async createCompany(companyData: Omit<Company, 'id'>): Promise<ApiResponse<Company>> {
     await delay(800)
 
-    const companies = MockDataStore.getInstance().getCompanies()
-    const maxId = Math.max(...companies.map(c => c.id), 0)
-    
-    const newCompany: Company = {
-      id: maxId + 1,
-      ...companyData
-    }
-
-    companies.push(newCompany)
-
-    return successResponse(newCompany, 'Company created successfully')
+    return errorResponse('Company creation not implemented', ['Real API not yet implemented'])
   },
 
   /**
@@ -1581,16 +1178,7 @@ export const companyApi = {
   async updateCompany(id: number, companyData: Partial<Company>): Promise<ApiResponse<Company>> {
     await delay(800)
 
-    const companies = MockDataStore.getInstance().getCompanies()
-    const companyIndex = companies.findIndex(c => c.id === id)
-
-    if (companyIndex === -1) {
-      return errorResponse('Company not found')
-    }
-
-    companies[companyIndex] = { ...companies[companyIndex], ...companyData }
-
-    return successResponse(companies[companyIndex], 'Company updated successfully')
+    return errorResponse('Company update not implemented', ['Real API not yet implemented'])
   }
 }
 
@@ -1604,7 +1192,7 @@ export const locationApi = {
    */
   async getAllLocations(): Promise<ApiResponse<Location[]>> {
     try {
-      const response = await fetch('http://192.168.2.10:9011/api/locations/get-all', {
+      const response = await fetch('http://192.168.56.1:9011/api/locations/get-all', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1619,21 +1207,33 @@ export const locationApi = {
 
       if (data.status_code === 200 && data.data) {
         // Transform API response to match our Location interface
-        const locations: Location[] = data.data.map((location: any) => ({
-          id: location.id.toString(),
-          name: location.name || '',
-          address: location.address || '',
-          city: location.city || '',
-          country: location.country || '',
-          phone: location.phone || '',
-          email: location.email || '',
-          manager: location.manager || '',
-          totalSpaces: location.total_spaces || 0,
-          availableSpaces: location.available_spaces || 0,
-          facilities: location.facilities || [],
-          mapUrl: location.map_url || '',
-          status: location.is_active ? 'active' : 'inactive'
-        }))
+        const locations: Location[] = data.data.map((location: any) => {
+          // Use individual address fields from API response
+          const street = location.street || ''
+          const street2 = location.street_two || ''
+          const postalCode = location.postal_code ? location.postal_code.toString() : ''
+          const town = location.town || ''
+          const district = location.district || ''
+
+          // Build combined address string
+          const addressParts = [street, street2, postalCode, town, district].filter(part => part.trim() !== '')
+
+          return {
+            id: location.id.toString(),
+            name: location.name || '',
+            street: street,
+            street2: street2,
+            postalCode: postalCode,
+            town: town,
+            district: district,
+            city: town, // Use town as city since API doesn't have separate city field
+            contactName: location.contact_name || '',
+            contactEmail: location.contact_email || '',
+            contactPhone: location.contact_phone || '',
+            mapUrl: location.url || '', // API uses 'url' instead of 'map_url'
+            status: location.is_active ? 'active' : 'inactive'
+          }
+        })
 
         return successResponse(locations, data.message || 'Locations retrieved successfully')
       } else {
@@ -1649,39 +1249,15 @@ export const locationApi = {
    * Get location by ID
    */
   async getLocationById(id: string): Promise<ApiResponse<Location>> {
-    await delay(500)
-
-    // TODO: Implement API call to fetch location by ID
-    // const location = MockDataStore.getInstance().getLocations().find(l => l.id === id)
-
-    // For now, return not found since mock data is removed
-    return errorResponse('Location not found')
-  },
-
-  /**
-   * Create a new location
-   */
-  async createLocation(locationData: {
-    Name: string
-    Address: string
-    Url: string
-    ContactName: string
-    ContactEmail: string
-    ContactPhone: string
-  }): Promise<ApiResponse<string>> {
     try {
-      // Create FormData as required by the API
-      const formData = new FormData()
-      formData.append('Name', locationData.Name)
-      formData.append('Address', locationData.Address)
-      formData.append('Url', locationData.Url)
-      formData.append('ContactName', locationData.ContactName)
-      formData.append('ContactEmail', locationData.ContactEmail)
-      formData.append('ContactPhone', locationData.ContactPhone)
-
-      const response = await fetch('http://192.168.2.10:9011/api/locations/create', {
+      const response = await fetch('http://192.168.56.1:9011/api/locations/get-by-id', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: parseInt(id)
+        })
       })
 
       if (!response.ok) {
@@ -1689,6 +1265,109 @@ export const locationApi = {
       }
 
       const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        // Transform API response to match our Location interface
+        const locationData = data.data
+
+        // Use individual address fields from API response
+        const street = locationData.street || ''
+        const street2 = locationData.street_two || ''
+        const postalCode = locationData.postal_code ? locationData.postal_code.toString() : ''
+        const town = locationData.town || ''
+        const district = locationData.district || ''
+
+        const location: Location = {
+          id: locationData.id.toString(),
+          name: locationData.name || '',
+          street: street,
+          street2: street2,
+          postalCode: postalCode,
+          town: town,
+          district: district,
+          city: town, // Use town as city since API doesn't have separate city field
+          contactName: locationData.contact_name || '',
+          contactEmail: locationData.contact_email || '',
+          contactPhone: locationData.contact_phone || '',
+          mapUrl: locationData.url || '', // API uses 'url' instead of 'map_url'
+          status: locationData.is_active ? 'active' : 'inactive'
+        }
+
+        return successResponse(location, data.message || 'Location retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to load location')
+      }
+    } catch (error) {
+      console.error('Get location by ID error:', error)
+      return errorResponse('Network error while loading location', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Create a new location
+   */
+  async createLocation(locationData: {
+    Name: string
+    Street: string
+    StreetTwo?: string
+    PostalCode: string
+    Town: string
+    Url: string
+    District: string
+    ContactName: string
+    ContactEmail: string
+    ContactPhone: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Build full address from individual fields
+
+      // Create FormData as required by the API
+      const formData = new FormData()
+      formData.append('Name', locationData.Name)
+      formData.append('ContactName', locationData.ContactName)
+      formData.append('ContactEmail', locationData.ContactEmail)
+      formData.append('ContactPhone', locationData.ContactPhone)
+      formData.append('Street', locationData.Street)
+      if (locationData.StreetTwo) {
+        formData.append('StreetTwo', locationData.StreetTwo)
+      }
+      formData.append('PostalCode', locationData.PostalCode)
+      formData.append('Url', locationData.Url)
+      formData.append('Town', locationData.Town)
+      formData.append('District', locationData.District)
+      formData.append('IsActive', 'true')
+      formData.append('City', locationData.Town) // Use Town as City if not provided
+
+      // Debug: Log the FormData contents
+      console.log('FormData contents:')
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`)
+      }
+
+      const response = await fetch('http://192.168.56.1:9011/api/locations/create', {
+        method: 'POST',
+        body: formData
+      })
+
+      // Debug: Log response details
+      console.log('Response status:', response.status)
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+
+      if (!response.ok) {
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`
+        try {
+          const errorData = await response.text()
+          console.log('Error response body:', errorData)
+          errorMessage += ` - ${errorData}`
+        } catch (e) {
+          console.log('Could not read error response body')
+        }
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      console.log('Success response:', data)
 
       if (data.status_code === 200) {
         return successResponse(data.data, data.message || 'Location created successfully')
@@ -1712,42 +1391,41 @@ export const facilityApi = {
    */
   async getAllFacilities(): Promise<ApiResponse<Facility[]>> {
     try {
-      const response = await fetch('http://192.168.2.10:9011/api/facility-type/get-facility-type-list', {
+      console.log('API - Fetching all facilities...')
+      const response = await fetch('http://192.168.56.1:9011/api/facility-type/get-facility-type-list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         }
       })
 
+      console.log('API - Get facilities response status:', response.status)
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('API - Get facilities response data:', data)
 
       if (data.status_code === 200 && data.data) {
         // Transform API response to match our Facility interface
-        const facilities: Facility[] = data.data.map((facility: any) => ({
-          id: facility.id.toString(),
-          name: facility.facility_name || '',
-          description: '',
-          type: 'General',
-          location: '',
-          capacity: 1,
-          pricePerHour: 0,
+        const facilities: Facility[] = data.data.map((facility: any, index: number) => ({
+          id: facility.facility_id,
+          name: facility.facility_name || facility.name || '',
           status: facility.is_active ? 'active' : 'inactive',
-          amenities: [],
-          images: [],
-          Icon: facility.Icon || facility.icon || '' // Include the Icon field from backend
+          Icon: facility.Icon || facility.icon || ''
         }))
 
+        console.log('API - Transformed facilities:', facilities)
         return successResponse(facilities, data.message || 'Facilities retrieved successfully')
       } else {
+        console.error('API - Failed to load facilities:', data.message)
         return errorResponse(data.message || 'Failed to load facilities')
       }
     } catch (error) {
       console.error('Get facilities error:', error)
-      return errorResponse('Network error while loading facilities', [(error as Error).message])
+      return errorResponse('Network error while fetching facilities', [(error as Error).message])
     }
   },
 
@@ -1756,12 +1434,6 @@ export const facilityApi = {
    */
   async getFacilityById(id: string): Promise<ApiResponse<Facility>> {
     await delay(500)
-
-    const facility = MockDataStore.getInstance().getFacilities().find(f => f.id === id)
-
-    if (facility) {
-      return successResponse(facility)
-    }
 
     return errorResponse('Facility not found')
   },
@@ -1781,7 +1453,7 @@ export const facilityApi = {
         formData.append('Icon', facilityData.Icon)
       }
 
-      const response = await fetch('http://192.168.2.10:9011/api/facility-type/create-facility-type', {
+      const response = await fetch('http://192.168.56.1:9011/api/facility-type/create-facility-type', {
         method: 'POST',
         body: formData
         // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
@@ -1794,23 +1466,6 @@ export const facilityApi = {
       const data = await response.json()
 
       if (data.status_code === 200) {
-        // Update local storage for immediate UI updates
-        const facilities = MockDataStore.getInstance().getFacilities()
-        const newFacility: Facility = {
-          id: `FC-${Date.now()}`,
-          name: facilityData.FacilityName,
-          description: '',
-          type: 'General',
-          location: '',
-          capacity: 1,
-          pricePerHour: 0,
-          status: facilityData.IsActive ? 'active' : 'inactive',
-          amenities: [],
-          images: []
-        }
-        facilities.push(newFacility)
-        MockDataStore.getInstance().updateFacilities(facilities)
-
         return successResponse(null, data.message || 'Facility created successfully')
       } else {
         return errorResponse(data.message || 'Failed to create facility')
@@ -1826,6 +1481,15 @@ export const facilityApi = {
    */
   async updateFacility(id: string, facilityData: { FacilityName: string; IsActive: boolean; Icon?: string; }): Promise<ApiResponse<null>> {
     try {
+      console.log('API - Updating facility with ID:', id)
+      console.log('API - Facility data:', facilityData)
+
+      // Check if ID is valid
+      if (!id) {
+        console.error('API - Invalid facility ID:', id)
+        return errorResponse('Invalid facility ID')
+      }
+
       // Create FormData as required by the API and include Id field per backend requirements
       const formData = new FormData()
       formData.append('Id', id)
@@ -1837,38 +1501,43 @@ export const facilityApi = {
         formData.append('Icon', facilityData.Icon)
       }
 
+      // Log the FormData entries
+      console.log('API - FormData entries:')
+      for (const pair of formData.entries()) {
+        console.log('API -', pair[0], pair[1])
+      }
+
       // POST to endpoint (backend expects Id in form-data rather than URL param)
-      const response = await fetch('http://192.168.2.10:9011/api/facility-type/update-facility-type', {
+      const response = await fetch('http://192.168.56.1:9011/api/facility-type/update-facility-type', {
         method: 'POST',
         body: formData
         // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
       })
 
+      console.log('API - Update facility response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          // Try to parse the error response as JSON
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
       }
 
       const data = await response.json()
+      console.log('API - Update facility response data:', data)
 
       if (data.status_code === 200) {
-        // Update local storage for immediate UI updates
-        const facilities = MockDataStore.getInstance().getFacilities()
-        const facilityIndex = facilities.findIndex(f => f.id === id)
-        if (facilityIndex !== -1) {
-          facilities[facilityIndex] = {
-            ...facilities[facilityIndex],
-            name: facilityData.FacilityName,
-            status: facilityData.IsActive ? 'active' : 'inactive'
-          }
-          MockDataStore.getInstance().updateFacilities(facilities)
-        }
-
         return successResponse(null, data.message || 'Facility updated successfully')
       } else {
         return errorResponse(data.message || 'Failed to update facility')
       }
     } catch (error) {
-      console.error('Update facility error:', error)
+      console.error('API - Update facility error:', error)
       return errorResponse('Network error while updating facility', [(error as Error).message])
     }
   },
@@ -1878,13 +1547,15 @@ export const facilityApi = {
    */
   async deleteFacility(id: string): Promise<ApiResponse<null>> {
     try {
+
+      console.log('Deleting facility with ID:', id);
       // Send JSON body per backend API expectation: { id: number }
-      const response = await fetch('http://192.168.2.10:9011/api/facility-type/delete-facility-type', {
+      const response = await fetch('http://192.168.56.1:9011/api/facility-type/delete-facility-type', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: parseInt(id, 10) })
+        body: JSON.stringify({ id: Number(id) })
       })
 
       if (!response.ok) {
@@ -1894,11 +1565,6 @@ export const facilityApi = {
       const data = await response.json()
 
       if (data.status_code === 200) {
-        // Update local storage for immediate UI updates
-        const facilities = MockDataStore.getInstance().getFacilities()
-        const updatedFacilities = facilities.filter(f => f.id !== id)
-        MockDataStore.getInstance().updateFacilities(updatedFacilities)
-
         return successResponse(null, data.message || 'Facility deleted successfully')
       } else {
         return errorResponse(data.message || 'Failed to delete facility')
@@ -1921,8 +1587,7 @@ export const productApi = {
   async getAllProducts(): Promise<ApiResponse<Product[]>> {
     await delay(600)
 
-    const products = MockDataStore.getInstance().getProducts()
-    return successResponse(products)
+    return successResponse([])
   },
 
   /**
@@ -1930,12 +1595,6 @@ export const productApi = {
    */
   async getProductById(id: string): Promise<ApiResponse<Product>> {
     await delay(500)
-
-    const product = MockDataStore.getInstance().getProducts().find(p => p.id === id)
-
-    if (product) {
-      return successResponse(product)
-    }
 
     return errorResponse('Product not found')
   }
@@ -1956,18 +1615,15 @@ export const paymentApi = {
   }): Promise<ApiResponse<Payment[]>> {
     await delay(600)
 
-    let payments = MockDataStore.getInstance().getPayments()
-
-    if (filters?.status) {
-      payments = payments.filter(p => p.status === filters.status)
-    }
-
-    const { data, pagination } = paginate(payments, filters?.page, filters?.limit)
-
     return {
       success: true,
-      data,
-      pagination
+      data: [],
+      pagination: {
+        currentPage: filters?.page || 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: filters?.limit || 10
+      }
     }
   },
 
@@ -1976,12 +1632,6 @@ export const paymentApi = {
    */
   async getPaymentById(id: string): Promise<ApiResponse<Payment>> {
     await delay(500)
-
-    const payment = MockDataStore.getInstance().getPayments().find(p => p.id === id)
-
-    if (payment) {
-      return successResponse(payment)
-    }
 
     return errorResponse('Payment not found')
   }
@@ -2043,17 +1693,13 @@ export const dashboardApi = {
     await delay(800)
 
     // Mock API call - replace with real implementation
-    const bookings = MockDataStore.getInstance().getBookings()
-    const customers = MockDataStore.getInstance().getCustomers()
-    const payments = MockDataStore.getInstance().getPayments()
-
     const stats: DashboardStats = {
-      totalBookings: bookings.length,
-      totalRevenue: payments.reduce((sum, p) => sum + p.amount, 0),
-      totalCustomers: customers.length,
-      totalSubscriptions: bookings.filter(b => b.productType === 'Subscription').length,
-      activeBookings: bookings.filter(b => b.status === 'confirmed').length,
-      pendingPayments: payments.filter(p => p.status === 'pending').length,
+      totalBookings: 0,
+      totalRevenue: 0,
+      totalCustomers: 0,
+      totalSubscriptions: 0,
+      activeBookings: 0,
+      pendingPayments: 0,
       cancellationRequests: JSON.parse(localStorage.getItem('cancellationRequests') || '[]').length,
       occupancyRate: 75, // Mock calculation
       monthlyGrowth: {
@@ -2079,25 +1725,10 @@ export const dashboardApi = {
 
     const searchTerm = query.toLowerCase()
 
-    const bookings = MockDataStore.getInstance().getBookings()
-      .filter(b => 
-        b.customerName.toLowerCase().includes(searchTerm) ||
-        b.productName.toLowerCase().includes(searchTerm) ||
-        b.id.toLowerCase().includes(searchTerm)
-      )
-
-    const customers = MockDataStore.getInstance().getCustomers()
-      .filter(c => 
-        c.name.toLowerCase().includes(searchTerm) ||
-        c.email.toLowerCase().includes(searchTerm) ||
-        c.id.toLowerCase().includes(searchTerm)
-      )
-
-    const companies = MockDataStore.getInstance().getCompanies()
-      .filter(c => 
-        c.name.toLowerCase().includes(searchTerm) ||
-        c.contactPerson.toLowerCase().includes(searchTerm)
-      )
+    // For now, return empty arrays since MockDataStore is removed
+    const bookings: Booking[] = []
+    const customers: Customer[] = []
+    const companies: Company[] = []
 
     // TODO: Implement API call to fetch and filter locations
     // const locations = MockDataStore.getInstance().getLocations()
