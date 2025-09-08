@@ -109,9 +109,7 @@
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
               >
                 <option value="">All Types</option>
-                <option value="Meeting Room">Meeting Room</option>
-                <option value="Hot Desk">Hot Desk</option>
-                <option value="Dedicated Desk">Dedicated Desk</option>
+                <option v-for="type in availableProductTypes" :key="type" :value="type">{{ type }}</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg 
@@ -149,16 +147,16 @@
           </div>
 
           <!-- Error State -->
-          <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-            <h3 class="mt-4 text-lg font-medium text-red-900">Error Loading Products</h3>
-            <p class="mt-2 text-sm text-red-700">{{ error }}</p>
-            <button @click="loadProducts" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-              Try Again
-            </button>
-          </div>
+          <div v-else-if="error" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading Products</h3>
+          <p class="mt-1 text-sm text-red-500">{{ error }}</p>
+          <button @click="loadProducts" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+            Try Again
+          </button>
+        </div>
 
           <!-- Products Table -->
           <table v-else class="min-w-full divide-y divide-gray-200">
@@ -193,6 +191,7 @@
                     </div>
                     <div class="ml-4">
                       <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                      <div class="text-sm text-gray-500">{{ product.type }}</div>
                     </div>
                   </div>
                 </td>
@@ -377,6 +376,35 @@ const availableLocations = computed(() => {
   return Array.from(set)
 })
 
+// Available product types (derived from product data)
+const availableProductTypes = computed(() => {
+  const set = new Set<string>()
+  products.value.forEach(p => {
+    if (p.type) {
+      set.add(p.type)
+    }
+  })
+  return Array.from(set)
+})
+
+// Helper function to map API product types to our valid types
+const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' => {
+  if (!apiType) return 'Meeting Room'
+  
+  const normalizedType = apiType.toLowerCase().trim()
+  
+  if (normalizedType.includes('meeting') || normalizedType.includes('conference') || normalizedType.includes('room')) {
+    return 'Meeting Room'
+  } else if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk')) {
+    return 'Hot Desk'
+  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+    return 'Dedicated Desk'
+  }
+  
+  // Default fallback
+  return 'Meeting Room'
+}
+
 // Load products from API
 const loadProducts = async () => {
   isLoading.value = true
@@ -385,20 +413,31 @@ const loadProducts = async () => {
   try {
     const response = await productApi.getAllProducts()
     if (response.success && response.data) {
+      console.log('API Response Data:', response.data) // Debug: Log the API response
+      
       // Transform API data to match our Product interface
-      products.value = response.data.map((apiProduct: any) => ({
-        ...apiProduct,
-        locationName: apiProduct.location_name || 'Unknown Location',
-        locationAddress: apiProduct.address || apiProduct.location_address || 'Unknown Address',
-        companyName: apiProduct.company_name || 'Unknown Company',
-        companyId: apiProduct.company_id || 'unknown',
-        locationId: apiProduct.location_id || 'unknown',
-        maxSeatingCapacity: apiProduct.capacity || 1,
-        openDays: [],
-        openHours: { start: '09:00', end: '17:00' },
-        defaultFacilities: apiProduct.facilities || [],
-        additionalFacilities: []
-      })) as Product[]
+      products.value = response.data.map((apiProduct: any) => {
+        console.log('Individual Product:', apiProduct) // Debug: Log each product
+        console.log('Product type field:', apiProduct.type, apiProduct.product_type, apiProduct.category) // Debug: Check different possible field names
+        
+        return {
+          ...apiProduct,
+          locationName: apiProduct.location_name || 'Unknown Location',
+          locationAddress: apiProduct.address || apiProduct.location_address || 'Unknown Address',
+          companyName: apiProduct.company_name || 'Unknown Company',
+          companyId: apiProduct.company_id || 'unknown',
+          locationId: apiProduct.location_id || 'unknown',
+          maxSeatingCapacity: apiProduct.capacity || 1,
+          status: (apiProduct.is_active === true || apiProduct.is_active === 1) ? 'active' : 'inactive',
+          type: mapProductType(apiProduct.type || apiProduct.product_type || apiProduct.category || apiProduct.ProductType || apiProduct.productType), // Map to valid types
+          openDays: [],
+          openHours: { start: '09:00', end: '17:00' },
+          defaultFacilities: apiProduct.facilities || [],
+          additionalFacilities: []
+        }
+      }) as Product[]
+      
+      console.log('Mapped Products:', products.value) // Debug: Log the mapped products
     } else {
       error.value = response.message || 'Failed to load products'
     }

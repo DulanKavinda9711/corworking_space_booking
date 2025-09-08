@@ -92,7 +92,16 @@
                 <div class="text-sm font-medium text-gray-500 mb-1">Location</div>
                 <div class="text-lg font-semibold text-gray-900">{{ product.locationName }}</div>
                 <div class="text-sm text-gray-500">{{ product.locationAddress }}</div>
+                <a v-if="product.locationUrl" :href="product.locationUrl" target="_blank" 
+                   class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 mt-1">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  View on Map
+                </a>
               </div>
+              
             </div>
 
             <!-- Description -->
@@ -112,7 +121,8 @@
                 <div class="aspect-w-16 aspect-h-10 bg-gray-200 rounded-lg overflow-hidden">
                   <img :src="image" :alt="`Product image ${index + 1}`" 
                        class="w-full h-32 object-cover rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer"
-                       @click="openImageModal(image, index)">
+                       @click="openImageModal(image, index)"
+                       @error="handleImageError($event)">
                 </div>
               </div>
             </div>
@@ -235,14 +245,27 @@
               <h4 class="text-sm font-medium text-gray-700 mb-4">Premium Add-ons (Paid)</h4>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div v-for="facility in product.additionalFacilities" :key="facility.id" 
-                     class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div class="flex items-center space-x-3">
+                     class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div class="flex items-center space-x-3 mb-2">
                     <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiCurrencyUsd" />
                     </svg>
                     <span class="text-blue-800 font-medium">{{ facility.name || facility }}</span>
                   </div>
-                  <span v-if="facility.pricePerHour" class="text-blue-900 font-bold">${{ facility.pricePerHour }}/hr</span>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div v-if="facility.pricePerHour && facility.pricePerHour > 0" class="text-blue-900">
+                      <span class="font-medium">${{ facility.pricePerHour }}</span> /hour
+                    </div>
+                    <div v-if="facility.pricePerDay && facility.pricePerDay > 0" class="text-blue-900">
+                      <span class="font-medium">${{ facility.pricePerDay }}</span> /day
+                    </div>
+                    <div v-if="facility.pricePerMonth && facility.pricePerMonth > 0" class="text-blue-900">
+                      <span class="font-medium">${{ facility.pricePerMonth }}</span> /month
+                    </div>
+                    <div v-if="facility.pricePerYear && facility.pricePerYear > 0" class="text-blue-900">
+                      <span class="font-medium">${{ facility.pricePerYear }}</span> /year
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -379,42 +402,32 @@ const loadProduct = async () => {
   error.value = ''
   
   try {
-    // Since getProductById is not implemented, we'll get all products and find the one we need
-    const response = await productApi.getAllProducts()
+    console.log('Loading product with ID:', productId)
+    
+    // Use the new getProductById API method
+    const response = await productApi.getProductById(productId)
+    
+    console.log('API Response:', response)
     
     if (response.success && response.data) {
-      // Find the product with matching ID - use type assertion for API response
-      const foundProduct = response.data.find((p: any) => p.id === productId || p.product_id === productId)
+      console.log('Product loaded successfully:', response.data)
+      console.log('Product images:', response.data.images)
+      console.log('Product pricing:', {
+        hourly: response.data.pricePerHour,
+        daily: response.data.pricePerDay,
+        monthly: response.data.pricePerMonth,
+        yearly: response.data.pricePerYear
+      })
+      console.log('Product facilities:', {
+        default: response.data.defaultFacilities,
+        additional: response.data.additionalFacilities
+      })
+      console.log('Product schedule:', response.data.openDays)
       
-      if (foundProduct) {
-        // Transform API data to match our expected structure
-        product.value = {
-          id: foundProduct.id,
-          name: foundProduct.name,
-          type: foundProduct.type,
-          locationName: (foundProduct as any).location_name || foundProduct.location || 'Unknown Location',
-          locationAddress: (foundProduct as any).address || (foundProduct as any).location_address || 'Unknown Address',
-          companyName: (foundProduct as any).company_name || 'Unknown Company',
-          companyId: (foundProduct as any).company_id || 'unknown',
-          locationId: (foundProduct as any).location_id || foundProduct.location || 'unknown',
-          status: foundProduct.status,
-          maxSeatingCapacity: foundProduct.capacity,
-          pricePerHour: foundProduct.pricePerHour,
-          pricePerDay: (foundProduct as any).pricePerDay || 0,
-          pricePerMonth: (foundProduct as any).pricePerMonth || 0,
-          pricePerYear: (foundProduct as any).pricePerYear || 0,
-          images: foundProduct.images,
-          description: foundProduct.description,
-          openDays: (foundProduct as any).openDays || [],
-          openHours: (foundProduct as any).openHours || { start: '09:00', end: '17:00' },
-          defaultFacilities: foundProduct.facilities,
-          additionalFacilities: (foundProduct as any).additionalFacilities || []
-        }
-      } else {
-        error.value = 'Product not found'
-      }
+      product.value = response.data
     } else {
-      error.value = response.message || 'Failed to load products'
+      error.value = response.message || 'Product not found'
+      console.error('Failed to load product:', response.message)
     }
   } catch (err) {
     console.error('Error loading product:', err)
@@ -432,6 +445,13 @@ const openImageModal = (image: string, index: number) => {
 const closeImageModal = () => {
   selectedImage.value = null
   selectedImageIndex.value = 0
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIxIDMuMDEySDNDMS44OTUgMy4wMTIgMSAzLjkwNyAxIDUuMDEyVjE5LjAxMkMxIDIwLjExNyAxLjg5NSAyMS4wMTIgMyAyMS4wMTJIMjFDMjIuMTA1IDIxLjAxMiAyMyAyMC4xMTcgMjMgMTkuMDEyVjUuMDEyQzIzIDMuOTA3IDIyLjEwNSAzLjAxMiAyMSAzLjAxMlpNMjEgMTkuMDEySDNWNS4wMTJIMjFWMTkuMDEyWiIgZmlsbD0iIzk5OTk5OSIvPgo8cGF0aCBkPSJNNy41IDEwLjUxMkM4LjMyOCAxMC41MTIgOSA5Ljg0IDkgOS4wMTJDOSA4LjE4NCA4LjMyOCA3LjUxMiA3LjUgNy41MTJDNS42NzIgNy41MTIgNiA4LjE4NCA2IDkuMDEyQzYgOS44NCA2LjY3MiAxMC41MTIgNy41IDEwLjUxMloiIGZpbGw9IiM5OTk5OTkiLz4KPHBhdGggZD0iTTMgMTcuMDEySDIxTDE4IDE0LjAxMkwxNC41IDE2LjUxMkwxMSAxMy4wMTJMMyAxNy4wMTJaIiBmaWxsPSIjOTk5OTk5Ii8+Cjwvc3ZnPgo='
+  img.className = 'w-full h-32 object-contain rounded-lg opacity-50'
+  img.title = 'Image not available'
 }
 
 const confirmDeleteProduct = () => {

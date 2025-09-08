@@ -21,7 +21,7 @@
         </router-link>
       </div>
 
-      <!-- Error Message -->
+      <!-- Error Message
       <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
         <div class="flex items-center">
           <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,18 +32,9 @@
             Retry
           </button>
         </div>
-      </div>
+      </div> -->
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
-        <div class="flex items-center justify-center">
-          <svg class="animate-spin h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span class="ml-3 text-gray-600">Loading locations...</span>
-        </div>
-      </div>
+      
 
       <!-- Locations Table -->
       <div class="bg-white rounded-xl shadow-card overflow-hidden">
@@ -130,7 +121,32 @@
           </div>
         </div>
       </div>
-        <div class="overflow-x-auto">
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
+        <div class="flex items-center justify-center">
+          <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="ml-3 text-gray-600">Loading locations...</span>
+        </div>
+      </div>
+
+        <!-- Error State -->
+        <div v-if="errorMessage" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading locations</h3>
+          <p class="mt-1 text-sm text-red-500">{{ errorMessage }}</p>
+          <button @click="fetchLocations" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+            Try Again
+          </button>
+        </div>
+
+        <!-- Locations Table -->
+        <div v-else-if="!isLoading" class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -192,16 +208,16 @@
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredLocations.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No locations found</h3>
-          <p class="mt-1 text-sm text-gray-500">No locations match the current search and filters.</p>
+          
+          <!-- Empty State -->
+          <div v-if="filteredLocations.length === 0" class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No locations found</h3>
+            <p class="mt-1 text-sm text-gray-500">No locations match the current search and filters.</p>
+          </div>
         </div>
       </div>
     </div>

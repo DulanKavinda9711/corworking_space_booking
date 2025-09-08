@@ -285,6 +285,8 @@
             </div>
           </div>
         </div>
+        
+        <div class="overflow-x-auto"></div>
 
         <!-- Loading State -->
         <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">

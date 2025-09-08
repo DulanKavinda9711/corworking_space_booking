@@ -409,10 +409,10 @@
                                      class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
                               <span class="font-medium text-gray-900">{{ day }}</span>
                             </label>
-                            <span v-if="product.openDays.includes(day)" 
+                            <!-- <span v-if="product.openDays.includes(day)" 
                                   class="text-xs text-green-600 font-medium">
                               Open
-                            </span>
+                            </span> -->
                           </div>
                           
                           <!-- Time Settings (shown only when day is selected) -->
@@ -682,7 +682,7 @@
                                   :value="facility.id"
                                   :checked="product.additionalFacilities.some(f => f.id === facility.id)"
                                   @change="(event) => updateAdditionalFacilities(event, idx)"
-                                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                  class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
                                 <div class="flex-1">
                                   <div class="font-medium text-gray-900">{{ facility.name }}</div>
                                   <div v-if="facility.description" class="text-xs text-gray-500">
@@ -821,6 +821,40 @@
                         <p class="text-sm font-medium text-gray-700">No premium facilities selected</p>
                         <p class="text-xs text-gray-500 mt-1">Select from the dropdown above to include paid amenities</p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Product Status -->
+                <div v-if="product.type">
+                  <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiToggleSwitch" />
+                    </svg>
+                    Product Status
+                  </h2>
+
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Status <span class="text-red-500">*</span>
+                      </label>
+                      
+                      <div class="relative">
+                        <select 
+                          v-model="product.status"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900 bg-white appearance-none">
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                     
                     </div>
                   </div>
                 </div>
@@ -992,7 +1026,8 @@ import {
   mdiPackageVariant, 
   mdiCurrencyUsd, 
   mdiClockOutline, 
-  mdiCog 
+  mdiCog,
+  mdiToggleSwitch
 } from '@mdi/js'
 
 const router = useRouter()
@@ -1802,7 +1837,7 @@ const createProductAPI = async (product: any) => {
     DefaultFacilities: product.defaultFacilities,
     AdditionalFacilities: product.additionalFacilities,
     Images: product.images, // This will be base64 data URLs
-    Status: product.status || 'active',
+    IsActive: product.status === 'active', // Convert status to boolean
     OperationTime: {
       IsMonday: product.openDays.includes('Monday'),
       IsTuesday: product.openDays.includes('Tuesday'),
@@ -1828,6 +1863,9 @@ const createProductAPI = async (product: any) => {
     }
   }
 
+  // Debug log for status and active state
+  console.log('Product status:', product.status, '→ IsActive:', product.status === 'active')
+  
   // Debug log for images
   console.log('Creating product with', product.images.length, 'images')
   if (product.images.length > 0) {
@@ -1918,7 +1956,7 @@ button {
 }
 
 .group:hover .group-hover\:text-primary-600 {
-  color: rgb(37 99 235);
+  color: rgb(9, 48, 132);
 }
 
 .group:hover .group-hover\:text-primary-500 {
@@ -2000,6 +2038,7 @@ html {
 /* Custom checkbox styling */
 input[type="checkbox"] {
   transition: all 0.2s ease;
+  accent-color: #16a34a; /* Green-600 for fill color */
 }
 
 input[type="checkbox"]:checked {
@@ -2010,6 +2049,7 @@ input[type="checkbox"]:checked {
 /* Dropdown z-index fix */
 .dropdown-content {
   z-index: 50;
+
 }
 
 /* Improved focus states */

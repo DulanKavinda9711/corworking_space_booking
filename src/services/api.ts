@@ -131,17 +131,37 @@ export interface Facility {
 export interface Product {
   id: string
   name: string
-  type: 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' | 'Private Office'
+  type: 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk'
   description: string
-  pricePerHour: number
-  capacity: number
-  facilities: string[]
-  location: string
+  locationName: string
+  locationAddress: string
+  companyName: string
+  companyId: string
+  locationId: string
+  maxSeatingCapacity: number
   status: 'active' | 'inactive'
+  pricePerHour: number
+  pricePerDay: number
+  pricePerMonth: number
+  pricePerYear: number
   images: string[]
-  availability: {
-    [key: string]: boolean // date -> available
+  openHours: {
+    start: string
+    end: string
   }
+  openDays: string[]
+  defaultFacilities: string[]
+  additionalFacilities: Array<{
+    id: string
+    name: string
+    pricePerHour: number
+    pricePerDay: number
+    pricePerMonth: number
+    pricePerYear: number
+  }>
+  totalReviews?: number
+  averageRating?: number
+  locationUrl?: string
 }
 
 export interface Payment {
@@ -1782,6 +1802,24 @@ export const facilityApi = {
 // PRODUCT API
 // ============================================================================
 
+// Helper function to map API product types to our valid types
+const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' => {
+  if (!apiType) return 'Meeting Room'
+  
+  const normalizedType = apiType.toLowerCase().trim()
+  
+  if (normalizedType.includes('meeting') || normalizedType.includes('conference') || normalizedType.includes('room')) {
+    return 'Meeting Room'
+  } else if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk')) {
+    return 'Hot Desk'
+  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+    return 'Dedicated Desk'
+  }
+  
+  // Default fallback
+  return 'Meeting Room'
+}
+
 export const productApi = {
   /**
    * Get all products
@@ -1790,7 +1828,7 @@ export const productApi = {
     try {
       console.log('API - Fetching products from server...')
 
-      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/get-product-list`, {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/admin-get-product-list`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1817,7 +1855,25 @@ export const productApi = {
       if (data.status_code === 200) {
         // Transform the API response data to match our Product interface if needed
         const products = data.data || []
-        return successResponse(products, data.message || 'Products retrieved successfully')
+        
+        // Apply transformations to each product
+        const transformedProducts = products.map((apiProduct: any) => ({
+          ...apiProduct,
+          locationName: apiProduct.location_name || 'Unknown Location',
+          locationAddress: apiProduct.address || apiProduct.location_address || 'Unknown Address',
+          companyName: apiProduct.company_name || 'Unknown Company',
+          companyId: apiProduct.company_id || 'unknown',
+          locationId: apiProduct.location_id || 'unknown',
+          maxSeatingCapacity: apiProduct.capacity || 1,
+          status: (apiProduct.is_active === true || apiProduct.is_active === 1) ? 'active' : 'inactive',
+          type: mapProductType(apiProduct.type || apiProduct.product_type || apiProduct.category || apiProduct.ProductType || apiProduct.productType),
+          openDays: apiProduct.openDays || [],
+          openHours: apiProduct.openHours || { start: '09:00', end: '17:00' },
+          defaultFacilities: apiProduct.facilities || [],
+          additionalFacilities: apiProduct.additionalFacilities || []
+        }))
+        
+        return successResponse(transformedProducts, data.message || 'Products retrieved successfully')
       } else {
         return errorResponse(data.message || 'Failed to fetch products')
       }
@@ -1832,7 +1888,9 @@ export const productApi = {
    */
   async getProductById(id: string): Promise<ApiResponse<Product>> {
     try {
-      const response = await fetch(buildApiUrl('/product/get-product-by-id'), {
+      console.log('API - Fetching product by ID:', id)
+
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/get-product-by-id`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1842,19 +1900,92 @@ export const productApi = {
         })
       })
 
+      console.log('API - Get product by ID response status:', response.status)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
       }
 
       const data = await response.json()
+      console.log('API - Get product by ID success response:', data)
 
-      if (data.status_code === 200 && data.data) {
-        return successResponse(data.data, data.message)
+      if (data.status_code === 200) {
+        // Transform the API response data to match our Product interface if needed
+        const product = data.data
+        if (product) {
+          // Apply comprehensive transformations for the product detail
+          const transformedProduct: Product = {
+            id: product.id?.toString() || '',
+            name: product.name || '',
+            type: mapProductType(product.type),
+            description: product.product_description || product.description || '',
+            locationName: product.location_name || 'Unknown Location',
+            locationAddress: product.address || 'Unknown Address',
+            companyName: product.company_name || 'Unknown Company',
+            companyId: product.company_id?.toString() || 'unknown',
+            locationId: product.location_id?.toString() || 'unknown',
+            maxSeatingCapacity: product.capacity || 1,
+            status: (product.is_active === true || product.is_active === 1) ? 'active' as const : 'inactive' as const,
+            
+            // Pricing - extract from pricing array
+            pricePerHour: product.pricing?.[0]?.hourly || 0,
+            pricePerDay: product.pricing?.[0]?.daily || 0,
+            pricePerMonth: product.pricing?.[0]?.monthly || 0,
+            pricePerYear: product.pricing?.[0]?.yearly || 0,
+            
+            // Images - convert relative paths to full URLs
+            images: (product.images || []).map((img: string) => 
+              img.startsWith('/') ? `${API_CONFIG.BASE_URL}${img}` : img
+            ),
+            
+            // Operating hours
+            openHours: {
+              start: product.start_operation_time || '09:00:00',
+              end: product.end_operation_time || '17:00:00'
+            },
+            
+            // Open days - extract from operation_schedule
+            openDays: (product.operation_schedule || [])
+              .filter((schedule: any) => schedule.is_enabled)
+              .map((schedule: any) => schedule.day),
+            
+            // Default facilities
+            defaultFacilities: (product.default_facilities || []).map((facility: any) => 
+              facility.facility_name || facility.name || facility
+            ),
+            
+            // Additional facilities
+            additionalFacilities: (product.additional_facilities || []).map((facility: any) => ({
+              id: facility.facility_id?.toString() || facility.id?.toString() || Math.random().toString(),
+              name: facility.facility_name || facility.name || '',
+              pricePerHour: facility.hourly_price || facility.pricePerHour || 0,
+              pricePerDay: facility.daily_price || facility.pricePerDay || 0,
+              pricePerMonth: facility.monthly_price || facility.pricePerMonth || 0,
+              pricePerYear: facility.yearly_price || facility.pricePerYear || 0
+            })),
+            
+            // Additional fields from API (excluding recent_ratings)
+            totalReviews: product.total_reviews || 0,
+            averageRating: product.average_rating || 0,
+            locationUrl: product.location_url || ''
+            // Note: recent_ratings is intentionally excluded
+          }
+          return successResponse(transformedProduct, data.message || 'Product retrieved successfully')
+        } else {
+          return errorResponse('Product not found')
+        }
       } else {
         return errorResponse(data.message || 'Failed to fetch product')
       }
     } catch (error: any) {
-      console.error('Get product by ID error:', error)
+      console.error('API - Get product by ID error:', error)
       return errorResponse('Network error while fetching product', [error.message])
     }
   },
@@ -1884,7 +2015,7 @@ export const productApi = {
       pricePerYear: number
     }>
     Images?: string[]
-    Status?: string
+    IsActive?: boolean
     OperationTime: {
       IsMonday: boolean
       IsTuesday: boolean
@@ -2011,9 +2142,11 @@ export const productApi = {
         })
       }
       
-      // Set status (default to active)
-      formData.append('IsActive', (productData.Status === 'active').toString())
-
+      // Set status - use IsActive if provided, otherwise default to true (active)
+      const isActiveValue = productData.IsActive !== undefined 
+        ? productData.IsActive 
+        : true
+      formData.append('IsActive', isActiveValue.toString())
 
       // Debug: Log the FormData contents
       console.log('API - FormData contents:')
@@ -2050,6 +2183,209 @@ export const productApi = {
     } catch (error) {
       console.error('API - Create product error:', error)
       return errorResponse('Network error while creating product', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Update an existing product
+   */
+  async updateProduct(id: string, productData: {
+    LocationId: string
+    ProductType: string
+    ProductName: string
+    Description: string
+    MaxSeatingCapacity: number
+    PricePerHour?: number
+    PricePerDay?: number
+    PricePerMonth?: number
+    PricePerYear?: number
+    OpeningTime: string
+    ClosingTime: string
+    DefaultFacilities: Number[]
+    AdditionalFacilities: Array<{
+      id: number
+      name: string
+      pricePerHour: number
+      pricePerDay: number
+      pricePerMonth: number
+      pricePerYear: number
+    }>
+    Images?: string[]
+    IsActive?: boolean
+    OperationTime: {
+      IsMonday: boolean
+      IsTuesday: boolean
+      IsWednesday: boolean
+      IsThursday: boolean
+      IsFriday: boolean
+      IsSaturday: boolean
+      IsSunday: boolean
+      MondayStart: string
+      MondayEnd: string
+      TuesdayStart: string
+      TuesdayEnd: string
+      WednesdayStart: string
+      WednesdayEnd: string
+      ThursdayStart: string
+      ThursdayEnd: string
+      FridayStart: string
+      FridayEnd: string
+      SaturdayStart: string
+      SaturdayEnd: string
+      SundayStart: string
+      SundayEnd: string
+    }
+  }): Promise<ApiResponse<any>> {
+    try {
+      console.log('API - Updating product with ID:', id)
+      console.log('API - Update product data:', productData)
+      
+      // Create FormData for multipart/form-data request
+      const formData = new FormData()
+      
+      // Add product ID for the update
+      formData.append('ProductId', id)
+      
+      // Basic product information
+      formData.append('LocationId', productData.LocationId)
+      formData.append('ProductType', productData.ProductType)
+      formData.append('ProductName', productData.ProductName)
+      formData.append('Description', productData.Description)
+      formData.append('MaxSeatingCapacity', productData.MaxSeatingCapacity.toString())
+      
+      // Pricing - only append if value exists and is greater than 0
+      if (productData.PricePerHour && productData.PricePerHour > 0) {
+        formData.append('PricePerHour', productData.PricePerHour.toString())
+      }
+      if (productData.PricePerDay && productData.PricePerDay > 0) {
+        formData.append('PricePerDay', productData.PricePerDay.toString())
+      }
+      if (productData.PricePerMonth && productData.PricePerMonth > 0) {
+        formData.append('PricePerMonth', productData.PricePerMonth.toString())
+      }
+      if (productData.PricePerYear && productData.PricePerYear > 0) {
+        formData.append('PricePerYear', productData.PricePerYear.toString())
+      }
+      
+      // Operating hours
+      formData.append('OpeningTime', productData.OpeningTime)
+      formData.append('ClosingTime', productData.ClosingTime)
+      
+      // Operation schedule for each day
+      formData.append('OperationTime.IsMonday', productData.OperationTime.IsMonday.toString())
+      formData.append('OperationTime.IsTuesday', productData.OperationTime.IsTuesday.toString())
+      formData.append('OperationTime.IsWednesday', productData.OperationTime.IsWednesday.toString())
+      formData.append('OperationTime.IsThursday', productData.OperationTime.IsThursday.toString())
+      formData.append('OperationTime.IsFriday', productData.OperationTime.IsFriday.toString())
+      formData.append('OperationTime.IsSaturday', productData.OperationTime.IsSaturday.toString())
+      formData.append('OperationTime.IsSunday', productData.OperationTime.IsSunday.toString())
+      
+      // Time slots for each day
+      formData.append('OperationTime.MondayStart', productData.OperationTime.MondayStart)
+      formData.append('OperationTime.MondayEnd', productData.OperationTime.MondayEnd)
+      formData.append('OperationTime.TuesdayStart', productData.OperationTime.TuesdayStart)
+      formData.append('OperationTime.TuesdayEnd', productData.OperationTime.TuesdayEnd)
+      formData.append('OperationTime.WednesdayStart', productData.OperationTime.WednesdayStart)
+      formData.append('OperationTime.WednesdayEnd', productData.OperationTime.WednesdayEnd)
+      formData.append('OperationTime.ThursdayStart', productData.OperationTime.ThursdayStart)
+      formData.append('OperationTime.ThursdayEnd', productData.OperationTime.ThursdayEnd)
+      formData.append('OperationTime.FridayStart', productData.OperationTime.FridayStart)
+      formData.append('OperationTime.FridayEnd', productData.OperationTime.FridayEnd)
+      formData.append('OperationTime.SaturdayStart', productData.OperationTime.SaturdayStart)
+      formData.append('OperationTime.SaturdayEnd', productData.OperationTime.SaturdayEnd)
+      formData.append('OperationTime.SundayStart', productData.OperationTime.SundayStart)
+      formData.append('OperationTime.SundayEnd', productData.OperationTime.SundayEnd)
+      
+      // Add default facilities - send as individual array entries
+      productData.DefaultFacilities.forEach((facilityId, index) => {
+        formData.append(`DefaultFacilities[${index}]`, facilityId.toString())
+      })
+      
+      // Transform and add additional facilities in the required format
+      // Convert from frontend format to API format: [{"FacilityId":1,"HourlyPrice":150.00}]
+      const transformedAdditionalFacilities = productData.AdditionalFacilities.map(facility => ({
+        FacilityId: facility.id,
+        HourlyPrice: facility.pricePerHour || 0
+      }))
+      
+      formData.append('AdditionalFacilities', JSON.stringify(transformedAdditionalFacilities))
+      
+      // Add images if provided - convert base64 to files
+      if (productData.Images && productData.Images.length > 0) {
+        console.log('API - Processing', productData.Images.length, 'images for update')
+        
+        // Convert base64 images to File objects and add them to FormData
+        productData.Images.forEach((base64String, index) => {
+          try {
+            // Extract the base64 data and mime type
+            const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+            if (matches && matches.length === 3) {
+              const mimeType = matches[1]
+              const base64Data = matches[2]
+              
+              // Convert base64 to binary
+              const binaryString = atob(base64Data)
+              const bytes = new Uint8Array(binaryString.length)
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i)
+              }
+              
+              // Create a File object
+              const file = new File([bytes], `image_${index}.${mimeType.split('/')[1]}`, { type: mimeType })
+              formData.append('Images', file)
+            } else if (base64String.startsWith('http')) {
+              // Handle existing image URLs - these will be kept as-is by the backend
+              console.log('API - Keeping existing image URL:', base64String)
+            } else {
+              console.warn('API - Invalid image format for index', index, ':', base64String.substring(0, 50))
+            }
+          } catch (error) {
+            console.error('API - Error processing image', index, ':', error)
+          }
+        })
+      }
+      
+      // Set status - use IsActive if provided, otherwise default to true (active)
+      const isActiveValue = productData.IsActive !== undefined 
+        ? productData.IsActive 
+        : true
+      formData.append('IsActive', isActiveValue.toString())
+
+      // Debug: Log the FormData contents
+      console.log('API - Update FormData contents:')
+      for (const [key, value] of formData.entries()) {
+        console.log('API -', key, ':', value)
+      }
+
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/update-product`, {
+        method: 'POST',
+        body: formData
+      })
+
+      console.log('API - Update product response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Update product success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Product updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update product')
+      }
+    } catch (error) {
+      console.error('API - Update product error:', error)
+      return errorResponse('Network error while updating product', [(error as Error).message])
     }
   }
 }
