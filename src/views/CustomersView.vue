@@ -37,13 +37,32 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select v-model="filters.status"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="blocked">Blocked</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.status"
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="blocked">Blocked</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="flex items-end justify-end">
             <button @click="resetFilters"
@@ -268,7 +287,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers } from '@/composables/useCustomers'
@@ -289,6 +308,11 @@ const itemsPerPage = 10
 const showStatusModal = ref(false)
 const customerToToggle = ref<any>(null)
 const isProcessing = ref(false)
+
+// Dropdown states for arrow rotation
+const dropdownStates = ref({
+  status: false
+})
 
 // Filters
 const filters = ref({
@@ -364,6 +388,21 @@ const getStatusClass = (status: string) => {
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+// Dropdown toggle functions
+const toggleDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = !dropdownStates.value[dropdownName as keyof typeof dropdownStates.value]
+}
+
+const closeDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = false
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
 }
 
 const resetFilters = () => {
@@ -442,8 +481,90 @@ const goToPage = (page: number) => {
   currentPage.value = page
 }
 
+// Click outside handler
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const selectElement = target.closest('select')
+  
+  // Close all dropdowns if clicking outside any select element
+  if (!selectElement) {
+    closeAllDropdowns()
+  }
+}
+
 // Load persisted customer statuses on component mount
 onMounted(() => {
   loadPersistedStatuses()
+  document.addEventListener('click', handleClickOutside)
+})
+
+// Cleanup event listener
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<style scoped>
+/* Custom dropdown styles */
+.appearance-none {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Enhance dropdown arrow animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Custom select hover effects */
+select:hover {
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+/* Smooth transitions for focus states */
+select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Enhanced arrow styling */
+.pointer-events-none svg {
+  transition: all 0.2s ease-in-out;
+}
+
+select:focus + .absolute svg {
+  color: #10b981;
+}
+
+/* Custom scrollbar for select options (webkit browsers) */
+select::-webkit-scrollbar {
+  width: 8px;
+}
+
+select::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Additional styling for better visual feedback */
+select {
+  cursor: pointer;
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>

@@ -106,48 +106,148 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-              <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
-                <option value="">All Locations</option>
-                <option value="main-branch">Main Branch</option>
-                <option value="tech-hub">Tech Hub</option>
-                <option value="business-center">Business Center</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="filters.location" 
+                  @focus="toggleDropdown('location')"
+                  @blur="closeDropdown('location')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
+                >
+                  <option value="">All Locations</option>
+                  <option value="main-branch">Main Branch</option>
+                  <option value="tech-hub">Tech Hub</option>
+                  <option value="business-center">Business Center</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.location ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <!-- Show Product Type filter for bookings and history tabs -->
             <div v-if="activeTab !== 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-              <select v-model="filters.productType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
-                <option value="">All Types</option>
-                <option value="Meeting Room">Meeting Room</option>
-                <option value="Hot Desk">Hot Desk</option>
-                <option value="Dedicated Desk">Dedicated Desk</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="filters.productType" 
+                  @focus="toggleDropdown('productType')"
+                  @blur="closeDropdown('productType')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
+                >
+                  <option value="">All Types</option>
+                  <option value="Meeting Room">Meeting Room</option>
+                  <option value="Hot Desk">Hot Desk</option>
+                  <option value="Dedicated Desk">Dedicated Desk</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.productType ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <!-- Show Subscription Type filter for subscriptions tab -->
             <div v-if="activeTab === 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
-              <select v-model="filters.subscriptionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
-                <option value="">All Periods</option>
-                <option value="monthly">Monthly</option>
-                <option value="annually">Annually</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="filters.subscriptionType" 
+                  @focus="toggleDropdown('subscriptionType')"
+                  @blur="closeDropdown('subscriptionType')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
+                >
+                  <option value="">All Periods</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="annually">Annually</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.subscriptionType ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <!-- Show Subscription Status filter for subscriptions tab -->
             <div v-if="activeTab === 'subscriptions'" class="md:col-span-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select v-model="filters.subscriptionStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
-                <option value="">All Status</option>
-                <option value="confirmed">Active</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="filters.subscriptionStatus" 
+                  @focus="toggleDropdown('subscriptionStatus')"
+                  @blur="closeDropdown('subscriptionStatus')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
+                >
+                  <option value="">All Status</option>
+                  <option value="confirmed">Active</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.subscriptionStatus ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
-              <select v-model="filters.userType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900">
-                <option value="">All Users</option>
-                <option value="registered">Registered</option>
-                <option value="guest">Guest</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="filters.userType" 
+                  @focus="toggleDropdown('userType')"
+                  @blur="closeDropdown('userType')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
+                >
+                  <option value="">All Users</option>
+                  <option value="registered">Registered</option>
+                  <option value="guest">Guest</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.userType ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           <div class="flex items-end justify-end">
             <button
@@ -431,6 +531,15 @@ const currentDate = ref(new Date())
 const showDeleteModal = ref(false)
 const bookingToDelete = ref<any>(null)
 const isDeleting = ref(false)
+
+// Dropdown states for arrow rotation
+const dropdownStates = ref({
+  location: false,
+  productType: false,
+  subscriptionType: false,
+  subscriptionStatus: false,
+  userType: false
+})
 
 // Tabs
 const tabs = [
@@ -1080,6 +1189,21 @@ const getTabCount = (tabId: string) => {
   }
 }
 
+// Dropdown toggle functions
+const toggleDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = !dropdownStates.value[dropdownName as keyof typeof dropdownStates.value]
+}
+
+const closeDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = false
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
+
 const getStatusClass = (status: string) => {
   switch (status) {
     case 'confirmed':
@@ -1260,9 +1384,15 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const datePickerContainer = target.closest('.date-picker-container')
   const dateInput = target.closest('.date-input')
+  const selectElement = target.closest('select')
   
   if (!datePickerContainer && !dateInput && showDatePicker.value) {
     showDatePicker.value = false
+  }
+  
+  // Close all dropdowns if clicking outside any select element
+  if (!selectElement) {
+    closeAllDropdowns()
   }
 }
 
@@ -1364,3 +1494,58 @@ defineExpose({
   confirmDeleteBooking
 })
 </script>
+
+<style scoped>
+/* Custom dropdown styles */
+.appearance-none {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Enhance dropdown arrow animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Custom select hover effects */
+select:hover {
+  border-color: #10b981;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+/* Smooth transitions for focus states */
+select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* Enhanced arrow styling */
+.pointer-events-none svg {
+  transition: all 0.2s ease-in-out;
+}
+
+select:focus + .absolute svg {
+  color: #10b981;
+}
+
+/* Custom scrollbar for select options (webkit browsers) */
+select::-webkit-scrollbar {
+  width: 8px;
+}
+
+select::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>

@@ -55,11 +55,31 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
-              <select v-model="statusFilter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+              <div class="relative">
+                <select 
+                  v-model="statusFilter" 
+                  @focus="toggleDropdown('status')"
+                  @blur="closeDropdown('status')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg 
+                    :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.status ? 'transform rotate-180' : ''
+                    ]"
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div class="flex items-end justify-end">
               <button @click="resetFilters"
@@ -83,7 +103,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                       Actions
                     </th>
                   </tr>
@@ -109,17 +129,24 @@
                       {{ facility.status }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex items-center space-x-3">
+                  <td class="px-3 py-4 whitespace-nowrap text-sm font-medium w-48" @click.stop>
+                    <div class="flex items-center justify-end space-x-2">
+                      
                       <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
-                      title="Edit Facility">
-                      <span>Edit</span>
+                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+                        title="Edit Facility">
+                        <span>Edit</span>
+                      </button>
+                      <button @click.stop="toggleFacilityStatus(facility)"
+                        :class="facility.status === 'active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'"
+                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors text-white flex items-center justify-center"
+                        :title="facility.status === 'active' ? 'Deactivate Facility' : 'Activate Facility'">
+                        <span>{{ facility.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
                       </button>
                       <button @click.stop="confirmDeleteFacility(facility)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
-                      title="Delete Facility">
-                      <span>Delete</span>
+                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
+                        title="Delete Facility">
+                        <span>Delete</span>
                       </button>
                     </div>
                   </td>
@@ -291,7 +318,7 @@
           <p class="mt-1 text-sm text-gray-500">
             {{ facilities.length === 0 ? 'No facilities have been created yet.' : 'No facilities match the current search and filters.' }}
           </p>
-          <router-link v-if="facilities.length === 0" to="/facilities/add" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
+          <router-link v-if="facilities.length === 0" to="/facilities/add" class="mt-4 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -315,11 +342,11 @@
             <p class="text-sm text-gray-500 text-center">
               Are you sure you want to delete this facility permanently? This action cannot be undone.
             </p>
-            <div v-if="facilityToDelete" class="mt-4 p-3 bg-gray-50 rounded-lg text-gray-900">
+            <div v-if="facilityToDelete" class="mt-4 p-3 bg-gray-100 rounded-lg text-gray-900">
               <div class="text-sm space-y-1">
                 <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="getFacilityIcon(facilityToDelete)" />
                     </svg>
                   </div>
@@ -339,7 +366,7 @@
           <div class="flex items-center justify-center pt-4 space-x-4">
             <button
               @click="closeDeleteModal"
-              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+              class="px-4 py-2 bg-gray-500 text-gray-100 text-sm font-medium rounded-md hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
@@ -424,6 +451,11 @@ const facilities = ref<any[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const viewMode = ref<'tile' | 'table'>('tile') // Default to tile view
+
+// Dropdown states for rotating arrows
+const dropdownStates = ref({
+  status: false
+})
 
 // Modal state
 const showDeleteModal = ref(false)
@@ -630,10 +662,76 @@ const toggleViewMode = () => {
   viewMode.value = viewMode.value === 'tile' ? 'table' : 'tile'
 }
 
+const toggleFacilityStatus = async (facility: any) => {
+  if (!facility.id) {
+    console.error('Cannot toggle facility status: ID is missing or invalid')
+    modalMessage.value = 'Cannot update facility: ID is missing or invalid'
+    showErrorModal.value = true
+    return
+  }
+
+  // Store the original status in case we need to revert
+  const originalStatus = facility.status
+  const newStatus = facility.status === 'active' ? 'inactive' : 'active'
+  const newIsActive = newStatus === 'active'
+
+  // Optimistically update the UI
+  facility.status = newStatus
+
+  try {
+    console.log('Updating facility status:', {
+      facilityId: facility.id,
+      newStatus: newStatus,
+      isActive: newIsActive
+    })
+
+    // Make API call to update facility status
+    const response = await facilityApi.updateFacilityStatus(facility.id, newIsActive, facility.name)
+
+    if (response.success) {
+      console.log('Facility status updated successfully:', facility.name, '->', newStatus)
+      console.log('API Response:', response.message)
+
+      // Show success message
+      modalMessage.value = `Facility "${facility.name}" status updated to ${newStatus}`
+      showSuccessModal.value = true
+    } else {
+      console.error('Failed to update facility status:', response.message)
+      // Revert the status change
+      facility.status = originalStatus
+      modalMessage.value = response.message || 'Failed to update facility status'
+      showErrorModal.value = true
+    }
+  } catch (error) {
+    console.error('Error updating facility status:', error)
+    // Revert the status change
+    facility.status = originalStatus
+    modalMessage.value = 'Network error while updating facility status'
+    showErrorModal.value = true
+  }
+}
+
 const resetFilters = () => {
   searchQuery.value = ''
   statusFilter.value = '' // Clear status filter to show all facilities
   currentPage.value = 1
+}
+
+// Dropdown control functions
+const toggleDropdown = (dropdown: string) => {
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+}
+
+const closeDropdown = (dropdown: string) => {
+  setTimeout(() => {
+    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
+  }, 150)
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
 }
 
 // Pagination methods

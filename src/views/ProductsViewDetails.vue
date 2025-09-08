@@ -38,12 +38,12 @@
       </div>
 
       <!-- Product Not Found -->
-      <div v-else-if="!product" class="bg-white rounded-xl shadow-card p-8 text-center">
+      <div v-else-if="!product || error" class="bg-white rounded-xl shadow-card p-8 text-center">
         <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Product Not Found</h3>
-        <p class="text-gray-500 mb-6">The product you're looking for doesn't exist or has been removed.</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">{{ error || 'Product Not Found' }}</h3>
+        <p class="text-gray-500 mb-6">{{ error ? 'Please try again later.' : 'The product you\'re looking for doesn\'t exist or has been removed.' }}</p>
         <router-link to="/products" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -129,21 +129,29 @@
               Pricing
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div v-if="product.pricePerHour" class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div v-if="product.pricePerHour && product.pricePerHour > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-green-600 mb-1">Per Hour</div>
                 <div class="text-2xl font-bold text-green-800">${{ product.pricePerHour }}</div>
               </div>
-              <div v-if="product.pricePerDay" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div v-if="product.pricePerDay && product.pricePerDay > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-blue-600 mb-1">Per Day</div>
                 <div class="text-2xl font-bold text-blue-800">${{ product.pricePerDay }}</div>
               </div>
-              <div v-if="product.pricePerMonth" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div v-if="product.pricePerMonth && product.pricePerMonth > 0" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-purple-600 mb-1">Per Month</div>
                 <div class="text-2xl font-bold text-purple-800">${{ product.pricePerMonth }}</div>
               </div>
-              <div v-if="product.pricePerYear" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div v-if="product.pricePerYear && product.pricePerYear > 0" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-orange-600 mb-1">Per Year</div>
                 <div class="text-2xl font-bold text-orange-800">${{ product.pricePerYear }}</div>
+              </div>
+              <!-- Show no pricing message if no pricing is available -->
+              <div v-if="!product.pricePerHour && !product.pricePerDay && !product.pricePerMonth && !product.pricePerYear" 
+                   class="col-span-full text-center py-8 text-gray-500">
+                <svg class="mx-auto w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+                <p class="text-sm">No pricing information available</p>
               </div>
             </div>
           </div>
@@ -164,10 +172,13 @@
                 <h4 class="text-sm font-medium text-gray-700 mb-3">Open Days</h4>
                 <div class="flex flex-wrap gap-2">
                   <span v-for="day in allDays" :key="day" 
-                        :class="product.openDays.includes(day) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'"
+                        :class="(product.openDays && product.openDays.includes(day)) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'"
                         class="px-3 py-1 text-sm font-medium rounded-full">
                     {{ day.substring(0, 3) }}
                   </span>
+                </div>
+                <div v-if="!product.openDays || product.openDays.length === 0" class="text-sm text-gray-500 mt-2">
+                  No schedule information available
                 </div>
               </div>
 
@@ -175,13 +186,19 @@
               <div>
                 <h4 class="text-sm font-medium text-gray-700 mb-3">Operating Hours</h4>
                 <div class="bg-gray-50 rounded-lg p-4">
-                  <div class="flex items-center space-x-2">
+                  <div v-if="product.openHours && product.openHours.start && product.openHours.end" class="flex items-center space-x-2">
                     <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiClockOutline" />
                     </svg>
                     <span class="text-gray-900 font-medium">
                       {{ formatTime(product.openHours.start) }} - {{ formatTime(product.openHours.end) }}
                     </span>
+                  </div>
+                  <div v-else class="flex items-center space-x-2 text-gray-500">
+                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiClockOutline" />
+                    </svg>
+                    <span class="text-sm">Operating hours not specified</span>
                   </div>
                 </div>
               </div>
@@ -223,9 +240,9 @@
                     <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiCurrencyUsd" />
                     </svg>
-                    <span class="text-blue-800 font-medium">{{ facility.name }}</span>
+                    <span class="text-blue-800 font-medium">{{ facility.name || facility }}</span>
                   </div>
-                  <span class="text-blue-900 font-bold">${{ facility.pricePerHour }}/hr</span>
+                  <span v-if="facility.pricePerHour" class="text-blue-900 font-bold">${{ facility.pricePerHour }}/hr</span>
                 </div>
               </div>
             </div>
@@ -294,6 +311,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { productApi } from '@/services/api'
 import { 
   mdiPencil, 
   mdiDelete, 
@@ -317,92 +335,11 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const selectedImage = ref<string | null>(null)
 const selectedImageIndex = ref(0)
+const error = ref('')
 
 // Data
 const productId = route.params.id as string
 const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-// Sample products data - in real app, this would come from API
-const sampleProducts = [
-  {
-    id: 'PROD001',
-    name: 'Executive Meeting Room',
-    type: 'Meeting Room',
-    locationName: 'Downtown Office',
-    locationAddress: '123 Business St',
-    companyName: 'ABC Corporation',
-    companyId: 'COMP001',
-    locationId: 'LOC001',
-    status: 'active',
-    maxSeatingCapacity: 12,
-    pricePerHour: 50,
-    images: [
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500',
-      'https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=500',
-      'https://images.unsplash.com/photo-1541746972996-4e0b0f93e586?w=500'
-    ],
-    description: 'Spacious executive meeting room with state-of-the-art video conferencing facilities, perfect for important business meetings and presentations. Features floor-to-ceiling windows with city views.',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    openHours: { start: '08:00', end: '18:00' },
-    defaultFacilities: ['High-Speed WiFi', 'HD Projector & Screen', 'Whiteboard', 'Video Conferencing Setup'],
-    additionalFacilities: [
-      { id: 'FAC001', name: 'Coffee Machine', pricePerHour: 5 },
-      { id: 'FAC002', name: 'Catering Service', pricePerHour: 15 },
-      { id: 'FAC003', name: 'Printing Services', pricePerHour: 3 }
-    ]
-  },
-  {
-    id: 'PROD002',
-    name: 'Modern Hot Desk',
-    type: 'Hot Desk',
-    locationName: 'Tech Hub',
-    locationAddress: '456 Innovation Ave',
-    companyName: 'Tech Innovations Ltd.',
-    companyId: 'COMP004',
-    locationId: 'LOC002',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerHour: 8,
-    pricePerDay: 60,
-    images: [
-      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=500',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500'
-    ],
-    description: 'Modern hot desk in a vibrant coworking environment with ergonomic furniture and high-speed connectivity. Perfect for freelancers and remote workers.',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    openHours: { start: '07:00', end: '19:00' },
-    defaultFacilities: ['High-Speed WiFi', 'Power Outlets', 'Ergonomic Chair', 'Desk Lamp'],
-    additionalFacilities: [
-      { id: 'FAC004', name: 'External Monitor', pricePerHour: 3 },
-      { id: 'FAC005', name: 'Keyboard & Mouse', pricePerHour: 2 }
-    ]
-  },
-  {
-    id: 'PROD003',
-    name: 'Private Dedicated Workspace',
-    type: 'Dedicated Desk',
-    locationName: 'Business Center',
-    locationAddress: '789 Corporate Blvd',
-    companyName: 'Global Solutions Inc.',
-    companyId: 'COMP003',
-    locationId: 'LOC003',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerMonth: 800,
-    pricePerYear: 8500,
-    images: [
-      'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=500'
-    ],
-    description: 'Private dedicated workspace with personal storage and 24/7 access. Ideal for entrepreneurs and small business owners who need a permanent office solution.',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    openHours: { start: '00:00', end: '23:59' },
-    defaultFacilities: ['High-Speed WiFi', 'Storage Locker', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line'],
-    additionalFacilities: [
-      { id: 'FAC006', name: 'Printer Access', pricePerHour: 1 },
-      { id: 'FAC007', name: 'Meeting Room Credits', pricePerHour: 10 }
-    ]
-  }
-]
 
 // Methods
 const getProductIcon = (type: string) => {
@@ -437,14 +374,54 @@ const formatTime = (time: string) => {
   return `${displayHour}:${minutes} ${ampm}`
 }
 
-const loadProduct = () => {
+const loadProduct = async () => {
   isLoading.value = true
+  error.value = ''
   
-  // Simulate API call
-  setTimeout(() => {
-    product.value = sampleProducts.find(p => p.id === productId) || null
+  try {
+    // Since getProductById is not implemented, we'll get all products and find the one we need
+    const response = await productApi.getAllProducts()
+    
+    if (response.success && response.data) {
+      // Find the product with matching ID - use type assertion for API response
+      const foundProduct = response.data.find((p: any) => p.id === productId || p.product_id === productId)
+      
+      if (foundProduct) {
+        // Transform API data to match our expected structure
+        product.value = {
+          id: foundProduct.id,
+          name: foundProduct.name,
+          type: foundProduct.type,
+          locationName: (foundProduct as any).location_name || foundProduct.location || 'Unknown Location',
+          locationAddress: (foundProduct as any).address || (foundProduct as any).location_address || 'Unknown Address',
+          companyName: (foundProduct as any).company_name || 'Unknown Company',
+          companyId: (foundProduct as any).company_id || 'unknown',
+          locationId: (foundProduct as any).location_id || foundProduct.location || 'unknown',
+          status: foundProduct.status,
+          maxSeatingCapacity: foundProduct.capacity,
+          pricePerHour: foundProduct.pricePerHour,
+          pricePerDay: (foundProduct as any).pricePerDay || 0,
+          pricePerMonth: (foundProduct as any).pricePerMonth || 0,
+          pricePerYear: (foundProduct as any).pricePerYear || 0,
+          images: foundProduct.images,
+          description: foundProduct.description,
+          openDays: (foundProduct as any).openDays || [],
+          openHours: (foundProduct as any).openHours || { start: '09:00', end: '17:00' },
+          defaultFacilities: foundProduct.facilities,
+          additionalFacilities: (foundProduct as any).additionalFacilities || []
+        }
+      } else {
+        error.value = 'Product not found'
+      }
+    } else {
+      error.value = response.message || 'Failed to load products'
+    }
+  } catch (err) {
+    console.error('Error loading product:', err)
+    error.value = 'Failed to load product details'
+  } finally {
     isLoading.value = false
-  }, 500)
+  }
 }
 
 const openImageModal = (image: string, index: number) => {
@@ -473,16 +450,22 @@ const deleteProduct = async () => {
   isDeleting.value = true
   
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Since deleteProduct API is not implemented yet, we'll show a warning
+    alert('Delete functionality is not yet implemented in the API. This would delete product: ' + product.value.name)
     
-    // In real app, make API call to delete product
-    console.log('Deleting product:', product.value.id)
+    // TODO: Implement when API is ready
+    // const response = await productApi.deleteProduct(product.value.id)
+    // if (response.success) {
+    //   router.push('/products')
+    // } else {
+    //   alert(`Failed to delete product: ${response.message}`)
+    // }
     
-    // Navigate back to products list
-    router.push('/products')
+    // For now, just close the modal
+    showDeleteModal.value = false
   } catch (error) {
     console.error('Error deleting product:', error)
+    alert('An error occurred while deleting the product')
   } finally {
     isDeleting.value = false
   }

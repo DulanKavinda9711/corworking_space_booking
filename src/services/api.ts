@@ -1192,7 +1192,7 @@ export const locationApi = {
    */
   async getAllLocations(): Promise<ApiResponse<Location[]>> {
     try {
-      const response = await fetch('http://192.168.56.1:9011/api/locations/get-all', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/get-all`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1250,7 +1250,7 @@ export const locationApi = {
    */
   async getLocationById(id: string): Promise<ApiResponse<Location>> {
     try {
-      const response = await fetch('http://192.168.56.1:9011/api/locations/get-by-id', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/get-by-id`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1344,7 +1344,7 @@ export const locationApi = {
         console.log(`${key}: ${value}`)
       }
 
-      const response = await fetch('http://192.168.56.1:9011/api/locations/create', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/create`, {
         method: 'POST',
         body: formData
       })
@@ -1378,6 +1378,126 @@ export const locationApi = {
       console.error('Create location error:', error)
       return errorResponse('Network error while creating location', [(error as Error).message])
     }
+  },
+
+  /**
+   * Update an existing location
+   */
+  async updateLocation(id: string, locationData: {
+    Name: string
+    Street: string
+    StreetTwo?: string
+    PostalCode: string
+    Town: string
+    Url: string
+    District: string
+    ContactName: string
+    ContactEmail: string
+    ContactPhone: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Create FormData as required by the API
+      const formData = new FormData()
+      formData.append('Id', id)
+      formData.append('Name', locationData.Name)
+      formData.append('ContactName', locationData.ContactName)
+      formData.append('ContactEmail', locationData.ContactEmail)
+      formData.append('ContactPhone', locationData.ContactPhone)
+      formData.append('Street', locationData.Street)
+      if (locationData.StreetTwo) {
+        formData.append('StreetTwo', locationData.StreetTwo)
+      }
+      formData.append('PostalCode', locationData.PostalCode)
+      formData.append('Url', locationData.Url)
+      formData.append('Town', locationData.Town)
+      formData.append('District', locationData.District)
+      formData.append('IsActive', 'true')
+      formData.append('City', locationData.Town) // Use Town as City if not provided
+
+      // Debug: Log the FormData contents
+      console.log('Update FormData contents:')
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`)
+      }
+
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/update`, {
+        method: 'POST',
+        body: formData
+      })
+
+      // Debug: Log response details
+      console.log('Update response status:', response.status)
+      console.log('Update response headers:', Object.fromEntries(response.headers.entries()))
+
+      if (!response.ok) {
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`
+        try {
+          const errorData = await response.text()
+          console.log('Update error response body:', errorData)
+          errorMessage += ` - ${errorData}`
+        } catch (e) {
+          console.log('Could not read error response body')
+        }
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      console.log('Update success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Location updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update location')
+      }
+    } catch (error) {
+      console.error('Update location error:', error)
+      return errorResponse('Network error while updating location', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Delete a location
+   */
+  async deleteLocation(id: string): Promise<ApiResponse<string>> {
+    try {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: parseInt(id)
+        })
+      })
+
+      console.log('Delete location response status:', response.status)
+
+      if (!response.ok) {
+        // Try to get error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`
+        try {
+          const errorData = await response.text()
+          console.log('Delete error response body:', errorData)
+          errorMessage += ` - ${errorData}`
+        } catch (e) {
+          console.log('Could not read error response body')
+        }
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      console.log('Delete location success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Location deleted successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to delete location')
+      }
+    } catch (error) {
+      console.error('Delete location error:', error)
+      return errorResponse('Network error while deleting location', [(error as Error).message])
+    }
   }
 }
 
@@ -1392,7 +1512,7 @@ export const facilityApi = {
   async getAllFacilities(): Promise<ApiResponse<Facility[]>> {
     try {
       console.log('API - Fetching all facilities...')
-      const response = await fetch('http://192.168.56.1:9011/api/facility-type/get-facility-type-list', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/facility-type/get-facility-type-list`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1453,7 +1573,7 @@ export const facilityApi = {
         formData.append('Icon', facilityData.Icon)
       }
 
-      const response = await fetch('http://192.168.56.1:9011/api/facility-type/create-facility-type', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/facility-type/create-facility-type`, {
         method: 'POST',
         body: formData
         // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
@@ -1508,7 +1628,7 @@ export const facilityApi = {
       }
 
       // POST to endpoint (backend expects Id in form-data rather than URL param)
-      const response = await fetch('http://192.168.56.1:9011/api/facility-type/update-facility-type', {
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/facility-type/update-facility-type`, {
         method: 'POST',
         body: formData
         // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
@@ -1543,26 +1663,108 @@ export const facilityApi = {
   },
 
   /**
-   * Delete an existing facility
+   * Update facility status (active/inactive)
+   */
+  async updateFacilityStatus(id: string, isActive: boolean, facilityName?: string): Promise<ApiResponse<null>> {
+    try {
+      console.log('API - Updating facility status with ID:', id, 'isActive:', isActive, 'name:', facilityName)
+
+      // Check if ID is valid
+      if (!id) {
+        console.error('API - Invalid facility ID:', id)
+        return errorResponse('Invalid facility ID')
+      }
+
+      // Create FormData with all required fields
+      const formData = new FormData()
+      formData.append('Id', id)
+      formData.append('IsActive', isActive.toString())
+      // Use provided facility name or a placeholder
+      formData.append('FacilityName', facilityName || 'Facility Status Update')
+
+      console.log('API - FormData entries for status update:')
+      for (const pair of formData.entries()) {
+        console.log('API -', pair[0], pair[1])
+      }
+
+      // Use the same endpoint as regular updates since update-facility-type-status doesn't exist
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/facility-type/update-facility-type`, {
+        method: 'POST',
+        body: formData
+        // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
+      })
+
+      console.log('API - Update facility status response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Update facility status response data:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(null, data.message || 'Facility status updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update facility status')
+      }
+    } catch (error) {
+      console.error('API - Update facility status error:', error)
+      return errorResponse('Network error while updating facility status', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Delete a facility
    */
   async deleteFacility(id: string): Promise<ApiResponse<null>> {
     try {
+      console.log('API - Deleting facility with ID:', id)
 
-      console.log('Deleting facility with ID:', id);
-      // Send JSON body per backend API expectation: { id: number }
-      const response = await fetch('http://192.168.56.1:9011/api/facility-type/delete-facility-type', {
+      // Check if ID is valid
+      if (!id) {
+        console.error('API - Invalid facility ID:', id)
+        return errorResponse('Invalid facility ID')
+      }
+
+      // Create JSON payload with the facility ID
+      const payload = {
+        Id: parseInt(id) // Convert to number as expected by backend
+      }
+
+      console.log('API - Delete payload:', payload)
+
+      // Use delete-facility-type endpoint with JSON
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/facility-type/delete-facility-type`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ id: Number(id) })
+        body: JSON.stringify(payload)
       })
 
+      console.log('API - Delete facility response status:', response.status)
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
       }
 
       const data = await response.json()
+      console.log('API - Delete facility response data:', data)
 
       if (data.status_code === 200) {
         return successResponse(null, data.message || 'Facility deleted successfully')
@@ -1570,7 +1772,7 @@ export const facilityApi = {
         return errorResponse(data.message || 'Failed to delete facility')
       }
     } catch (error) {
-      console.error('Delete facility error:', error)
+      console.error('API - Delete facility error:', error)
       return errorResponse('Network error while deleting facility', [(error as Error).message])
     }
   }
@@ -1585,18 +1787,270 @@ export const productApi = {
    * Get all products
    */
   async getAllProducts(): Promise<ApiResponse<Product[]>> {
-    await delay(600)
+    try {
+      console.log('API - Fetching products from server...')
 
-    return successResponse([])
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/get-product-list`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      })
+
+      console.log('API - Get products response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Get products success response:', data)
+
+      if (data.status_code === 200) {
+        // Transform the API response data to match our Product interface if needed
+        const products = data.data || []
+        return successResponse(products, data.message || 'Products retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to fetch products')
+      }
+    } catch (error) {
+      console.error('API - Get products error:', error)
+      return errorResponse('Network error while fetching products', [(error as Error).message])
+    }
   },
 
   /**
    * Get product by ID
    */
   async getProductById(id: string): Promise<ApiResponse<Product>> {
-    await delay(500)
+    try {
+      const response = await fetch(buildApiUrl('/product/get-product-by-id'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: parseInt(id) // Convert string ID to number as expected by API
+        })
+      })
 
-    return errorResponse('Product not found')
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message)
+      } else {
+        return errorResponse(data.message || 'Failed to fetch product')
+      }
+    } catch (error: any) {
+      console.error('Get product by ID error:', error)
+      return errorResponse('Network error while fetching product', [error.message])
+    }
+  },
+
+  /**
+   * Create a new product
+   */
+  async createProduct(productData: {
+    LocationId: string
+    ProductType: string
+    ProductName: string
+    Description: string
+    MaxSeatingCapacity: number
+    PricePerHour?: number
+    PricePerDay?: number
+    PricePerMonth?: number
+    PricePerYear?: number
+    OpeningTime: string
+    ClosingTime: string
+    DefaultFacilities: Number[]
+    AdditionalFacilities: Array<{
+      id: number
+      name: string
+      pricePerHour: number
+      pricePerDay: number
+      pricePerMonth: number
+      pricePerYear: number
+    }>
+    Images?: string[]
+    Status?: string
+    OperationTime: {
+      IsMonday: boolean
+      IsTuesday: boolean
+      IsWednesday: boolean
+      IsThursday: boolean
+      IsFriday: boolean
+      IsSaturday: boolean
+      IsSunday: boolean
+      MondayStart: string
+      MondayEnd: string
+      TuesdayStart: string
+      TuesdayEnd: string
+      WednesdayStart: string
+      WednesdayEnd: string
+      ThursdayStart: string
+      ThursdayEnd: string
+      FridayStart: string
+      FridayEnd: string
+      SaturdayStart: string
+      SaturdayEnd: string
+      SundayStart: string
+      SundayEnd: string
+    }
+  }): Promise<ApiResponse<string>> {
+    try {
+      console.log('API - Creating product with data:', productData)
+
+      // Create FormData as required by the API
+      const formData = new FormData()
+      formData.append('LocationId', productData.LocationId)
+      formData.append('Type', productData.ProductType)
+      formData.append('Name', productData.ProductName)
+      formData.append('Description', productData.Description)
+      formData.append('Capacity', productData.MaxSeatingCapacity.toString())
+      
+      // Add pricing based on product type
+      if (productData.PricePerHour !== undefined) {
+        formData.append('Hourly', productData.PricePerHour.toString())
+      }
+      if (productData.PricePerDay !== undefined) {
+        formData.append('Daily', productData.PricePerDay.toString())
+      }
+      if (productData.PricePerMonth !== undefined) {
+        formData.append('Monthly', productData.PricePerMonth.toString())
+      }
+      if (productData.PricePerYear !== undefined) {
+        formData.append('Yearly', productData.PricePerYear.toString())
+      }
+      
+      formData.append('StartOperationTime', productData.OpeningTime)
+      formData.append('EndOperationTime', productData.ClosingTime)
+      
+      // Add operation time details
+      formData.append('OperationTime.IsMonday', productData.OperationTime.IsMonday.toString())
+      formData.append('OperationTime.IsTuesday', productData.OperationTime.IsTuesday.toString())
+      formData.append('OperationTime.IsWednesday', productData.OperationTime.IsWednesday.toString())
+      formData.append('OperationTime.IsThursday', productData.OperationTime.IsThursday.toString())
+      formData.append('OperationTime.IsFriday', productData.OperationTime.IsFriday.toString())
+      formData.append('OperationTime.IsSaturday', productData.OperationTime.IsSaturday.toString())
+      formData.append('OperationTime.IsSunday', productData.OperationTime.IsSunday.toString())
+      formData.append('OperationTime.MondayStart', productData.OperationTime.MondayStart)
+      formData.append('OperationTime.MondayEnd', productData.OperationTime.MondayEnd)
+      formData.append('OperationTime.TuesdayStart', productData.OperationTime.TuesdayStart)
+      formData.append('OperationTime.TuesdayEnd', productData.OperationTime.TuesdayEnd)
+      formData.append('OperationTime.WednesdayStart', productData.OperationTime.WednesdayStart)
+      formData.append('OperationTime.WednesdayEnd', productData.OperationTime.WednesdayEnd)
+      formData.append('OperationTime.ThursdayStart', productData.OperationTime.ThursdayStart)
+      formData.append('OperationTime.ThursdayEnd', productData.OperationTime.ThursdayEnd)
+      formData.append('OperationTime.FridayStart', productData.OperationTime.FridayStart)
+      formData.append('OperationTime.FridayEnd', productData.OperationTime.FridayEnd)
+      formData.append('OperationTime.SaturdayStart', productData.OperationTime.SaturdayStart)
+      formData.append('OperationTime.SaturdayEnd', productData.OperationTime.SaturdayEnd)
+      formData.append('OperationTime.SundayStart', productData.OperationTime.SundayStart)
+      formData.append('OperationTime.SundayEnd', productData.OperationTime.SundayEnd)
+      
+      // Add default facilities - send as individual array entries
+      productData.DefaultFacilities.forEach((facilityId, index) => {
+        formData.append(`DefaultFacilities[${index}]`, facilityId.toString())
+      })
+      
+      // Transform and add additional facilities in the required format
+      // Convert from frontend format to API format: [{"FacilityId":1,"HourlyPrice":150.00}]
+      const transformedAdditionalFacilities = productData.AdditionalFacilities.map(facility => ({
+        FacilityId: facility.id,
+        HourlyPrice: facility.pricePerHour || 0
+      }))
+      
+      formData.append('AdditionalFacilities', JSON.stringify(transformedAdditionalFacilities))
+      
+      // Add images if provided - convert base64 to files
+      if (productData.Images && productData.Images.length > 0) {
+        console.log('API - Processing', productData.Images.length, 'images')
+        
+        // Convert base64 images to File objects and add them to FormData
+        productData.Images.forEach((base64String, index) => {
+          try {
+            // Extract the base64 data and mime type
+            const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+            if (matches && matches.length === 3) {
+              const mimeType = matches[1]
+              const base64Data = matches[2]
+              
+              // Convert base64 to binary
+              const binaryString = atob(base64Data)
+              const bytes = new Uint8Array(binaryString.length)
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i)
+              }
+              
+              // Create a File object
+              const fileExtension = mimeType.split('/')[1] || 'jpg'
+              const fileName = `product_image_${index + 1}.${fileExtension}`
+              const file = new File([bytes], fileName, { type: mimeType })
+              
+              // Add the file to FormData
+              formData.append('Images', file)
+              console.log('API - Added image file:', fileName, 'size:', file.size, 'bytes')
+            } else {
+              console.warn('API - Invalid base64 format for image', index)
+            }
+          } catch (error) {
+            console.error('API - Error processing image', index, ':', error)
+          }
+        })
+      }
+      
+      // Set status (default to active)
+      formData.append('IsActive', (productData.Status === 'active').toString())
+
+
+      // Debug: Log the FormData contents
+      console.log('API - FormData contents:')
+      for (const [key, value] of formData.entries()) {
+        console.log('API -', key, ':', value)
+      }
+
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/product/create-product`, {
+        method: 'POST',
+        body: formData
+      })
+
+      console.log('API - Create product response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Create product success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Product created successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create product')
+      }
+    } catch (error) {
+      console.error('API - Create product error:', error)
+      return errorResponse('Network error while creating product', [(error as Error).message])
+    }
   }
 }
 
@@ -1816,11 +2270,37 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.PROD 
-    ? 'https://your-production-api.com/api'
-    : 'http://localhost:3000/api',
+  BASE_URL: 'http://192.168.56.1:9011',
+  API_BASE_URL: 'http://192.168.56.1:9011/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3
+}
+
+/**
+ * Pre-configured HTTP client using the default API base URL
+ */
+export const apiClient = createHttpClient(API_CONFIG.API_BASE_URL)
+
+/**
+ * Utility function to build API URLs
+ * @param endpoint - The API endpoint (e.g., '/locations/get-all')
+ * @returns Full API URL
+ */
+export const buildApiUrl = (endpoint: string): string => {
+  // Ensure endpoint starts with /
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+  return `${API_CONFIG.API_BASE_URL}${cleanEndpoint}`
+}
+
+/**
+ * Utility function to build base URLs
+ * @param path - The path (e.g., '/uploads/image.jpg')
+ * @returns Full base URL
+ */
+export const buildBaseUrl = (path: string): string => {
+  // Ensure path starts with /
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  return `${API_CONFIG.BASE_URL}${cleanPath}`
 }
 
 // ============================================================================

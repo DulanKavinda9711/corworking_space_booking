@@ -15,13 +15,53 @@
         </div>
       </div>
 
-      <!-- Error Message -->
-      <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div class="flex items-center">
-          <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span class="text-red-800">{{ errorMessage }}</span>
+      <!-- Success Modal -->
+      <div v-if="showSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSuccessModal">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+          <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Success!</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">Product Save Successfully</p>
+            </div>
+            <div class="items-center px-4 py-3">
+              <button @click="closeSuccessModal"
+                class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Modal -->
+      <div v-if="showErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeErrorModal">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+          <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Error</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">{{ errorMessage }}</p>
+            </div>
+            <div class="items-center px-4 py-3 flex space-x-3">
+              <button @click="closeErrorModal"
+                class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1">
+                Close
+              </button>
+              <button @click="retryCreateLocation"
+                class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 flex-1">
+                Retry
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -94,11 +134,16 @@
                       <input type="text" v-model="form.postalCode"
                         :class="[
                           'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && !form.postalCode.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                          showValidation && (!form.postalCode.trim() || !isValidPostalCode(form.postalCode)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
                         ]"
-                        placeholder="Enter postal code" />
+                        placeholder="Enter 5-digit postal code"
+                        maxlength="5"
+                        @input="validatePostalCode" />
                       <div v-if="showValidation && !form.postalCode.trim()" class="mt-1 text-sm text-red-600">
                         Postal code is required
+                      </div>
+                      <div v-else-if="showValidation && !isValidPostalCode(form.postalCode)" class="mt-1 text-sm text-red-600">
+                        Postal code must be exactly 5 digits
                       </div>
                     </div>
                     <div>
@@ -119,12 +164,38 @@
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         District <span class="text-red-500">*</span>
                       </label>
-                      <input type="text" v-model="form.district"
+                      <select v-model="form.district"
                         :class="[
                           'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
                           showValidation && !form.district.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
-                        ]"
-                        placeholder="Enter district" />
+                        ]">
+                        <option value="">Select District</option>
+                        <option value="Ampara">Ampara</option>
+                        <option value="Anuradhapura">Anuradhapura</option>
+                        <option value="Badulla">Badulla</option>
+                        <option value="Batticaloa">Batticaloa</option>
+                        <option value="Colombo">Colombo</option>
+                        <option value="Galle">Galle</option>
+                        <option value="Gampaha">Gampaha</option>
+                        <option value="Hambantota">Hambantota</option>
+                        <option value="Jaffna">Jaffna</option>
+                        <option value="Kalutara">Kalutara</option>
+                        <option value="Kandy">Kandy</option>
+                        <option value="Kegalle">Kegalle</option>
+                        <option value="Kilinochchi">Kilinochchi</option>
+                        <option value="Kurunegala">Kurunegala</option>
+                        <option value="Mannar">Mannar</option>
+                        <option value="Matale">Matale</option>
+                        <option value="Matara">Matara</option>
+                        <option value="Monaragala">Monaragala</option>
+                        <option value="Mullaitivu">Mullaitivu</option>
+                        <option value="Nuwara Eliya">Nuwara Eliya</option>
+                        <option value="Polonnaruwa">Polonnaruwa</option>
+                        <option value="Puttalam">Puttalam</option>
+                        <option value="Ratnapura">Ratnapura</option>
+                        <option value="Trincomalee">Trincomalee</option>
+                        <option value="Vavuniya">Vavuniya</option>
+                      </select>
                       <div v-if="showValidation && !form.district.trim()" class="mt-1 text-sm text-red-600">
                         District is required
                       </div>
@@ -179,11 +250,16 @@
                     <input type="tel" v-model="form.contactPhone"
                       :class="[
                         'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.contactPhone.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        showValidation && (!form.contactPhone.trim() || !isValidPhoneNumber(form.contactPhone)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
                       ]"
-                      placeholder="+1-555-0123" />
+                      placeholder="+94701234567"
+                      maxlength="12"
+                      @input="formatPhoneNumber" />
                     <div v-if="showValidation && !form.contactPhone.trim()" class="mt-1 text-sm text-red-600">
                       Contact phone number is required
+                    </div>
+                    <div v-else-if="showValidation && !isValidPhoneNumber(form.contactPhone)" class="mt-1 text-sm text-red-600">
+                      Phone number must be in format +94701234567 (12 characters)
                     </div>
                   </div>
                   <div>
@@ -261,18 +337,82 @@ const isLoading = ref(false)
 // Error message
 const errorMessage = ref('')
 
+// Modal states
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const successMessage = ref('')
+
 // Form validation
 const isFormValid = computed(() => {
   return form.value.name.trim() !== '' &&
          form.value.street.trim() !== '' &&
          form.value.postalCode.trim() !== '' &&
+         isValidPostalCode(form.value.postalCode) &&
          form.value.town.trim() !== '' &&
          form.value.district.trim() !== '' &&
          form.value.mapUrl.trim() !== '' &&
          form.value.contactName.trim() !== '' &&
          form.value.contactPhone.trim() !== '' &&
+         isValidPhoneNumber(form.value.contactPhone) &&
          form.value.contactEmail.trim() !== ''
 })
+
+// Validation methods
+const isValidPostalCode = (postalCode: string) => {
+  // Must be exactly 5 digits
+  const postalCodeRegex = /^\d{5}$/
+  return postalCodeRegex.test(postalCode.trim())
+}
+
+const isValidPhoneNumber = (phoneNumber: string) => {
+  // Must be exactly +94701234567 format (12 characters)
+  const phoneRegex = /^\+947\d{8}$/
+  return phoneRegex.test(phoneNumber.trim())
+}
+
+const validatePostalCode = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  // Only allow digits and limit to 5 characters
+  target.value = target.value.replace(/\D/g, '').substring(0, 5)
+  form.value.postalCode = target.value
+}
+
+const formatPhoneNumber = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  let value = target.value.replace(/\D/g, '') // Remove non-digits
+
+  // If user starts typing with 0, remove it (Sri Lankan numbers don't start with 0 after +94)
+  if (value.startsWith('0')) {
+    value = value.substring(1)
+  }
+
+  // Handle different scenarios based on input length
+  if (value.length === 0) {
+    // Empty field, do nothing
+    target.value = ''
+    form.value.contactPhone = ''
+    return
+  } else if (value.length === 1) {
+    // Single digit, prepend 94
+    value = '94' + value
+  } else if (value.length === 2) {
+    // Two digits, check if it's 94 or prepend
+    if (value !== '94') {
+      value = '94' + value
+    }
+  } else if (value.length > 2 && !value.startsWith('94')) {
+    // More than 2 digits but doesn't start with 94, prepend it
+    value = '94' + value
+  }
+
+  // Format as +94701234567 (12 characters total)
+  if (value.length >= 2) {
+    value = '+' + value.substring(0, 11) // +94 + 8 digits = 12 characters
+  }
+
+  target.value = value
+  form.value.contactPhone = value
+}
 
 // Methods
 const saveLocation = async () => {
@@ -302,20 +442,36 @@ const saveLocation = async () => {
     })
 
     if (response.success) {
-      // Show success message
-      alert(response.message || 'Location created successfully!')
-
-      // Navigate back to locations list
-      router.push('/locations')
+      // Show success modal
+      successMessage.value = response.message || 'Location created successfully!'
+      showSuccessModal.value = true
     } else {
-      // Show error message
+      // Show error modal
       errorMessage.value = response.message || 'Failed to create location'
+      showErrorModal.value = true
     }
   } catch (error) {
     console.error('Error creating location:', error)
     errorMessage.value = 'An unexpected error occurred while creating the location'
+    showErrorModal.value = true
   } finally {
     isLoading.value = false
   }
+}
+
+// Modal methods
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  // Navigate back to locations list after closing success modal
+  router.push('/locations')
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+}
+
+const retryCreateLocation = () => {
+  showErrorModal.value = false
+  saveLocation()
 }
 </script>

@@ -1,0 +1,15 @@
+Let me create a temporary note to help fix the modal removal issue.
+
+The issue is that the file has become too large and complex with duplicated modal sections. 
+
+Key changes needed:
+1. Remove modal sections entirely (lines after form closing)
+2. Keep only dropdown-based facility selection
+3. Remove modal state variables if not used elsewhere
+
+The dropdown functionality is already implemented in the template with:
+- selectedDefaultFacility and selectedAdditionalFacility variables
+- addDefaultFacility() and addAdditionalFacility() methods
+- availableDefaultFacilities and availableAdditionalFacilities computed properties
+
+Modal sections should be completely removed since we're now using inline dropdowns.

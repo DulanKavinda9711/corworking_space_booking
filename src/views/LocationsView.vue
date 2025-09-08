@@ -65,20 +65,60 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select v-model="filters.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.status" 
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
-            <select v-model="filters.company" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-              <option value="">All Companies</option>
-              <option value="workhub">WorkHub Co.</option>
-              <option value="flexspace">FlexSpace Inc.</option>
-              <option value="creativespaces">Creative Spaces LLC</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.company" 
+                @focus="toggleDropdown('company')"
+                @blur="closeDropdown('company')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+              >
+                <option value="">All Companies</option>
+                <option value="workhub">WorkHub Co.</option>
+                <option value="flexspace">FlexSpace Inc.</option>
+                <option value="creativespaces">Creative Spaces LLC</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.company ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="flex items-end justify-end">
             <button
@@ -103,13 +143,15 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="location in filteredLocations" :key="location.id" class="hover:bg-gray-50">
+              <tr v-for="location in filteredLocations" :key="location.id" 
+                  class="hover:bg-gray-50 cursor-pointer transition-colors"
+                  @click="navigateToLocationDetail(location.id)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -133,22 +175,17 @@
                     {{ location.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex items-center space-x-3">
-                    <router-link :to="`/locations/${location.id}`" class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiEye" />
-                      </svg>
-                    </router-link>
-                    <router-link :to="`/locations/${location.id}/edit`" class="text-blue-600 hover:text-blue-900 flex items-center space-x-1" title="Edit Location">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiPencil" />
-                      </svg>
-                    </router-link>
-                    <button @click="deleteLocation(location)" class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Location">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
-                      </svg>
+                <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-center" @click.stop>
+                  <div class="flex items-center justify-center space-x-2">
+                    <button @click.stop="editLocation(location.id)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
+                      title="Edit Location">
+                      <span>Edit</span>
+                    </button>
+                    <button @click.stop="confirmDeleteLocation(location)"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
+                      title="Delete Location">
+                      <span>Delete</span>
                     </button>
                   </div>
                 </td>
@@ -295,14 +332,100 @@
         </form>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeDeleteModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3 text-center">
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Delete Location</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              Are you sure you want to delete <strong>"{{ locationToDelete?.name }}"</strong>? 
+              This action cannot be undone and will remove all associated data.
+            </p>
+          </div>
+          <div class="items-center px-4 py-3 flex space-x-3">
+            <button @click="closeDeleteModal"
+              :disabled="isDeleting"
+              class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1 disabled:opacity-50">
+              Cancel
+            </button>
+            <button @click="confirmDelete"
+              :disabled="isDeleting"
+              class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 flex-1 disabled:opacity-50 flex items-center justify-center">
+              <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isDeleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Popup Modal -->
+    <div v-if="showSuccessPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showSuccessPopup = false">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 transform transition-all" @click.stop>
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+          <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+          </svg>
+        </div>
+        
+        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Success!</h3>
+        <p class="text-sm text-gray-600 text-center mb-6">{{ popupMessage }}</p>
+        
+        <div class="flex justify-center">
+          <button
+            @click="showSuccessPopup = false"
+            class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Popup Modal -->
+    <div v-if="showErrorPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showErrorPopup = false">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 transform transition-all" @click.stop>
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+          <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+          </svg>
+        </div>
+        
+        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Error</h3>
+        <p class="text-sm text-gray-600 text-center mb-6">{{ popupMessage }}</p>
+        
+        <div class="flex justify-center">
+          <button
+            @click="showErrorPopup = false"
+            class="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { locationApi } from '@/services/api'
 import { mdiMapMarker, mdiEye, mdiPencil, mdiDelete } from '@mdi/js'
+
+const router = useRouter()
 
 // State
 const searchQuery = ref('')
@@ -310,10 +433,26 @@ const showAddModal = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+// Delete modal state
+const showDeleteModal = ref(false)
+const locationToDelete = ref<any>(null)
+const isDeleting = ref(false)
+
+// Success/Error popup states
+const showSuccessPopup = ref(false)
+const showErrorPopup = ref(false)
+const popupMessage = ref('')
+
 // Filters
 const filters = ref({
   status: '',
   company: ''
+})
+
+// Dropdown states for rotating arrows
+const dropdownStates = ref({
+  status: false,
+  company: false
 })
 
 // Form data
@@ -400,12 +539,86 @@ const resetFilters = () => {
   }
 }
 
-const deleteLocation = (location: any) => {
-  if (confirm(`Are you sure you want to delete "${location.name}"?`)) {
-    const index = locations.value.findIndex(l => l.id === location.id)
-    if (index !== -1) {
-      locations.value.splice(index, 1)
+// Dropdown control functions
+const toggleDropdown = (dropdown: string) => {
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+}
+
+const closeDropdown = (dropdown: string) => {
+  setTimeout(() => {
+    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
+  }, 150)
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
+
+const navigateToLocationDetail = (locationId: string) => {
+  router.push(`/locations/${locationId}`)
+}
+
+const editLocation = (locationId: string) => {
+  router.push(`/locations/${locationId}/edit`)
+}
+
+const confirmDeleteLocation = (location: any) => {
+  locationToDelete.value = location
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  if (!isDeleting.value) {
+    showDeleteModal.value = false
+    locationToDelete.value = null
+  }
+}
+
+const confirmDelete = async () => {
+  if (!locationToDelete.value) return
+
+  isDeleting.value = true
+
+  try {
+    const response = await locationApi.deleteLocation(locationToDelete.value.id)
+
+    if (response.success) {
+      // Remove location from local array
+      const index = locations.value.findIndex(l => l.id === locationToDelete.value.id)
+      if (index !== -1) {
+        locations.value.splice(index, 1)
+      }
+
+      // Hide delete modal first
+      showDeleteModal.value = false
+      locationToDelete.value = null
+
+      // Show success popup
+      popupMessage.value = response.message || 'Location deleted successfully'
+      showSuccessPopup.value = true
+    } else {
+      // Hide delete modal first
+      showDeleteModal.value = false
+      locationToDelete.value = null
+
+      // Show error popup
+      popupMessage.value = response.message || 'Failed to delete location'
+      showErrorPopup.value = true
     }
+  } catch (error) {
+    console.error('Error deleting location:', error)
+    
+    // Hide delete modal first
+    showDeleteModal.value = false
+    locationToDelete.value = null
+
+    // Show error popup
+    popupMessage.value = 'Network error while deleting location'
+    showErrorPopup.value = true
+  } finally {
+    isDeleting.value = false
   }
 }
 

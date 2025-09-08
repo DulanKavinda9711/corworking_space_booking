@@ -114,7 +114,7 @@
       </header>
 
       <!-- Page Content -->
-      <main class="flex-1 overflow-y-auto p-6 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm border-b border-green-100">
+      <main class="flex-1 overflow-y-auto p-6 bg-gradient-to-r from-gray-200 to-gray-250 shadow-sm border-b border-gray-100">
         <slot />
       </main>
     </div>

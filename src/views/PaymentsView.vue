@@ -109,40 +109,120 @@
           </div>
           <div class="md:w-40">
             <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
-            <select v-model="filters.product" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="">All Products</option>
-              <option value="meeting-room">Meeting Room</option>
-              <option value="hot-desk">Hot Desk</option>
-              <option value="private-office">Private Office</option>
-              <option value="event-space">Event Space</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.product" 
+                @focus="toggleDropdown('product')"
+                @blur="closeDropdown('product')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="">All Products</option>
+                <option value="meeting-room">Meeting Room</option>
+                <option value="hot-desk">Hot Desk</option>
+                <option value="private-office">Private Office</option>
+                <option value="event-space">Event Space</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.product ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="md:w-48">
             <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="">All Locations</option>
-              <option value="main-branch">Main Branch - Downtown</option>
-              <option value="tech-hub">Tech Hub - Silicon Valley</option>
-              <option value="creative-quarter">Creative Quarter</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.location" 
+                @focus="toggleDropdown('location')"
+                @blur="closeDropdown('location')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="">All Locations</option>
+                <option value="main-branch">Main Branch - Downtown</option>
+                <option value="tech-hub">Tech Hub - Silicon Valley</option>
+                <option value="creative-quarter">Creative Quarter</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.location ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="md:w-40">
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select v-model="filters.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending (Subscription)</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.status" 
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending (Subscription)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="md:w-40">
             <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-            <select v-model="sortBy" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="date">Date</option>
-              <option value="amount">Amount</option>
-              <option value="booking">Booking ID</option>
-              <option value="commission">Commission</option>
-              <option value="subscriptions">Subscriptions</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="sortBy" 
+                @focus="toggleDropdown('sortBy')"
+                @blur="closeDropdown('sortBy')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="date">Date</option>
+                <option value="amount">Amount</option>
+                <option value="booking">Booking ID</option>
+                <option value="commission">Commission</option>
+                <option value="subscriptions">Subscriptions</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.sortBy ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="flex items-end md:absolute md:right-0 md:top-6">
             <button
@@ -385,6 +465,14 @@ onUnmounted(() => {
 const sortBy = ref('date')
 const sortOrder = ref('desc')
 
+// Dropdown states for rotating arrows
+const dropdownStates = ref({
+  product: false,
+  location: false,
+  status: false,
+  sortBy: false
+})
+
 // Sample payments data with new commission structure
 const payments = ref([
   {
@@ -622,6 +710,23 @@ const resetFilters = () => {
   }
   sortBy.value = 'date'
   sortOrder.value = 'desc'
+}
+
+// Dropdown control functions
+const toggleDropdown = (dropdown: string) => {
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+}
+
+const closeDropdown = (dropdown: string) => {
+  setTimeout(() => {
+    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
+  }, 150)
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
 }
 
 const exportToCSV = () => {

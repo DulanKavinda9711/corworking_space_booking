@@ -46,27 +46,87 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select v-model="filters.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.status" 
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <select v-model="filters.location" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-              <option value="">All Locations</option>
-              <option v-for="loc in availableLocations" :key="loc" :value="loc">{{ loc }}</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.location" 
+                @focus="toggleDropdown('location')"
+                @blur="closeDropdown('location')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+              >
+                <option value="">All Locations</option>
+                <option v-for="loc in availableLocations" :key="loc" :value="loc">{{ loc }}</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.location ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-            <select v-model="filters.productType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
-              <option value="">All Types</option>
-              <option value="Meeting Room">Meeting Room</option>
-              <option value="Hot Desk">Hot Desk</option>
-              <option value="Dedicated Desk">Dedicated Desk</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.productType" 
+                @focus="toggleDropdown('productType')"
+                @blur="closeDropdown('productType')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+              >
+                <option value="">All Types</option>
+                <option value="Meeting Room">Meeting Room</option>
+                <option value="Hot Desk">Hot Desk</option>
+                <option value="Dedicated Desk">Dedicated Desk</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.productType ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div class="md:col-span-2 flex items-end justify-end">
             <button @click="resetFilters"
@@ -77,7 +137,31 @@
         </div>
       </div>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+          <!-- Loading State -->
+          <div v-if="isLoading" class="flex items-center justify-center py-12">
+            <div class="flex items-center space-x-3">
+              <svg class="animate-spin h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-gray-600">Loading products...</span>
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-red-900">Error Loading Products</h3>
+            <p class="mt-2 text-sm text-red-700">{{ error }}</p>
+            <button @click="loadProducts" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              Try Again
+            </button>
+          </div>
+
+          <!-- Products Table -->
+          <table v-else class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -89,7 +173,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
@@ -121,20 +205,21 @@
                     {{ product.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex items-center space-x-3">
-                    <!-- <button @click.stop="viewProductDetails(product.id)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-600 hover:bg-green-700 text-white flex items-center justify-center space-x-1"
-                      title="View Details">
-                      <span>View</span>
-                    </button> -->
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
+                  <div class="flex items-center justify-end space-x-2">
                     <button @click.stop="editProduct(product.id)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center space-x-1"
                       title="Edit Product">
                       <span>Edit</span>
                     </button>
+                    <button @click.stop="toggleProductStatus(product)"
+                      :class="product.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                      :title="product.status === 'active' ? 'Deactivate Product' : 'Activate Product'">
+                      <span>{{ product.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
+                    </button>
                     <button @click.stop="confirmDeleteProduct(product)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
                       title="Delete Product">
                       <span>Delete</span>
                     </button>
@@ -146,12 +231,14 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="filteredProducts.length === 0" class="text-center py-12">
+        <div v-if="!isLoading && !error && filteredProducts.length === 0" class="text-center py-12">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8V5a2 2 0 00-2-2H9a2 2 0 00-2-2v2h10z" />
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900">No products found</h3>
-          <p class="mt-1 text-sm text-gray-500">Get started by creating a new product.</p>
+          <p class="mt-1 text-sm text-gray-500">
+            {{ products.length === 0 ? 'Get started by creating a new product.' : 'Try adjusting your search or filters.' }}
+          </p>
           <div class="mt-6">
             <router-link to="/products/add" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,7 +262,7 @@
         
         <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Delete Product</h3>
         
-        <div v-if="productToDelete" class="bg-gray-50 rounded-lg p-4 mb-4">
+        <div v-if="productToDelete" class="bg-gray-100 rounded-lg p-4 mb-4">
           <div class="flex items-center space-x-3">
             <div class="flex-shrink-0 h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
@@ -189,15 +276,18 @@
           </div>
         </div>
         
-        <p class="text-sm text-gray-500 text-center mb-6">
-          Are you sure you want to delete this product? This action cannot be undone and will permanently remove the product from the system.
-        </p>
+        
+        <div class="my-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-xs text-red-700">
+          <strong>Warning:</strong> This will permanently remove the product from the system and affect any products that use it.
+              </p>
+            </div>
         
         <div class="flex space-x-3">
           <button
             @click="closeDeleteModal"
             :disabled="isDeleting"
-            class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+            class="flex-1 px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1"
           >
             Cancel
           </button>
@@ -219,15 +309,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { mdiPackageVariant, mdiEye, mdiPencil, mdiDelete, mdiDeskLamp, mdiAccountGroup, mdiChairRolling, mdiBookOpen } from '@mdi/js'
+import { productApi } from '@/services/api'
+
+// Types
+interface Product {
+  id: string
+  name: string
+  type: 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk'
+  locationName: string
+  locationAddress: string
+  companyName: string
+  companyId: string
+  locationId: string
+  status: 'active' | 'inactive'
+  maxSeatingCapacity: number
+  pricePerHour?: number
+  pricePerDay?: number
+  pricePerMonth?: number
+  pricePerYear?: number
+  images: string[]
+  description: string
+  openDays: string[]
+  openHours: { start: string; end: string }
+  defaultFacilities: string[]
+  additionalFacilities: Array<{
+    id: string
+    name: string
+    pricePerHour?: number
+    pricePerDay?: number
+    pricePerMonth?: number
+    pricePerYear?: number
+  }>
+}
 
 // State
 const searchQuery = ref('')
 const showDeleteModal = ref(false)
-const productToDelete = ref<any>(null)
+const productToDelete = ref<Product | null>(null)
 const isDeleting = ref(false)
+const isLoading = ref(false)
+const error = ref('')
+
+// Dropdown states for arrow rotation
+const dropdownStates = ref({
+  status: false,
+  location: false,
+  productType: false
+})
 
 // Filters
 const filters = ref({
@@ -236,84 +367,48 @@ const filters = ref({
   location: ''
 })
 
-// Available locations (derived from sample data)
+// Products data - now properly typed
+const products = ref<Product[]>([])
+
+// Available locations (derived from product data)
 const availableLocations = computed(() => {
   const set = new Set<string>()
   products.value.forEach(p => set.add(p.locationName))
   return Array.from(set)
 })
 
-// Sample data
-const products = ref([
-  {
-    id: 'PROD001',
-    name: 'Meeting Room',
-    type: 'Meeting Room',
-    locationName: 'Downtown Office',
-    locationAddress: '123 Business St',
-    companyName: 'ABC Corporation',
-    companyId: 'COMP001',
-    locationId: 'LOC001',
-    status: 'active',
-    maxSeatingCapacity: 12,
-    pricePerHour: 50,
-    images: ['meeting-room-1.jpg'],
-    description: 'Spacious executive meeting room with video conferencing facilities',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    openHours: { start: '08:00', end: '18:00' },
-    defaultFacilities: ['WiFi', 'Projector', 'Whiteboard'],
-    additionalFacilities: [
-      { id: 'FAC001', name: 'Coffee Machine', pricePerHour: 5 },
-      { id: 'FAC002', name: 'Catering', pricePerHour: 15 }
-    ]
-  },
-  {
-    id: 'PROD002',
-    name: 'Hot Desk',
-    type: 'Hot Desk',
-    locationName: 'Tech Hub',
-    locationAddress: '456 Innovation Ave',
-    companyName: 'Tech Innovations Ltd.',
-    companyId: 'COMP004',
-    locationId: 'LOC002',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerHour: 8,
-    pricePerDay: 60,
-    images: ['hot-desk-1.jpg'],
-    description: 'Modern hot desk with ergonomic chair and power outlets',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    openHours: { start: '07:00', end: '19:00' },
-    defaultFacilities: ['WiFi', 'Power Outlet', 'Ergonomic Chair'],
-    additionalFacilities: [
-      { id: 'FAC003', name: 'Monitor', pricePerHour: 3 },
-      { id: 'FAC004', name: 'Keyboard & Mouse', pricePerHour: 2 }
-    ]
-  },
-  {
-    id: 'PROD003',
-    name: 'Dedicated Desk',
-    type: 'Dedicated Desk',
-    locationName: 'Business Center',
-    locationAddress: '789 Corporate Blvd',
-    companyName: 'Global Solutions Inc.',
-    companyId: 'COMP003',
-    locationId: 'LOC003',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerMonth: 800,
-    pricePerYear: 8500,
-    images: ['dedicated-desk-1.jpg'],
-    description: 'Private dedicated desk in quiet workspace with storage',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    openHours: { start: '06:00', end: '22:00' },
-    defaultFacilities: ['WiFi', 'Storage Locker', 'Ergonomic Chair', 'Desk Lamp'],
-    additionalFacilities: [
-      { id: 'FAC005', name: 'Printer Access', pricePerHour: 1 },
-      { id: 'FAC006', name: 'Phone Line', pricePerHour: 2 }
-    ]
+// Load products from API
+const loadProducts = async () => {
+  isLoading.value = true
+  error.value = ''
+  
+  try {
+    const response = await productApi.getAllProducts()
+    if (response.success && response.data) {
+      // Transform API data to match our Product interface
+      products.value = response.data.map((apiProduct: any) => ({
+        ...apiProduct,
+        locationName: apiProduct.location_name || 'Unknown Location',
+        locationAddress: apiProduct.address || apiProduct.location_address || 'Unknown Address',
+        companyName: apiProduct.company_name || 'Unknown Company',
+        companyId: apiProduct.company_id || 'unknown',
+        locationId: apiProduct.location_id || 'unknown',
+        maxSeatingCapacity: apiProduct.capacity || 1,
+        openDays: [],
+        openHours: { start: '09:00', end: '17:00' },
+        defaultFacilities: apiProduct.facilities || [],
+        additionalFacilities: []
+      })) as Product[]
+    } else {
+      error.value = response.message || 'Failed to load products'
+    }
+  } catch (err) {
+    console.error('Error loading products:', err)
+    error.value = 'An error occurred while loading products'
+  } finally {
+    isLoading.value = false
   }
-])
+}
 
 // Computed properties
 const filteredProducts = computed(() => {
@@ -373,6 +468,21 @@ const getStatusClass = (status: string) => {
   }
 }
 
+// Dropdown toggle functions
+const toggleDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = !dropdownStates.value[dropdownName as keyof typeof dropdownStates.value]
+}
+
+const closeDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = false
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
+
 // Row click handler to view product details
 const viewProductDetails = (productId: string) => {
   // Navigate to product details page
@@ -385,7 +495,7 @@ const editProduct = (productId: string) => {
   window.location.href = `/products/${productId}/edit`
 }
 
-const confirmDeleteProduct = (product: any) => {
+const confirmDeleteProduct = (product: Product) => {
   productToDelete.value = product
   showDeleteModal.value = true
 }
@@ -406,7 +516,7 @@ const deleteProduct = async () => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    const index = products.value.findIndex(p => p.id === productToDelete.value.id)
+    const index = products.value.findIndex(p => p.id === productToDelete.value!.id)
     if (index !== -1) {
       products.value.splice(index, 1)
     }
@@ -428,6 +538,25 @@ const deleteProduct = async () => {
   }
 }
 
+const toggleProductStatus = async (product: Product) => {
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Toggle the status
+    product.status = product.status === 'active' ? 'inactive' : 'active'
+    
+    // You could also make an API call here to update the status on the server
+    // await productApi.updateProductStatus(product.id, product.status)
+    
+    console.log(`Product ${product.name} status changed to ${product.status}`)
+  } catch (error) {
+    console.error('Error toggling product status:', error)
+    // Revert the status change if API call fails
+    product.status = product.status === 'active' ? 'inactive' : 'active'
+  }
+}
+
 const resetFilters = () => {
   searchQuery.value = ''
   filters.value = {
@@ -436,6 +565,11 @@ const resetFilters = () => {
   location: ''
   }
 }
+
+// Load products on component mount
+onMounted(() => {
+  loadProducts()
+})
 </script>
 
 <style scoped>

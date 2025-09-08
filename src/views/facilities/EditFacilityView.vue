@@ -121,7 +121,7 @@
                   Cancel
                 </button>
                 <button type="submit" :disabled="!isFormValid"
-                  class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
+                  class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
@@ -141,7 +141,7 @@
                 </svg>
               </div>
               <h2 class="text-xl font-semibold text-gray-900 mb-2">Success!</h2>
-              <p class="text-gray-600 mb-6">{{ modalMessage || 'Facility updated successfully!' }}</p>
+              <p class="text-gray-600 mb-6">Update successful!</p>
               <button
                 @click="closeSuccessModal"
                 type="button"

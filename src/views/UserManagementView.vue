@@ -104,23 +104,63 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Role Filter</label>
-            <select v-model="filters.role" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="">All Roles</option>
-              <option value="super-admin">Super Admin</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="operator">Operator</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.role" 
+                @focus="toggleDropdown('role')"
+                @blur="closeDropdown('role')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+              >
+                <option value="">All Roles</option>
+                <option value="super-admin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="operator">Operator</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.role ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
-            <select v-model="filters.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="pending">Pending Approval</option>
-              <option value="suspended">Suspended</option>
-            </select>
+            <div class="relative">
+              <select 
+                v-model="filters.status" 
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending Approval</option>
+                <option value="suspended">Suspended</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
         <div class="mt-4 flex justify-end">
@@ -306,22 +346,63 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                <select v-model="form.role" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                  <option value="">Select role</option>
-                  <option value="super-admin">Super Admin</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="operator">Operator</option>
-                </select>
+                <div class="relative">
+                  <select 
+                    v-model="form.role" 
+                    required 
+                    @focus="toggleDropdown('formRole')"
+                    @blur="closeDropdown('formRole')"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="">Select role</option>
+                    <option value="super-admin">Super Admin</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="operator">Operator</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg 
+                      :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.formRole ? 'transform rotate-180' : ''
+                      ]"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select v-model="form.status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="pending">Pending Approval</option>
-                  <option value="suspended">Suspended</option>
-                </select>
+                <div class="relative">
+                  <select 
+                    v-model="form.status" 
+                    @focus="toggleDropdown('formStatus')"
+                    @blur="closeDropdown('formStatus')"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg 
+                      :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.formStatus ? 'transform rotate-180' : ''
+                      ]"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -531,6 +612,14 @@ const showViewModal = ref(false)
 const showSuccessModal = ref(false)
 const selectedUser = ref<User | null>(null)
 
+// Dropdown states for rotating arrows
+const dropdownStates = ref({
+  role: false,
+  status: false,
+  formRole: false,
+  formStatus: false
+})
+
 // Filters
 const filters = ref({
   role: '',
@@ -730,6 +819,23 @@ const resetFilters = () => {
     role: '',
     status: ''
   }
+}
+
+// Dropdown control functions
+const toggleDropdown = (dropdown: string) => {
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+}
+
+const closeDropdown = (dropdown: string) => {
+  setTimeout(() => {
+    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
+  }, 150)
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
 }
 
 const viewUser = (user: User) => {
