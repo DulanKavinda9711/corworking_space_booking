@@ -128,6 +128,13 @@ export interface Facility {
   Icon?: string
 }
 
+export interface OperationSchedule {
+  day: string
+  start_time: string
+  end_time: string
+  is_enabled: boolean
+}
+
 export interface Product {
   id: string
   name: string
@@ -150,6 +157,7 @@ export interface Product {
     end: string
   }
   openDays: string[]
+  operation_schedule?: OperationSchedule[]
   defaultFacilities: string[]
   additionalFacilities: Array<{
     id: string
@@ -1956,6 +1964,9 @@ export const productApi = {
               .filter((schedule: any) => schedule.is_enabled)
               .map((schedule: any) => schedule.day),
             
+            // Operation schedule
+            operation_schedule: product.operation_schedule || [],
+            
             // Default facilities
             defaultFacilities: (product.default_facilities || []).map((facility: any) => 
               facility.facility_name || facility.name || facility
@@ -2244,32 +2255,32 @@ export const productApi = {
       const formData = new FormData()
       
       // Add product ID for the update
-      formData.append('ProductId', id)
+      formData.append('id', Number(id).toString())
       
       // Basic product information
       formData.append('LocationId', productData.LocationId)
-      formData.append('ProductType', productData.ProductType)
-      formData.append('ProductName', productData.ProductName)
+      formData.append('Type', productData.ProductType)
+      formData.append('Name', productData.ProductName)
       formData.append('Description', productData.Description)
-      formData.append('MaxSeatingCapacity', productData.MaxSeatingCapacity.toString())
+      formData.append('Capacity', productData.MaxSeatingCapacity.toString())
       
       // Pricing - only append if value exists and is greater than 0
       if (productData.PricePerHour && productData.PricePerHour > 0) {
-        formData.append('PricePerHour', productData.PricePerHour.toString())
+        formData.append('Hourly', productData.PricePerHour.toString())
       }
       if (productData.PricePerDay && productData.PricePerDay > 0) {
-        formData.append('PricePerDay', productData.PricePerDay.toString())
+        formData.append('Daily', productData.PricePerDay.toString())
       }
       if (productData.PricePerMonth && productData.PricePerMonth > 0) {
-        formData.append('PricePerMonth', productData.PricePerMonth.toString())
+        formData.append('Monthly', productData.PricePerMonth.toString())
       }
       if (productData.PricePerYear && productData.PricePerYear > 0) {
-        formData.append('PricePerYear', productData.PricePerYear.toString())
+        formData.append('Yearly', productData.PricePerYear.toString())
       }
       
       // Operating hours
-      formData.append('OpeningTime', productData.OpeningTime)
-      formData.append('ClosingTime', productData.ClosingTime)
+      formData.append('StartOperationTime', productData.OpeningTime)
+      formData.append('EndOperationTime', productData.ClosingTime)
       
       // Operation schedule for each day
       formData.append('OperationTime.IsMonday', productData.OperationTime.IsMonday.toString())
@@ -2386,6 +2397,95 @@ export const productApi = {
     } catch (error) {
       console.error('API - Update product error:', error)
       return errorResponse('Network error while updating product', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Activate or deactivate a product
+   */
+  async activateProduct(productId: string | number, isActive: boolean): Promise<ApiResponse<string>> {
+    try {
+      console.log('API - Updating product activation status:', { productId, isActive })
+
+      const response = await fetch(buildApiUrl('/product/activate-product'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: Number(productId),
+          is_active: isActive
+        })
+      })
+
+      console.log('API - Activate product response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Activate product success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message)
+      } else {
+        return errorResponse(data.message || 'Failed to update product status', data.errors)
+      }
+    } catch (error) {
+      console.error('API - Activate product error:', error)
+      return errorResponse('Network error while updating product status', [(error as Error).message])
+    }
+  },
+
+  /**
+   * Delete a product
+   */
+  async deleteProduct(productId: string | number): Promise<ApiResponse<string>> {
+    try {
+      console.log('API - Deleting product:', { productId })
+
+      const response = await fetch(buildApiUrl('/product/delete-product'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: Number(productId)
+        })
+      })
+
+      console.log('API - Delete product response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Delete product success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message)
+      } else {
+        return errorResponse(data.message || 'Failed to delete product', data.errors)
+      }
+    } catch (error) {
+      console.error('API - Delete product error:', error)
+      return errorResponse('Network error while deleting product', [(error as Error).message])
     }
   }
 }

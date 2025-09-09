@@ -124,7 +124,7 @@
                       <div class="relative">
                         <select 
                           v-model="product.type"
-                          @change="onProductTypeChange"
+                          @change="onProductTypeChange(idx)"
                           @focus="toggleDropdown('productType')"
                           @blur="closeDropdown('productType')"
                           :class="[
@@ -1013,6 +1013,76 @@
       </div>
     </div>
 
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+         @click="closeSuccessModal">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4" @click.stop>
+        <!-- Success Icon with circular background like the image -->
+        <div class="flex items-center justify-center w-20 h-20 mx-auto bg-green-100 rounded-full mb-6">
+          <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        
+        <!-- Success Title -->
+        <h3 class="text-2xl font-bold text-gray-900 text-center mb-4">
+          Success!
+        </h3>
+        
+        <!-- Success Message -->
+        <p class="text-gray-600 text-center mb-8 leading-relaxed">
+          Product{{ createdProductsCount > 1 ? 's' : '' }} created successfully!
+        </p>
+        
+        <!-- Action Buttons - horizontal layout in one line -->
+        <div class="flex space-x-3">
+          <button @click="closeSuccessModalAndRedirect" 
+            class="flex-1 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+            Go to Products
+          </button>
+          <button @click="closeSuccessModal" 
+            class="flex-1 px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+            Add Another
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+         @click="closeErrorModal">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4" @click.stop>
+        <!-- Error Icon with circular background -->
+        <div class="flex items-center justify-center w-20 h-20 mx-auto bg-red-100 rounded-full mb-6">
+          <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        
+        <!-- Error Title -->
+        <h3 class="text-2xl font-bold text-gray-900 text-center mb-4">
+          Error!
+        </h3>
+        
+        <!-- Error Message -->
+        <p class="text-gray-600 text-center mb-8 leading-relaxed">
+          {{ errorMessage }}
+        </p>
+        
+        <!-- Action Buttons - vertical layout -->
+        <div class="flex space-x-3">
+          <button @click="closeErrorModal" 
+                  class="flex-1 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+            Try Again
+          </button>
+          <button @click="closeErrorModal" 
+                  class="flex-1 px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
   </AdminLayout>
 </template>
 
@@ -1072,6 +1142,13 @@ const selectedMinute = ref(0)
 const selectedPeriod = ref('AM')
 const timePickerMode = ref<'hour' | 'minute'>('hour')
 const currentTimeField = ref<{day: DayOfWeek, type: 'start' | 'end'} | null>(null)
+
+// Modal state for success and error
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+const createdProductsCount = ref(0)
 
 // Form data
 const products = ref([
@@ -1510,15 +1587,15 @@ const onCompanyChange = () => {
   // Remove this method since we no longer have company selection
 }
 
-const onProductTypeChange = () => {
-  // Reset pricing fields when product type changes
-  products.value.forEach(product => {
-    product.pricePerHour = 0
-    product.pricePerDay = 0
-    product.pricePerWeek = 0
-    product.pricePerMonth = 0
-    product.pricePerYear = 0
-  })
+const onProductTypeChange = (index: number) => {
+  // Reset pricing fields when product type changes - only for the specific product
+  if (products.value[index]) {
+    products.value[index].pricePerHour = 0
+    products.value[index].pricePerDay = 0
+    products.value[index].pricePerWeek = 0
+    products.value[index].pricePerMonth = 0
+    products.value[index].pricePerYear = 0
+  }
 }
 
 const handleImageUpload = (event: any, productIndex: number) => {
@@ -1751,6 +1828,34 @@ const validateProduct = (product: any) => {
   }
 }
 
+// Modal control functions
+const showSuccess = (message: string, productCount: number = 1) => {
+  successMessage.value = message
+  createdProductsCount.value = productCount
+  showSuccessModal.value = true
+}
+
+const showError = (message: string) => {
+  errorMessage.value = message
+  showErrorModal.value = true
+}
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  successMessage.value = ''
+  createdProductsCount.value = 0
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
+}
+
+const closeSuccessModalAndRedirect = () => {
+  closeSuccessModal()
+  router.push('/products')
+}
+
 const saveProduct = async (idx: number) => {
   const lastIndex = products.value.length - 1
   isCreatingProduct.value = true
@@ -1773,7 +1878,10 @@ const saveProduct = async (idx: number) => {
       for (const product of products.value) {
         await createProductAPI(product)
       }
-      alert('All products created successfully!')
+      showSuccess(
+        `Successfully created ${products.value.length} product${products.value.length > 1 ? 's' : ''}. You can now view them in the products list or add more products.`,
+        products.value.length
+      )
       resetForm()
       return
     }
@@ -1786,7 +1894,10 @@ const saveProduct = async (idx: number) => {
 
     // Create single product
     await createProductAPI(product)
-    alert('Product created successfully!')
+    showSuccess(
+      `Successfully created "${product.name}".`,
+      1
+    )
     // remove or reset the form after creation - here we reset single form to blank
     if (products.value.length === 1) {
       resetForm()
@@ -1795,8 +1906,8 @@ const saveProduct = async (idx: number) => {
     }
   } catch (error) {
     console.error('Error creating product:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Please try again.'
-    alert(`Error creating product: ${errorMessage}`)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    showError(`Failed to create product: ${errorMessage}. Please check your input and try again.`)
   } finally {
     isCreatingProduct.value = false
   }

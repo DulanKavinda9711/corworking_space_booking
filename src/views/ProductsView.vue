@@ -21,6 +21,27 @@
         </router-link>
       </div>
 
+      <!-- Notification -->
+      <div v-if="showNotification" :class="[
+        'fixed top-4 right-4 z-50 max-w-md w-full rounded-lg shadow-lg p-4 transition-all duration-300',
+        successMessage ? 'bg-green-100 border border-green-200 text-green-800' : 'bg-red-100 border border-red-200 text-red-800'
+      ]">
+        <div class="flex items-center">
+          <svg v-if="successMessage" class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          <svg v-else class="w-5 h-5 mr-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="text-sm font-medium">{{ successMessage || error }}</span>
+          <button @click="showNotification = false" class="ml-auto text-gray-400 hover:text-gray-600">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Search and Filters -->
       
 
@@ -212,10 +233,18 @@
                       <span>Edit</span>
                     </button>
                     <button @click.stop="toggleProductStatus(product)"
-                      :class="product.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                      :disabled="toggleStatusLoading.has(product.id)"
+                      :class="[
+                        product.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
+                        toggleStatusLoading.has(product.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      ]"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                      :title="product.status === 'active' ? 'Deactivate Product' : 'Activate Product'">
-                      <span>{{ product.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
+                      :title="toggleStatusLoading.has(product.id) ? 'Updating...' : (product.status === 'active' ? 'Deactivate Product' : 'Activate Product')">
+                      <svg v-if="toggleStatusLoading.has(product.id)" class="animate-spin h-3 w-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span v-else>{{ product.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
                     </button>
                     <button @click.stop="confirmDeleteProduct(product)"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
@@ -270,7 +299,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 truncate">{{ productToDelete.name }}</p>
-              <p class="text-sm text-gray-500">{{ productToDelete.type }} • {{ productToDelete.companyName }}</p>
+              <p class="text-sm text-gray-500">{{ productToDelete.type }} • {{ productToDelete.locationName }}</p>
             </div>
           </div>
         </div>
@@ -291,15 +320,48 @@
             Cancel
           </button>
           <button
-            @click="deleteProduct"
+            @click="showDeleteConfirmation"
             :disabled="isDeleting"
             class="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center justify-center"
+          >
+            Delete Product
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final Confirmation Modal -->
+    <div v-if="showConfirmDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="cancelDelete">
+      <div class="bg-white rounded-lg p-6 w-full max-w-sm mx-4" @click.stop>
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        
+        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Are you sure?</h3>
+        <p class="text-sm text-gray-500 text-center mb-6">
+          This action cannot be undone. The product will be permanently deleted from the system.
+        </p>
+        
+        <div class="flex space-x-3">
+          <button
+            @click="cancelDelete"
+            :disabled="isDeleting"
+            class="flex-1 px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="deleteProduct"
+            :disabled="isDeleting"
+            class="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center justify-center transition-colors"
           >
             <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isDeleting ? 'Deleting...' : 'Delete Product' }}
+            {{ isDeleting ? 'Deleting...' : 'Yes, Delete' }}
           </button>
         </div>
       </div>
@@ -309,48 +371,46 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { mdiPackageVariant, mdiEye, mdiPencil, mdiDelete, mdiDeskLamp, mdiAccountGroup, mdiChairRolling, mdiBookOpen } from '@mdi/js'
-import { productApi } from '@/services/api'
+import { productApi, type Product } from '@/services/api'
 
-// Types
-interface Product {
-  id: string
+// Interface for API response data (before transformation)
+interface ApiProductResponse {
+  id: string | number
   name: string
-  type: 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk'
-  locationName: string
-  locationAddress: string
-  companyName: string
-  companyId: string
-  locationId: string
-  status: 'active' | 'inactive'
-  maxSeatingCapacity: number
-  pricePerHour?: number
-  pricePerDay?: number
-  pricePerMonth?: number
-  pricePerYear?: number
-  images: string[]
-  description: string
-  openDays: string[]
-  openHours: { start: string; end: string }
-  defaultFacilities: string[]
-  additionalFacilities: Array<{
-    id: string
-    name: string
-    pricePerHour?: number
-    pricePerDay?: number
-    pricePerMonth?: number
-    pricePerYear?: number
-  }>
+  type?: string
+  product_type?: string
+  category?: string
+  ProductType?: string
+  productType?: string
+  location_name?: string
+  address?: string
+  location_address?: string
+  company_name?: string
+  company_id?: string | number
+  location_id?: string | number
+  capacity?: number
+  is_active?: boolean | number
+  facilities?: string[]
+  description?: string
 }
+
+// Router
+const router = useRouter()
 
 // State
 const searchQuery = ref('')
 const showDeleteModal = ref(false)
+const showConfirmDelete = ref(false)
 const productToDelete = ref<Product | null>(null)
 const isDeleting = ref(false)
 const isLoading = ref(false)
 const error = ref('')
+const successMessage = ref('')
+const showNotification = ref(false)
+const toggleStatusLoading = ref<Set<string>>(new Set())
 
 // Dropdown states for arrow rotation
 const dropdownStates = ref({
@@ -413,37 +473,42 @@ const loadProducts = async () => {
   try {
     const response = await productApi.getAllProducts()
     if (response.success && response.data) {
-      console.log('API Response Data:', response.data) // Debug: Log the API response
-      
       // Transform API data to match our Product interface
-      products.value = response.data.map((apiProduct: any) => {
-        console.log('Individual Product:', apiProduct) // Debug: Log each product
-        console.log('Product type field:', apiProduct.type, apiProduct.product_type, apiProduct.category) // Debug: Check different possible field names
+      products.value = response.data.map((apiProduct: ApiProductResponse) => {
         
         return {
-          ...apiProduct,
+          id: String(apiProduct.id),
+          name: apiProduct.name || 'Unknown Product',
           locationName: apiProduct.location_name || 'Unknown Location',
           locationAddress: apiProduct.address || apiProduct.location_address || 'Unknown Address',
           companyName: apiProduct.company_name || 'Unknown Company',
-          companyId: apiProduct.company_id || 'unknown',
-          locationId: apiProduct.location_id || 'unknown',
+          companyId: String(apiProduct.company_id || 'unknown'),
+          locationId: String(apiProduct.location_id || 'unknown'),
           maxSeatingCapacity: apiProduct.capacity || 1,
-          status: (apiProduct.is_active === true || apiProduct.is_active === 1) ? 'active' : 'inactive',
-          type: mapProductType(apiProduct.type || apiProduct.product_type || apiProduct.category || apiProduct.ProductType || apiProduct.productType), // Map to valid types
+          status: (apiProduct.is_active === true || apiProduct.is_active === 1) ? 'active' as const : 'inactive' as const,
+          type: mapProductType(apiProduct.type || apiProduct.product_type || apiProduct.category || apiProduct.ProductType || apiProduct.productType || ''),
+          description: apiProduct.description || '',
+          pricePerHour: 0,
+          pricePerDay: 0,
+          pricePerMonth: 0,
+          pricePerYear: 0,
+          images: [],
           openDays: [],
           openHours: { start: '09:00', end: '17:00' },
           defaultFacilities: apiProduct.facilities || [],
           additionalFacilities: []
         }
       }) as Product[]
-      
-      console.log('Mapped Products:', products.value) // Debug: Log the mapped products
     } else {
-      error.value = response.message || 'Failed to load products'
+      const errorMsg = response.message || 'Failed to load products'
+      error.value = errorMsg
+      showError(errorMsg)
     }
   } catch (err) {
     console.error('Error loading products:', err)
-    error.value = 'An error occurred while loading products'
+    const errorMsg = 'An error occurred while loading products'
+    error.value = errorMsg
+    showError(errorMsg)
   } finally {
     isLoading.value = false
   }
@@ -525,13 +590,13 @@ const closeAllDropdowns = () => {
 // Row click handler to view product details
 const viewProductDetails = (productId: string) => {
   // Navigate to product details page
-  window.location.href = `/products/${productId}`
+  router.push(`/products/${productId}`)
 }
 
 // Edit product handler
 const editProduct = (productId: string) => {
   // Navigate to product edit page
-  window.location.href = `/products/${productId}/edit`
+  router.push(`/products/${productId}/edit`)
 }
 
 const confirmDeleteProduct = (product: Product) => {
@@ -539,11 +604,23 @@ const confirmDeleteProduct = (product: Product) => {
   showDeleteModal.value = true
 }
 
+const showDeleteConfirmation = () => {
+  showDeleteModal.value = false
+  showConfirmDelete.value = true
+}
+
 const closeDeleteModal = () => {
   if (!isDeleting.value) {
     showDeleteModal.value = false
+    showConfirmDelete.value = false
     productToDelete.value = null
   }
+}
+
+const cancelDelete = () => {
+  showConfirmDelete.value = false
+  showDeleteModal.value = false
+  productToDelete.value = null
 }
 
 const deleteProduct = async () => {
@@ -552,48 +629,101 @@ const deleteProduct = async () => {
   isDeleting.value = true
   
   try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Call the delete product API
+    const response = await productApi.deleteProduct(productToDelete.value.id)
     
-    const index = products.value.findIndex(p => p.id === productToDelete.value!.id)
-    if (index !== -1) {
-      products.value.splice(index, 1)
+    if (response.success) {
+      // Remove from local products list
+      const index = products.value.findIndex(p => p.id === productToDelete.value!.id)
+      if (index !== -1) {
+        products.value.splice(index, 1)
+      }
+      
+      // Add to localStorage for audit trail
+      const deletedProducts = JSON.parse(localStorage.getItem('deletedProducts') || '[]')
+      deletedProducts.push({
+        ...productToDelete.value,
+        deletedAt: new Date().toISOString(),
+        deletedBy: 'Admin User'
+      })
+      localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts))
+      
+      console.log('Product deleted successfully:', response.message)
+      showSuccess(response.message || 'Product deleted successfully')
+      
+      // Automatically close the modal after showing success message
+      setTimeout(() => {
+        closeDeleteModal()
+      }, 2000) // Close after 2 seconds to let user see the success message
+    } else {
+      console.error('Failed to delete product:', response.message)
+      showError(response.message || 'Failed to delete product')
     }
-    
-    // Add to localStorage for audit trail
-    const deletedProducts = JSON.parse(localStorage.getItem('deletedProducts') || '[]')
-    deletedProducts.push({
-      ...productToDelete.value,
-      deletedAt: new Date().toISOString(),
-      deletedBy: 'Admin User'
-    })
-    localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts))
-    
-    closeDeleteModal()
   } catch (error) {
     console.error('Error deleting product:', error)
+    showError('An error occurred while deleting the product')
   } finally {
     isDeleting.value = false
   }
 }
 
 const toggleProductStatus = async (product: Product) => {
+  // Prevent multiple concurrent requests for the same product
+  if (toggleStatusLoading.value.has(product.id)) {
+    return
+  }
+  
+  const originalStatus = product.status
+  const newStatus = product.status === 'active' ? 'inactive' : 'active'
+  const isActive = newStatus === 'active'
+  
   try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Add to loading state
+    toggleStatusLoading.value.add(product.id)
     
-    // Toggle the status
-    product.status = product.status === 'active' ? 'inactive' : 'active'
+    // Optimistically update the UI
+    product.status = newStatus
     
-    // You could also make an API call here to update the status on the server
-    // await productApi.updateProductStatus(product.id, product.status)
+    // Use the new activateProduct API method
+    const response = await productApi.activateProduct(product.id, isActive)
     
-    console.log(`Product ${product.name} status changed to ${product.status}`)
+    if (response.success) {
+      console.log(`Product ${product.name} status changed to ${product.status}`)
+      showSuccess(response.message || `Product ${isActive ? 'activated' : 'deactivated'} successfully`)
+    } else {
+      console.error('Failed to toggle product status:', response.message)
+      // Revert the status change if API call fails
+      product.status = originalStatus
+      showError(response.message || 'Failed to update product status')
+    }
   } catch (error) {
     console.error('Error toggling product status:', error)
     // Revert the status change if API call fails
-    product.status = product.status === 'active' ? 'inactive' : 'active'
+    product.status = originalStatus
+    showError('An error occurred while updating product status')
+  } finally {
+    // Remove from loading state
+    toggleStatusLoading.value.delete(product.id)
   }
+}
+
+// Notification helpers
+const showSuccess = (message: string) => {
+  successMessage.value = message
+  error.value = ''
+  showNotification.value = true
+  setTimeout(() => {
+    showNotification.value = false
+  }, 3000) // Reduced from 4000 to 3000ms for better UX with auto-close modal
+}
+
+const showError = (message: string) => {
+  error.value = message
+  successMessage.value = ''
+  showNotification.value = true
+  setTimeout(() => {
+    showNotification.value = false
+  }, 5000)
 }
 
 const resetFilters = () => {

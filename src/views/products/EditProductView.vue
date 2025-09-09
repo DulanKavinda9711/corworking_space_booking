@@ -23,9 +23,9 @@
 
       <!-- Product Not Found -->
       <div v-else-if="!originalProduct" class="bg-white rounded-xl shadow-card p-8 text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
+        </svg> -->
         <h3 class="text-lg font-medium text-gray-900 mb-2">Product Not Found</h3>
         <p class="text-gray-500 mb-6">The product you're trying to edit doesn't exist or has been removed.</p>
         <router-link to="/products" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-primary-700">
@@ -57,25 +57,8 @@
                     Select Location <span class="text-red-500">*</span>
                   </label>
                   
-                  <!-- Loading state for locations -->
-                  <div v-if="isLoadingLocations" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-500">
-                    <svg class="animate-spin w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Loading locations...
-                  </div>
-                  
-                  <!-- Error state for locations -->
-                  <div v-else-if="locationError" class="w-full border border-red-300 rounded-lg px-4 py-3 text-red-600 bg-red-50">
-                    {{ locationError }}
-                    <button @click="fetchLocations" class="ml-2 text-red-700 underline hover:no-underline">
-                      Retry
-                    </button>
-                  </div>
-                  
                   <!-- Location dropdown -->
-                  <div v-else class="relative">
+                  <div class="relative">
                     <select 
                       v-model="form.locationId"
                       @focus="toggleDropdown('location')"
@@ -90,6 +73,10 @@
                         {{ location.name }}
                       </option>
                     </select>
+                    <!-- Debug info -->
+                    <div class="mt-1 text-xs text-gray-500">
+                      Current locationId: {{ form.locationId }} | Available locations: {{ allLocations.length }}
+                    </div>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg 
                         :class="[
@@ -517,30 +504,105 @@
                       <span class="text-xs text-gray-500 font-normal ml-1">- No additional cost</span>
                     </label>
                     
-                    <div class="relative">
-                      <select 
-                        v-model="selectedDefaultFacility"
-                        @change="addDefaultFacility"
-                        class="w-full border border-green-400 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 text-gray-700 transition-colors appearance-none cursor-pointer bg-white"
-                      >
-                        <option value="">Select free facilities to add</option>
-                        <option 
-                          v-for="facility in availableDefaultFacilities" 
-                          :key="facility.id" 
-                          :value="facility.name"
+                    <!-- Loading state for facilities -->
+                    <div v-if="isLoadingFacilities" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-500 mb-4">
+                      <svg class="animate-spin w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading facilities...
+                    </div>
+                    
+                    <!-- Error state for facilities -->
+                    <div v-else-if="facilitiesError" class="w-full border border-red-300 rounded-lg px-4 py-3 text-red-600 bg-red-50 mb-4">
+                      {{ facilitiesError }}
+                      <button @click="fetchFacilities" class="ml-2 text-red-700 underline hover:no-underline">
+                        Retry
+                      </button>
+                    </div>
+                    
+                    <!-- Facilities dropdown with checkboxes -->
+                    <div v-else class="mb-4 relative" v-click-outside="closeDefaultDropdown">
+                      <div class="relative">
+                        <button type="button" @click="toggleDefaultDropdown()"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
                         >
-                          {{ facility.name }}
-                        </option>
-                      </select>
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                          <span v-if="form.defaultFacilities.length === 0" class="text-gray-500">
+                            Select free facilities to add
+                          </span>
+                          <span v-else class="text-gray-900">
+                            {{ form.defaultFacilities.length }} {{ form.defaultFacilities.length === 1 ? 'facility' : 'facilities' }} selected
+                          </span>
+                          <svg class="w-5 h-5 text-gray-400 transform transition-transform duration-200"
+                            :class="{ 'rotate-180': showDefaultDropdown }"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        
+                        <!-- Dropdown content -->
+                        <div v-show="showDefaultDropdown" 
+                          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div v-if="availableDefaultFacilities.length === 0" class="px-4 py-3 text-gray-500 text-sm">
+                            No facilities available
+                          </div>
+                          <div v-else class="py-2">
+                            <label v-for="facility in availableDefaultFacilities" :key="facility.id" 
+                              class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                              <input type="checkbox" 
+                                :value="facility.id"
+                                :checked="form.defaultFacilities.includes(facility.id)"
+                                @change="(event) => updateDefaultFacilities(event)"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
+                              <div class="flex-1">
+                                <div class="font-medium text-gray-900">{{ facility.name }}</div>
+                                <div v-if="facility.description" class="text-xs text-gray-500">
+                                  {{ facility.description }}
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          <!-- Action buttons -->
+                          <div class="border-t border-gray-200 px-4 py-3 flex justify-between">
+                            <button type="button" @click="clearDefaultFacilities()" 
+                              class="text-xs text-red-600 hover:text-red-700 font-medium">
+                              Clear All
+                            </button>
+                            <button type="button" @click="showDefaultDropdown = false"
+                              class="text-xs text-green-600 hover:text-green-700 font-medium">
+                              Done
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
-                    <!-- Selected Default Facilities Display -->
-                    <div v-if="form.defaultFacilities.length === 0" class="mt-4 text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
+                    <!-- Selected Default Facilities as Chips -->
+                    <div v-if="form.defaultFacilities.length > 0" class="mb-4">
+                      <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-gray-600">{{ form.defaultFacilities.length }} facilities selected</span>
+                        <button type="button" @click="clearDefaultFacilities()" class="text-xs text-red-600 hover:text-red-700 font-medium">
+                          Clear All
+                        </button>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <div v-for="(facilityId, index) in form.defaultFacilities" :key="index"
+                             class="inline-flex items-center bg-gradient-to-r from-green-50 to-green-100 text-green-800 border border-green-200 px-3 py-2 rounded-lg text-sm font-medium hover:from-green-100 hover:to-green-150 transition-all duration-200 group">
+                          <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{{ getFacilityName(facilityId) }}</span>
+                          <button type="button" @click="removeDefaultFacility(index)"
+                            class="ml-2 w-4 h-4 text-green-600 hover:text-red-600 transition-colors">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div v-if="form.defaultFacilities.length === 0 && !isLoadingFacilities && !facilitiesError" class="text-center py-6 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
                       <div class="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -549,57 +611,147 @@
                       <p class="text-sm font-medium text-gray-700">No free facilities selected yet</p>
                       <p class="text-xs text-gray-500 mt-1">Select from the dropdown above to add basic amenities</p>
                     </div>
-                    
-                    <div v-else class="mt-4 space-y-2">
-                      <div v-for="(facility, index) in form.defaultFacilities" :key="index"
-                           class="inline-flex items-center bg-gradient-to-r from-green-50 to-green-100 text-green-900 border border-green-200 px-4 py-3 rounded-lg text-sm font-medium mr-2 mb-2 hover:from-green-100 hover:to-green-150 transition-all duration-200 group">
-                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span class="font-semibold">{{ facility }}</span>
-                        <span class="mx-2 text-green-400">•</span>
-                        <span class="bg-green-200 text-green-800 px-2 py-1 rounded-full text-xs font-bold">FREE</span>
-                        <button type="button" @click="removeDefaultFacility(index)"
-                          class="ml-3 text-green-600 hover:text-green-800 hover:bg-green-200 rounded-full p-1 transition-all duration-200">
-                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
                   </div>
 
-                  <!-- Additional Facilities with Pricing -->
+                  <!-- Additional Facilities with Flexible Pricing -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-3">
                       Additional Facilities (Paid)
                       <span class="text-xs text-gray-500 font-normal ml-1">- Premium add-ons with flexible pricing</span>
                     </label>
                     
-                    <div class="relative">
-                      <select 
-                        v-model="selectedAdditionalFacility"
-                        @change="addAdditionalFacility"
-                        class="w-full border border-blue-400 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-blue-500 text-gray-700 transition-colors appearance-none cursor-pointer bg-white"
-                      >
-                        <option value="">Select premium facilities to add</option>
-                        <option 
-                          v-for="facility in availableAdditionalFacilities" 
-                          :key="facility.id" 
-                          :value="facility.name"
+                    <!-- Loading state for facilities -->
+                    <div v-if="isLoadingFacilities" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-500 mb-4">
+                      <svg class="animate-spin w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading facilities...
+                    </div>
+                    
+                    <!-- Error state for facilities -->
+                    <div v-else-if="facilitiesError" class="w-full border border-red-300 rounded-lg px-4 py-3 text-red-600 bg-red-50 mb-4">
+                      {{ facilitiesError }}
+                      <button @click="fetchFacilities" class="ml-2 text-red-700 underline hover:no-underline">
+                        Retry
+                      </button>
+                    </div>
+                    
+                    <!-- Additional Facilities dropdown with checkboxes -->
+                    <div v-else class="mb-4 relative" v-click-outside="closeAdditionalDropdown">
+                      <div class="relative">
+                        <button type="button" @click="toggleAdditionalDropdown()"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
                         >
-                          {{ facility.name }}
-                        </option>
-                      </select>
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                          <span v-if="form.additionalFacilities.length === 0" class="text-gray-500">
+                            Select premium facilities to add
+                          </span>
+                          <span v-else class="text-gray-900">
+                            {{ form.additionalFacilities.length }} {{ form.additionalFacilities.length === 1 ? 'facility' : 'facilities' }} selected
+                          </span>
+                          <svg class="w-5 h-5 text-gray-400 transform transition-transform duration-200"
+                            :class="{ 'rotate-180': showAdditionalDropdown }"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        
+                        <!-- Dropdown content -->
+                        <div v-show="showAdditionalDropdown" 
+                          class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div v-if="availableAdditionalFacilities.length === 0" class="px-4 py-3 text-gray-500 text-sm">
+                            No facilities available
+                          </div>
+                          <div v-else class="py-2">
+                            <label v-for="facility in availableAdditionalFacilities" :key="facility.id" 
+                              class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                              <input type="checkbox" 
+                                :value="facility.id"
+                                :checked="form.additionalFacilities.some(f => f.id === facility.id)"
+                                @change="(event) => updateAdditionalFacilities(event)"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
+                              <div class="flex-1">
+                                <div class="font-medium text-gray-900">{{ facility.name }}</div>
+                                <div v-if="facility.description" class="text-xs text-gray-500">
+                                  {{ facility.description }}
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          <!-- Action buttons -->
+                          <div class="border-t border-gray-200 px-4 py-3 flex justify-between">
+                            <button type="button" @click="clearAdditionalFacilities()" 
+                              class="text-xs text-red-600 hover:text-red-700 font-medium">
+                              Clear All
+                            </button>
+                            <button type="button" @click="showAdditionalDropdown = false"
+                              class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                              Done
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
-                    <!-- Selected Additional Facilities Display -->
-                    <div v-if="form.additionalFacilities.length === 0" class="mt-4 text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
+                    <!-- Selected Additional Facilities - Card layout -->
+                    <div v-if="form.additionalFacilities.length > 0" class="mb-4">
+                      <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-600">{{ form.additionalFacilities.length }} premium facilities selected</span>
+                        <button type="button" @click="clearAdditionalFacilities()" class="text-xs text-red-600 hover:text-red-700 font-medium">
+                          Clear All
+                        </button>
+                      </div>
+                      
+                      <!-- Card Layout for Additional Facilities -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div v-for="(facility, index) in form.additionalFacilities" :key="index"
+                             class="bg-white border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
+                          <!-- Card Header -->
+                          <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                </svg>
+                              </div>
+                              <h4 class="font-medium text-gray-900 text-sm">{{ facility.name }}</h4>
+                            </div>
+                            <button type="button" @click="removeAdditionalFacility(index)"
+                              class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full p-1 transition-all duration-200">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          
+                          <!-- Pricing Input -->
+                          <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-2">Price per Hour</label>
+                            <div class="relative">
+                              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                              <input type="number" 
+                                     v-model.number="facility.pricePerHour"
+                                     step="0.01" min="0"
+                                     class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                     placeholder="0.00" />
+                            </div>
+                          </div>
+                          
+                          <!-- Price Display -->
+                          <div class="mt-3">
+                            <span v-if="facility.pricePerHour > 0" 
+                              class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                              ${{ facility.pricePerHour }}/hour
+                            </span>
+                            <span v-else class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
+                              No price set
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div v-if="form.additionalFacilities.length === 0 && !isLoadingFacilities && !facilitiesError" class="text-center py-6 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50">
                       <div class="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -608,62 +760,40 @@
                       <p class="text-sm font-medium text-gray-700">No premium facilities selected</p>
                       <p class="text-xs text-gray-500 mt-1">Select from the dropdown above to include paid amenities</p>
                     </div>
-                    
-                    <div v-else class="mt-4 space-y-3">
-                      <div v-for="(facility, index) in form.additionalFacilities" :key="index"
-                           class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 px-4 py-4 rounded-lg hover:from-blue-100 hover:to-blue-150 transition-all duration-200">
-                        <div class="flex items-center justify-between mb-3">
-                          <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                            </svg>
-                            <span class="font-semibold text-blue-900">{{ facility.name }}</span>
-                          </div>
-                          <button type="button" @click="removeAdditionalFacility(index)"
-                            class="text-blue-600 hover:text-blue-800 hover:bg-blue-200 rounded-full p-1 transition-all duration-200">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                          <label class="text-sm font-medium text-blue-800">Price per Hour:</label>
-                          <div class="relative flex-1 max-w-32">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600">$</span>
-                            <input 
-                              type="number" 
-                              v-model.number="facility.pricePerHour"
-                              step="0.01" 
-                              min="0"
-                              class="w-full border border-blue-300 rounded-lg pl-8 pr-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-blue-900 bg-white"
-                              placeholder="0.00" 
-                            />
-                          </div>
-                          <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">
-                            ${{ facility.pricePerHour || 0 }}/hr
-                          </span>
-                        </div>
-                      </div>
-                    </div>
                   </div>
+                </div>
+              </div>
 
-                  <!-- Product Status -->
+              <!-- Product Status -->
+              <div v-if="form.type">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                  <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiCog" />
+                  </svg>
+                  Product Status
+                </h2>
+
+                <div class="space-y-4">
                   <div>
-                    <div class="flex items-center space-x-3">
-                      <div class="flex items-center">
-                        <input 
-                          type="checkbox" 
-                          id="product-status"
-                          v-model="isProductActive"
-                          class="w-5 h-5 text-green-600 border-2 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
-                        />
-                        <div class="ml-3">
-                          <label for="product-status" class="text-lg font-semibold text-gray-900 cursor-pointer">
-                            Product Status
-                          </label>
-                        </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Status <span class="text-red-500">*</span>
+                    </label>
+                    
+                    <div class="relative">
+                      <select 
+                        v-model="form.status"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900 bg-white appearance-none">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
                       </div>
                     </div>
+                    
+                    
                   </div>
                 </div>
               </div>
@@ -796,14 +926,70 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+         @click="closeSuccessModal">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4" @click.stop>
+        <div class="text-center">
+          <!-- Success Icon -->
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          
+          <!-- Success Message -->
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Success!</h3>
+          <p class="text-sm text-gray-500 mb-6">{{ successMessage }}</p>
+          
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button @click="closeSuccessModalAndRedirect"
+                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              Back to Products
+            </button>
+            <button @click="closeSuccessModal"
+                    class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+              Continue Editing
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+         @click="closeErrorModal">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4" @click.stop>
+        <div class="text-center">
+          <!-- Error Icon -->
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          
+          <!-- Error Message -->
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Error</h3>
+          <p class="text-sm text-gray-500 mb-6">{{ errorMessage }}</p>
+          
+          <!-- Close Button -->
+          <button @click="closeErrorModal"
+                  class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { productApi, locationApi } from '@/services/api'
+import { productApi, locationApi, facilityApi } from '@/services/api'
 import { 
   mdiOfficeBuilding, 
   mdiPackageVariant, 
@@ -836,13 +1022,15 @@ const selectedDefaultFacility = ref('')
 const selectedAdditionalFacility = ref('')
 
 // Loading states for external data
-const isLoadingLocations = ref(false)
-const locationError = ref('')
 const isLoadingFacilities = ref(false)
 const facilitiesError = ref('')
 
 // Validation state
 const showValidation = ref(false)
+
+// Dropdown states
+const showDefaultDropdown = ref(false)
+const showAdditionalDropdown = ref(false)
 
 // Time picker state
 const showTimePicker = ref(false)
@@ -852,33 +1040,23 @@ const selectedPeriod = ref('AM')
 const timePickerMode = ref<'hour' | 'minute'>('hour')
 const currentTimeField = ref<{day: DayOfWeek, type: 'start' | 'end'} | null>(null)
 
+// Modal state for success and error
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   location: false,
   productType: false
 })
 
-// Available locations and facilities
-const locations = ref<any[]>([])
+// Available facilities
+const availableFacilities = ref<any[]>([])
 
-// Sample locations as fallback
-const sampleLocations = [
-  { id: 'LOC001', name: 'Downtown Office', city: 'New York', status: 'active' },
-  { id: 'LOC002', name: 'Tech Hub', city: 'San Francisco', status: 'active' },
-  { id: 'LOC003', name: 'Business Center', city: 'Los Angeles', status: 'active' },
-  { id: 'LOC004', name: 'Innovation Campus', city: 'Austin', status: 'active' },
-  { id: 'LOC005', name: 'Corporate Plaza', city: 'Chicago', status: 'active' }
-]
-const availableFacilities = ref([
-  { id: 'FC-001', name: 'High-Speed WiFi', description: 'Reliable high-speed internet connection' },
-  { id: 'FC-002', name: 'Projector & Screen', description: 'HD projector with large screen for presentations' },
-  { id: 'FC-003', name: 'Whiteboard', description: 'Large whiteboard for brainstorming sessions' },
-  { id: 'FC-004', name: 'Video Conferencing Setup', description: 'Professional camera and audio system' },
-  { id: 'FC-005', name: 'Coffee & Refreshments', description: 'Complimentary coffee and light refreshments' },
-  { id: 'FC-006', name: 'Printing Services', description: 'Access to printer and scanner facilities' },
-  { id: 'FC-007', name: 'Climate Control', description: 'Individual temperature control system' },
-  { id: 'FC-008', name: 'Parking Space', description: 'Dedicated parking spot included' }
-])
+// Available locations
+const allLocations = ref<any[]>([])
 
 // Form data
 const form = ref({
@@ -906,82 +1084,14 @@ const form = ref({
     start: '09:00',
     end: '17:00'
   },
-  defaultFacilities: [] as string[],
+  defaultFacilities: [] as number[],
   additionalFacilities: [] as Array<{
+    id: number
     name: string
     pricePerHour: number
   }>,
   status: 'active' as 'active' | 'inactive'
 })
-
-// Sample products data
-const sampleProducts = [
-  {
-    id: 'PROD001',
-    name: 'Executive Meeting Room',
-    type: 'Meeting Room',
-    locationName: 'Downtown Office',
-    locationAddress: '123 Business St',
-    locationId: 'LOC001',
-    status: 'active',
-    maxSeatingCapacity: 12,
-    pricePerHour: 50,
-    images: [
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500',
-      'https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=500'
-    ],
-    description: 'Spacious executive meeting room with state-of-the-art video conferencing facilities',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    openHours: { start: '08:00', end: '18:00' },
-    defaultFacilities: ['High-Speed WiFi', 'HD Projector & Screen', 'Whiteboard'],
-    additionalFacilities: [
-      { name: 'Coffee Machine', pricePerHour: 5 },
-      { name: 'Catering Service', pricePerHour: 15 }
-    ]
-  },
-  {
-    id: 'PROD002',
-    name: 'Modern Hot Desk',
-    type: 'Hot Desk',
-    locationName: 'Tech Hub',
-    locationAddress: '456 Innovation Ave',
-    locationId: 'LOC002',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerHour: 8,
-    pricePerDay: 60,
-    images: ['https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=500'],
-    description: 'Modern hot desk in a vibrant coworking environment',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    openHours: { start: '07:00', end: '19:00' },
-    defaultFacilities: ['High-Speed WiFi', 'Power Outlets', 'Ergonomic Chair'],
-    additionalFacilities: [
-      { name: 'External Monitor', pricePerHour: 3 },
-      { name: 'Keyboard & Mouse', pricePerHour: 2 }
-    ]
-  },
-  {
-    id: 'PROD003',
-    name: 'Private Dedicated Workspace',
-    type: 'Dedicated Desk',
-    locationName: 'Business Center',
-    locationAddress: '789 Corporate Blvd',
-    locationId: 'LOC003',
-    status: 'active',
-    maxSeatingCapacity: 1,
-    pricePerMonth: 800,
-    pricePerYear: 8500,
-    images: [],
-    description: 'Private dedicated workspace with personal storage',
-    openDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    openHours: { start: '06:00', end: '22:00' },
-    defaultFacilities: ['High-Speed WiFi', 'Storage Locker', 'Ergonomic Chair', 'Desk Lamp'],
-    additionalFacilities: [
-      { name: 'Printer Access', pricePerHour: 1 },
-      { name: 'Phone Line', pricePerHour: 2 }
-    ]
-  }
-]
 
 // Computed properties
 const isFormValid = computed(() => {
@@ -1019,35 +1129,17 @@ const isProductActive = computed({
 
 const availableDefaultFacilities = computed(() => {
   return availableFacilities.value.filter(facility => 
-    !form.value.defaultFacilities.includes(facility.name)
+    !form.value.defaultFacilities.includes(facility.id)
   )
 })
 
 const availableAdditionalFacilities = computed(() => {
   return availableFacilities.value.filter(facility => 
-    !form.value.additionalFacilities.some(f => f.name === facility.name)
+    !form.value.additionalFacilities.some(f => f.id === facility.id)
   )
 })
 
-// Computed property to ensure current location is always in the list
-const allLocations = computed(() => {
-  const currentLocationId = form.value.locationId
-  const locationsList = [...locations.value]
-  
-  // If there's a current location ID that's not in the list, add it
-  if (currentLocationId && !locationsList.some(loc => loc.id === currentLocationId)) {
-    // Try to find the location name from originalProduct
-    const locationName = originalProduct.value?.locationName || `Location ${currentLocationId}`
-    locationsList.unshift({
-      id: currentLocationId,
-      name: locationName,
-      city: 'Unknown',
-      status: 'active'
-    })
-  }
-  
-  return locationsList
-})
+
 
 // Methods
 const loadProduct = async () => {
@@ -1056,45 +1148,122 @@ const loadProduct = async () => {
   try {
     console.log('Loading product for edit with ID:', productId)
     
-    const response = await productApi.getProductById(productId)
-    
+    let response = await productApi.getProductById(productId)
+
+    // If direct fetch failed (some backends return 404 for inactive products),
+    // attempt a fallback by retrieving the admin product list and finding the
+    // product (this includes inactive items). This ensures edit page shows
+    // details for inactive products as well.
+    if (!response.success || !response.data) {
+      console.warn('productApi.getProductById failed or returned no data, attempting fallback to getAllProducts()', response.message)
+      try {
+        const allResp = await productApi.getAllProducts()
+        if (allResp.success && Array.isArray(allResp.data)) {
+          const found = allResp.data.find((p: any) => String(p.id) === String(productId) || String(p.id) === String(Number(productId)))
+          if (found) {
+            response = { success: true, data: found }
+            console.log('Fallback: product found in getAllProducts():', found)
+          }
+        }
+      } catch (err) {
+        console.error('Fallback getAllProducts() failed:', err)
+      }
+    }
+
     if (response.success && response.data) {
       originalProduct.value = response.data
       console.log('Product loaded for editing:', originalProduct.value)
-      
+      console.log('Available locations:', allLocations.value)
+
       // Populate form with existing data
+      // Handle location mapping - the API returns location_id but we need locationId
+      let locationId = originalProduct.value.locationId || ''
+      console.log('Initial locationId from API:', locationId, 'Type:', typeof locationId)
+      
+      // If locationId is not available or is 'unknown', try to find it by location name
+      if (!locationId || locationId === 'unknown') {
+        const locationName = originalProduct.value.locationName || 
+                           originalProduct.value.location_name || 
+                           originalProduct.value.location
+        console.log('Trying to find location by name:', locationName)
+        if (locationName && locationName !== 'Unknown Location') {
+          // Find location ID by name if locationId is not provided
+          const matchingLocation = allLocations.value.find(loc => {
+            const locName = loc.name?.trim().toLowerCase()
+            const apiName = locationName?.trim().toLowerCase()
+            return locName === apiName || 
+                   locName?.includes(apiName) || 
+                   apiName?.includes(locName) ||
+                   // Try partial matches
+                   (locName && apiName && (
+                     locName.split(' ')[0] === apiName.split(' ')[0] ||
+                     locName.split(' ').pop() === apiName.split(' ').pop()
+                   ))
+          })
+          locationId = matchingLocation ? String(matchingLocation.id) : ''
+          console.log('Location mapping:', { locationName, found: !!matchingLocation, locationId, matchingLocation })
+        }
+      } else {
+        // Ensure locationId is a string to match the select options
+        locationId = String(locationId)
+      }
+
       Object.assign(form.value, {
-        locationId: originalProduct.value.locationId || '',
+        locationId: locationId,
         type: originalProduct.value.type || '',
         images: [...(originalProduct.value.images || [])],
         name: originalProduct.value.name || '',
-        description: originalProduct.value.description || '',
-        maxSeatingCapacity: originalProduct.value.maxSeatingCapacity || 1,
-        pricePerHour: originalProduct.value.pricePerHour || 0,
-        pricePerDay: originalProduct.value.pricePerDay || 0,
-        pricePerMonth: originalProduct.value.pricePerMonth || 0,
-        pricePerYear: originalProduct.value.pricePerYear || 0,
-        openDays: [...(originalProduct.value.openDays || [])],
-        dayHours: originalProduct.value.dayHours ? { ...originalProduct.value.dayHours } : {
-          'Monday': { start: '09:00', end: '17:00' },
-          'Tuesday': { start: '09:00', end: '17:00' },
-          'Wednesday': { start: '09:00', end: '17:00' },
-          'Thursday': { start: '09:00', end: '17:00' },
-          'Friday': { start: '09:00', end: '17:00' },
-          'Saturday': { start: '09:00', end: '17:00' },
-          'Sunday': { start: '09:00', end: '17:00' }
-        },
+        description: originalProduct.value.product_description || originalProduct.value.description || '',
+        maxSeatingCapacity: originalProduct.value.capacity || originalProduct.value.maxSeatingCapacity || 1,
+        pricePerHour: originalProduct.value.pricing?.[0]?.hourly || originalProduct.value.pricePerHour || 0,
+        pricePerDay: originalProduct.value.pricing?.[0]?.daily || originalProduct.value.pricePerDay || 0,
+        pricePerMonth: originalProduct.value.pricing?.[0]?.monthly || originalProduct.value.pricePerMonth || 0,
+        pricePerYear: originalProduct.value.pricing?.[0]?.yearly || originalProduct.value.pricePerYear || 0,
+        openDays: originalProduct.value.operation_schedule ? 
+          originalProduct.value.operation_schedule
+            .filter((schedule: any) => schedule.is_enabled)
+            .map((schedule: any) => schedule.day) :
+          [...(originalProduct.value.openDays || [])],
+        dayHours: originalProduct.value.operation_schedule ? 
+          originalProduct.value.operation_schedule.reduce((hours: any, schedule: any) => {
+            hours[schedule.day] = {
+              start: schedule.start_time.substring(0, 5), // Convert HH:MM:SS to HH:MM
+              end: schedule.end_time.substring(0, 5)      // Convert HH:MM:SS to HH:MM
+            }
+            return hours
+          }, {}) :
+          originalProduct.value.dayHours ? { ...originalProduct.value.dayHours } : {
+            'Monday': { start: '09:00', end: '17:00' },
+            'Tuesday': { start: '09:00', end: '17:00' },
+            'Wednesday': { start: '09:00', end: '17:00' },
+            'Thursday': { start: '09:00', end: '17:00' },
+            'Friday': { start: '09:00', end: '17:00' },
+            'Saturday': { start: '09:00', end: '17:00' },
+            'Sunday': { start: '09:00', end: '17:00' }
+          },
         openHours: { 
           start: originalProduct.value.openHours?.start || '09:00',
           end: originalProduct.value.openHours?.end || '17:00'
         },
-        defaultFacilities: [...(originalProduct.value.defaultFacilities || [])],
+        defaultFacilities: (originalProduct.value.defaultFacilities || []).map((facility: any) => 
+          typeof facility === 'string' ? availableFacilities.value.find(f => f.name === facility)?.id || 0 : facility
+        ).filter((id: number) => id > 0),
         additionalFacilities: (originalProduct.value.additionalFacilities || []).map((facility: any) => ({
+          id: facility.id || availableFacilities.value.find(f => f.name === facility.name)?.id || 0,
           name: facility.name || '',
           pricePerHour: facility.pricePerHour || 0
-        })),
-        status: originalProduct.value.status || 'active'
+        })).filter((f: { id: number; name: string; pricePerHour: number }) => f.id > 0),
+        status: (originalProduct.value.is_active !== undefined ? 
+          (originalProduct.value.is_active ? 'active' : 'inactive') : 
+          originalProduct.value.status) || 'active'
       })
+      
+      console.log('Form populated with locationId:', form.value.locationId)
+      console.log('Form data:', form.value)
+      
+      // Ensure the DOM updates with the new form data
+      await nextTick()
+      console.log('Form updated in DOM')
     } else {
       console.error('Failed to load product:', response.message)
       originalProduct.value = null
@@ -1155,50 +1324,102 @@ const closeDropdown = (dropdownType: string) => {
 }
 
 // Fetch methods (placeholder for future API integration)
-const fetchLocations = async () => {
-  isLoadingLocations.value = true
-  locationError.value = ''
-  try {
-    console.log('Fetching locations...')
-    const response = await locationApi.getAllLocations()
-    if (response.success && response.data) {
-      locations.value = response.data
-      console.log('Locations loaded:', locations.value)
-    } else {
-      // Use sample data as fallback
-      console.log('Using sample location data as fallback')
-      locations.value = sampleLocations
-    }
-  } catch (error) {
-    // Use sample data as fallback
-    console.log('Using sample location data as fallback due to error:', error)
-    locations.value = sampleLocations
-    locationError.value = ''  // Clear error since we have fallback data
-  } finally {
-    isLoadingLocations.value = false
-  }
-}
-
 const fetchFacilities = async () => {
   isLoadingFacilities.value = true
   facilitiesError.value = ''
   try {
-    // TODO: Implement facility API fetch
-    // const response = await facilityApi.getFacilities()
-    // availableFacilities.value = response.data || []
-    console.log('Facility fetching not yet implemented')
+    console.log('Fetching facilities...')
+    const response = await facilityApi.getAllFacilities()
+    if (response.success && response.data) {
+      // Map API response to match our expected format
+      availableFacilities.value = response.data.map((facility: any) => ({
+        id: facility.id,
+        name: facility.name,
+        description: facility.description || ''
+      }))
+      console.log('Facilities loaded:', availableFacilities.value)
+      return response.data
+    } else {
+      facilitiesError.value = response.message || 'Failed to load facilities'
+      console.error('Failed to fetch facilities:', response.message)
+      return []
+    }
   } catch (error) {
     facilitiesError.value = 'Failed to load facilities'
     console.error('Error fetching facilities:', error)
+    return []
   } finally {
     isLoadingFacilities.value = false
   }
 }
 
+// Facility management methods
+const toggleDefaultDropdown = () => {
+  showDefaultDropdown.value = !showDefaultDropdown.value
+}
+
+const toggleAdditionalDropdown = () => {
+  showAdditionalDropdown.value = !showAdditionalDropdown.value
+}
+
+const updateDefaultFacilities = (event: any) => {
+  const facilityId = parseInt(event.target.value)
+  if (event.target.checked) {
+    if (!form.value.defaultFacilities.includes(facilityId)) {
+      form.value.defaultFacilities.push(facilityId)
+    }
+  } else {
+    const index = form.value.defaultFacilities.indexOf(facilityId)
+    if (index > -1) {
+      form.value.defaultFacilities.splice(index, 1)
+    }
+  }
+}
+
+const updateAdditionalFacilities = (event: any) => {
+  const facilityId = parseInt(event.target.value)
+  if (event.target.checked) {
+    // Add facility if not already present
+    if (!form.value.additionalFacilities.some(f => f.id === facilityId)) {
+      const facility = availableFacilities.value.find(f => f.id === facilityId)
+      if (facility) {
+        form.value.additionalFacilities.push({
+          id: facilityId,
+          name: facility.name,
+          pricePerHour: 0
+        })
+      }
+    }
+  } else {
+    // Remove facility
+    const index = form.value.additionalFacilities.findIndex(f => f.id === facilityId)
+    if (index > -1) {
+      form.value.additionalFacilities.splice(index, 1)
+    }
+  }
+}
+
+const clearDefaultFacilities = () => {
+  form.value.defaultFacilities = []
+}
+
+const clearAdditionalFacilities = () => {
+  form.value.additionalFacilities = []
+}
+
+// Close dropdown methods
+const closeDefaultDropdown = () => {
+  showDefaultDropdown.value = false
+}
+
+const closeAdditionalDropdown = () => {
+  showAdditionalDropdown.value = false
+}
+
 // Default facility methods
 const addDefaultFacility = () => {
-  if (selectedDefaultFacility.value && !form.value.defaultFacilities.includes(selectedDefaultFacility.value)) {
-    form.value.defaultFacilities.push(selectedDefaultFacility.value)
+  if (selectedDefaultFacility.value && !form.value.defaultFacilities.includes(parseInt(selectedDefaultFacility.value))) {
+    form.value.defaultFacilities.push(parseInt(selectedDefaultFacility.value))
     selectedDefaultFacility.value = ''
   }
 }
@@ -1207,19 +1428,29 @@ const removeDefaultFacility = (index: number) => {
   form.value.defaultFacilities.splice(index, 1)
 }
 
-// Additional facility methods
+// Additional facility methods  
 const addAdditionalFacility = () => {
-  if (selectedAdditionalFacility.value && !form.value.additionalFacilities.some(f => f.name === selectedAdditionalFacility.value)) {
-    form.value.additionalFacilities.push({
-      name: selectedAdditionalFacility.value,
-      pricePerHour: 0
-    })
+  if (selectedAdditionalFacility.value && !form.value.additionalFacilities.some(f => f.id === parseInt(selectedAdditionalFacility.value))) {
+    const facility = availableFacilities.value.find(f => f.id === parseInt(selectedAdditionalFacility.value))
+    if (facility) {
+      form.value.additionalFacilities.push({
+        id: facility.id,
+        name: facility.name,
+        pricePerHour: 0
+      })
+    }
     selectedAdditionalFacility.value = ''
   }
 }
 
 const removeAdditionalFacility = (index: number) => {
   form.value.additionalFacilities.splice(index, 1)
+}
+
+// Helper function to get facility name by ID
+const getFacilityName = (facilityId: number) => {
+  const facility = availableFacilities.value.find(f => f.id === facilityId)
+  return facility ? facility.name : `Facility ${facilityId}`
 }
 
 // Time picker helper functions
@@ -1357,12 +1588,38 @@ const toggleDayHours = (day: DayOfWeek, isChecked: boolean) => {
   }
 }
 
+// Modal control functions
+const showSuccess = (message: string) => {
+  successMessage.value = message
+  showSuccessModal.value = true
+}
+
+const showError = (message: string) => {
+  errorMessage.value = message
+  showErrorModal.value = true
+}
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  successMessage.value = ''
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
+}
+
+const closeSuccessModalAndRedirect = () => {
+  closeSuccessModal()
+  router.push('/products')
+}
+
 const updateProduct = async () => {
   // Enable validation
   showValidation.value = true
   
   if (!isFormValid.value) {
-    alert('Please fill in all required fields')
+    showError('Please fill in all required fields')
     return
   }
 
@@ -1458,32 +1715,86 @@ const updateProduct = async () => {
     
     if (response.success) {
       console.log('Product updated successfully:', response)
-      alert('Product updated successfully!')
-      
-      // Navigate to product detail view
-      router.push(`/products/${productId}`)
+      showSuccess('Product updated successfully!')
     } else {
       console.error('Failed to update product:', response.message)
-      alert(`Failed to update product: ${response.message}`)
+      showError(`Failed to update product: ${response.message}`)
     }
   } catch (error) {
     console.error('Error updating product:', error)
-    alert('Failed to update product. Please try again.')
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    showError(`Failed to update product: ${errorMessage}. Please try again.`)
   } finally {
     isSaving.value = false
   }
 }
 
-// Initialize
-onMounted(() => {
-  loadProduct()
-  fetchLocations()
+// Fetch locations
+const fetchLocations = async () => {
+  try {
+    console.log('Fetching locations...')
+    const response = await locationApi.getAllLocations()
+    if (response.success && response.data) {
+      // Ensure location IDs are strings for consistency
+      allLocations.value = response.data.map((location: any) => ({
+        ...location,
+        id: String(location.id)
+      }))
+      console.log('Locations loaded:', allLocations.value)
+      return response.data
+    } else {
+      console.error('Failed to fetch locations:', response.message)
+      return []
+    }
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+    return []
+  }
+}
+
+// Watchers
+watch(() => form.value.locationId, (newValue, oldValue) => {
+  console.log('form.locationId changed:', { oldValue, newValue })
 })
+
+// Initialize
+onMounted(async () => {
+  // Load locations first, then load product to properly map location name to ID
+  await fetchLocations()
+  await fetchFacilities()
+  await loadProduct()
+})
+
+// Click outside directive
+const vClickOutside = {
+  beforeMount(el: any, binding: any) {
+    el.clickOutsideEvent = (event: Event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value()
+      }
+    }
+    document.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted(el: any) {
+    document.removeEventListener('click', el.clickOutsideEvent)
+  }
+}
 </script>
 
 <style scoped>
 .shadow-card {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Hide main scrollbar and prevent horizontal overflow */
+.max-w-6xl {
+  overflow-x: hidden;
+}
+html, body {
+  overflow-x: hidden;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none;
 }
 
 /* Modal backdrop blur effect */

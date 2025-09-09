@@ -2,14 +2,16 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
-        <div class="mx-auto h-20 w-20 bg-primary-600 rounded-full flex items-center justify-center">
-          <svg class="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiOfficeBuilding" />
-          </svg>
-        </div>
+        
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          CoWork Admin Dashboard
+          Admin Dashboard
         </h2>
+        <div class="mx-auto flex items-center justify-center mt-4 mb-2">
+          <img 
+            :src="logo" 
+            class="h-20 w-100 "
+          />
+        </div>
         <p class="mt-2 text-center text-sm text-gray-600">
           Sign in to your admin account
         </p>
@@ -91,7 +93,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <span v-if="loading" class="absolute left-0 inset-y-0 flex items-center pl-3">
               <svg class="h-5 w-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
@@ -137,6 +139,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiOfficeBuilding, mdiAccount, mdiEye, mdiEyeOff, mdiAlert } from '@mdi/js'
+import logo from '@/assets/logo.jpg'
 
 const router = useRouter()
 
@@ -147,14 +150,14 @@ const form = ref({
   remember: false
 })
 
+const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
-const showPassword = ref(false)
 
 // Handle login
 const handleLogin = async () => {
-  loading.value = true
   error.value = ''
+  loading.value = true
 
   try {
     // Simulate API call
@@ -162,24 +165,34 @@ const handleLogin = async () => {
 
     // Demo authentication
     if (form.value.username === 'admin' && form.value.password === 'admin123') {
-      // Store auth token
-      localStorage.setItem('auth-token', 'demo-token-123')
+      // Store token and user data in localStorage
+      const token = 'demo-token-123'
+      const user = {
+        id: '1',
+        username: 'admin',
+        email: 'admin@coworkingspace.com',
+        name: 'Administrator',
+        role: 'admin'
+      }
+
+      localStorage.setItem('auth-token', token)
+      localStorage.setItem('user', JSON.stringify(user))
       
-      // Check if password has already been reset
-      const passwordReset = localStorage.getItem('password-reset')
-      
-      if (!passwordReset && form.value.password === 'admin123') {
+      // Check if password needs to be reset
+      if (form.value.password === 'admin123') {
+        localStorage.setItem('password-reset', 'false')
         // First login with default password - redirect to onboarding
         router.push('/onboarding')
       } else {
+        localStorage.setItem('password-reset', 'true')
         // Password has been reset - redirect to dashboard
         router.push('/dashboard')
       }
     } else {
-      error.value = 'Invalid username or password. Please use the demo credentials provided.'
+      throw new Error('Invalid username or password')
     }
-  } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+  } catch (err: any) {
+    error.value = err.message || 'Login failed'
   } finally {
     loading.value = false
   }
