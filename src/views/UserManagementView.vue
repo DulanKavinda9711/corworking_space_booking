@@ -1,15 +1,23 @@
 <template>
   <AdminLayout>
     <div class="space-y-6">
-      <!-- Page Header -->
+      <!-- Page Header with User Count and Add Button -->
       <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-          <p class="text-gray-600">Manage admin users, roles, and permissions</p>
+        <div class="flex items-center space-x-3">
+          <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="mdiAccountSettings" />
+            </svg>
+            <span class="text-sm font-medium text-green-700">
+              Total Users:
+              <span class="font-bold text-green-800">{{ filteredUsers.length }}</span>
+            </span>
+          </div>
         </div>
+
         <button
-          @click="showAddModal = true"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+          @click="$router.push('/user-management/add')"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -19,7 +27,7 @@
       </div>
 
       <!-- User Statistics -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <!-- <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-white rounded-xl shadow-card p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -55,15 +63,15 @@
         <div class="bg-white rounded-xl shadow-card p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiClockAlert" />
+              <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiAccountCancel" />
                 </svg>
               </div>
             </div>
             <div class="ml-4">
-              <h3 class="text-sm font-medium text-gray-500">Pending Approval</h3>
-              <p class="text-2xl font-bold text-gray-900">{{ userStats.pendingApproval }}</p>
+              <h3 class="text-sm font-medium text-gray-500">Blocked Users</h3>
+              <p class="text-2xl font-bold text-gray-900">{{ userStats.blockedUsers }}</p>
             </div>
           </div>
         </div>
@@ -83,12 +91,16 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Filters -->
-      <div class="bg-white rounded-xl shadow-card p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="md:col-span-2">
+      
+
+      <!-- Users Table -->
+      <div class="bg-white rounded-xl shadow-card overflow-hidden">
+        <div class="bg-white border b shadow-card p-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <div class="md:col-span-1">
             <label class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
             <div class="relative">
               <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,13 +115,13 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Role Filter</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 ">Role Filter</label>
             <div class="relative">
               <select 
                 v-model="filters.role" 
                 @focus="toggleDropdown('role')"
                 @blur="closeDropdown('role')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer text-gray-900"
               >
                 <option value="">All Roles</option>
                 <option value="super-admin">Super Admin</option>
@@ -139,13 +151,11 @@
                 v-model="filters.status" 
                 @focus="toggleDropdown('status')"
                 @blur="closeDropdown('status')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer text-gray-900"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="pending">Pending Approval</option>
-                <option value="suspended">Suspended</option>
+                <option value="blocked">Blocked</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg 
@@ -162,22 +172,16 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="mt-4 flex justify-end">
-          <button
-            @click="resetFilters"
-            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Reset Filters
-          </button>
+          <div class="md:col-span-2 flex items-end justify-end">
+            <button
+              @click="resetFilters"
+              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
       </div>
-
-      <!-- Users Table -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-900">Users ({{ filteredUsers.length }})</h2>
-        </div>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -191,19 +195,16 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Permissions
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Login
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
+              <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 cursor-pointer" @click="viewUser(user)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -233,34 +234,36 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ formatDate(user.lastLogin) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(user.status)" class="px-2 py-1 text-xs font-medium rounded-full">
                     {{ user.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div class="flex items-center space-x-3">
-                    <button @click="viewUser(user)" class="text-primary-600 hover:text-primary-900" title="View Details">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiEye" />
-                      </svg>
-                    </button>
-                    <button @click="editUser(user)" class="text-blue-600 hover:text-blue-900" title="Edit User">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiPencil" />
-                      </svg>
-                    </button>
-                    <button
-                      @click="toggleUserStatus(user)"
-                      :class="user.status === 'suspended' ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'"
-                      :title="user.status === 'suspended' ? 'Activate User' : 'Suspend User'"
-                    >
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="user.status === 'suspended' ? mdiAccountCheck : mdiAccountCancel" />
-                      </svg>
-                    </button>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
+                  <div class="flex items-center justify-end space-x-2">
+                  <button @click.stop="editUser(user)"
+                    class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center space-x-1"
+                    title="Edit User">
+                    <span>Edit</span>
+                  </button>
+                  <button @click.stop="toggleUserStatus(user)"
+                    :disabled="toggleStatusLoading.has(user.id)"
+                    :class="[
+                    user.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
+                    toggleStatusLoading.has(user.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    ]"
+                    class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                    :title="toggleStatusLoading.has(user.id) ? 'Updating...' : (user.status === 'active' ? 'Block User' : 'Unblock User')">
+                    <svg v-if="toggleStatusLoading.has(user.id)" class="animate-spin h-3 w-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span v-else>{{ user.status === 'active' ? 'Block' : 'Unblock' }}</span>
+                  </button>
+                  <button @click.stop="confirmDeleteUser(user)"
+                    class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
+                    title="Delete User">
+                    <span>Delete</span>
+                  </button>
                   </div>
                 </td>
               </tr>
@@ -278,306 +281,12 @@
         </div>
       </div>
     </div>
-
-    <!-- Add/Edit User Modal -->
-    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-gray-200">
-          <h2 class="text-xl font-semibold text-gray-900">
-            {{ showAddModal ? 'Add New User' : 'Edit User' }}
-          </h2>
-          <p v-if="showAddModal" class="text-sm text-gray-600 mt-1">
-            New users require dual authentication approval before activation
-          </p>
-        </div>
-        
-        <form @submit.prevent="saveUser" class="p-6 space-y-6">
-          <!-- Personal Information -->
-          <div>
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  v-model="form.name"
-                  required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter full name"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  v-model="form.email"
-                  required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter email address"
-                />
-              </div>
-            </div>
-            
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  v-model="form.phone"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                <input
-                  type="text"
-                  v-model="form.department"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter department"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Role and Permissions -->
-          <div>
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Role and Permissions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                <div class="relative">
-                  <select 
-                    v-model="form.role" 
-                    required 
-                    @focus="toggleDropdown('formRole')"
-                    @blur="closeDropdown('formRole')"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-                  >
-                    <option value="">Select role</option>
-                    <option value="super-admin">Super Admin</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="operator">Operator</option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg 
-                      :class="[
-                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                        dropdownStates.formRole ? 'transform rotate-180' : ''
-                      ]"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <div class="relative">
-                  <select 
-                    v-model="form.status" 
-                    @focus="toggleDropdown('formStatus')"
-                    @blur="closeDropdown('formStatus')"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending Approval</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg 
-                      :class="[
-                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                        dropdownStates.formStatus ? 'transform rotate-180' : ''
-                      ]"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                <label v-for="permission in availablePermissions" :key="permission" class="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    :value="permission" 
-                    v-model="form.permissions"
-                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">{{ permission }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Access Settings -->
-          <div v-if="showAddModal">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Access Settings</h3>
-            <div class="space-y-3">
-              <label class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  v-model="form.sendWelcomeEmail"
-                  class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-gray-700">Send welcome email with login instructions</span>
-              </label>
-              <label class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  v-model="form.requirePasswordChange"
-                  class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-gray-700">Require password change on first login</span>
-              </label>
-              <label class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  v-model="form.enable2FA"
-                  class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span class="ml-2 text-sm text-gray-700">Enable two-factor authentication</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              @click="closeModal"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              {{ showAddModal ? 'Submit for Approval' : 'Save Changes' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- View User Modal -->
-    <div v-if="showViewModal && selectedUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-900">User Details</h2>
-            <button @click="showViewModal = false" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div class="p-6 space-y-6">
-          <!-- User Profile -->
-          <div class="flex items-center space-x-4">
-            <img class="h-16 w-16 rounded-full object-cover" :src="selectedUser.avatar" :alt="selectedUser.name">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ selectedUser.name }}</h3>
-              <p class="text-gray-600">{{ selectedUser.email }}</p>
-              <span :class="getStatusClass(selectedUser.status)" class="inline-block px-2 py-1 text-xs font-medium rounded-full mt-1">
-                {{ selectedUser.status }}
-              </span>
-            </div>
-          </div>
-
-          <!-- User Information -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Contact Information</h4>
-              <div class="space-y-2 text-sm">
-                <p><span class="text-gray-500">Phone:</span> {{ selectedUser.phone || 'Not provided' }}</p>
-                <p><span class="text-gray-500">Department:</span> {{ selectedUser.department || 'Not specified' }}</p>
-                <p><span class="text-gray-500">Last Login:</span> {{ formatDate(selectedUser.lastLogin) }}</p>
-              </div>
-            </div>
-            <div>
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Role & Permissions</h4>
-              <div class="space-y-2">
-                <div>
-                  <span :class="getRoleClass(selectedUser.role)" class="px-2 py-1 text-xs font-medium rounded-full">
-                    {{ formatRole(selectedUser.role) }}
-                  </span>
-                </div>
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="permission in selectedUser.permissions" :key="permission" 
-                        class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                    {{ permission }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <button
-              @click="editUser(selectedUser)"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Edit User
-            </button>
-            <button
-              @click="showViewModal = false"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dual Auth Approval Success Modal -->
-    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <div class="p-6 text-center">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiCheckCircle" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">User Submitted for Approval</h3>
-          <p class="text-gray-600 mb-6">
-            The new user has been submitted to the Dual Authentication system for approval. They will be notified once approved.
-          </p>
-          <div class="flex justify-center space-x-3">
-            <router-link to="/dual-auth" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-              View Dual Auth Queue
-            </router-link>
-            <button
-              @click="showSuccessModal = false"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { 
   mdiAccountGroup, 
@@ -587,7 +296,8 @@ import {
   mdiEye, 
   mdiPencil, 
   mdiAccountCancel,
-  mdiCheckCircle
+  mdiCheckCircle,
+  mdiAccountSettings
 } from '@mdi/js'
 
 // User interface
@@ -598,26 +308,23 @@ interface User {
   phone: string | null
   department: string | null
   role: 'super-admin' | 'admin' | 'manager' | 'operator'
-  status: 'active' | 'inactive' | 'pending' | 'suspended'
+  status: 'active' | 'blocked'
   lastLogin: string | null
   permissions: string[]
   avatar: string
 }
 
 // State
+const router = useRouter()
 const searchQuery = ref('')
-const showAddModal = ref(false)
 const showEditModal = ref(false)
-const showViewModal = ref(false)
 const showSuccessModal = ref(false)
-const selectedUser = ref<User | null>(null)
+const toggleStatusLoading = ref(new Set<string>())
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   role: false,
-  status: false,
-  formRole: false,
-  formStatus: false
+  status: false
 })
 
 // Filters
@@ -629,43 +336,9 @@ const filters = ref({
 // User statistics
 const userStats = ref({
   totalUsers: 12,
-  activeUsers: 8,
-  pendingApproval: 2,
-  adminUsers: 3
-})
-
-// Available permissions
-const availablePermissions = [
-  'Dashboard Access',
-  'User Management',
-  'Company Management',
-  'Booking Management',
-  'Customer Management',
-  'Facility Management',
-  'Product Management',
-  'Location Management',
-  'Payment Management',
-  'Reports Access',
-  'Activity Logs',
-  'System Settings',
-  'Bulk Operations',
-  'Export Data',
-  'Audit Trail'
-]
-
-// Form data
-const form = ref({
-  id: null as string | null,
-  name: '',
-  email: '',
-  phone: '',
-  department: '',
-  role: '' as 'super-admin' | 'admin' | 'manager' | 'operator' | '',
-  status: 'pending' as 'active' | 'inactive' | 'pending' | 'suspended',
-  permissions: [] as string[],
-  sendWelcomeEmail: true,
-  requirePasswordChange: true,
-  enable2FA: false
+  activeUsers: 9,
+  adminUsers: 3,
+  blockedUsers: 1
 })
 
 // Sample users data
@@ -713,7 +386,7 @@ const users = ref<User[]>([
     phone: '+1 (555) 234-5678',
     department: 'Support',
     role: 'operator',
-    status: 'pending',
+    status: 'active',
     lastLogin: null,
     permissions: ['Dashboard Access', 'Customer Management'],
     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=faces'
@@ -725,7 +398,7 @@ const users = ref<User[]>([
     phone: '+1 (555) 345-6789',
     department: 'Analytics',
     role: 'operator',
-    status: 'suspended',
+    status: 'blocked',
     lastLogin: '2024-08-10T12:15:00Z',
     permissions: ['Dashboard Access', 'Reports Access'],
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces'
@@ -780,11 +453,7 @@ const getStatusClass = (status: string) => {
   switch (status) {
     case 'active':
       return 'bg-green-100 text-green-800'
-    case 'inactive':
-      return 'bg-gray-100 text-gray-800'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'suspended':
+    case 'blocked':
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
@@ -839,102 +508,36 @@ const closeAllDropdowns = () => {
 }
 
 const viewUser = (user: User) => {
-  selectedUser.value = user
-  showViewModal.value = true
+  router.push(`/user-management/${user.id}`)
 }
 
 const editUser = (user: User) => {
-  form.value = { 
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone || '',
-    department: user.department || '',
-    role: user.role,
-    status: user.status,
-    permissions: [...user.permissions],
-    sendWelcomeEmail: false,
-    requirePasswordChange: false,
-    enable2FA: false
-  }
-  showEditModal.value = true
-  showViewModal.value = false
+  router.push(`/user-management/${user.id}/edit`)
 }
 
 const toggleUserStatus = (user: User) => {
-  const action = user.status === 'suspended' ? 'activate' : 'suspend'
+  const action = user.status === 'blocked' ? 'unblock' : 'block'
   
   if (confirm(`Are you sure you want to ${action} ${user.name}?`)) {
+    toggleStatusLoading.value.add(user.id)
+    
+    // Simulate async operation
+    setTimeout(() => {
+      const index = users.value.findIndex(u => u.id === user.id)
+      if (index !== -1) {
+        users.value[index].status = user.status === 'blocked' ? 'active' : 'blocked'
+      }
+      toggleStatusLoading.value.delete(user.id)
+    }, 1000)
+  }
+}
+
+const confirmDeleteUser = (user: User) => {
+  if (confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
     const index = users.value.findIndex(u => u.id === user.id)
     if (index !== -1) {
-      users.value[index].status = user.status === 'suspended' ? 'active' : 'suspended'
+      users.value.splice(index, 1)
     }
-  }
-}
-
-const closeModal = () => {
-  showAddModal.value = false
-  showEditModal.value = false
-  resetForm()
-}
-
-const resetForm = () => {
-  form.value = {
-    id: null,
-    name: '',
-    email: '',
-    phone: '',
-    department: '',
-    role: '',
-    status: 'pending',
-    permissions: [],
-    sendWelcomeEmail: true,
-    requirePasswordChange: true,
-    enable2FA: false
-  }
-}
-
-const saveUser = () => {
-  if (showAddModal.value) {
-    // Add new user - send to dual auth
-    const newUser: User = {
-      id: `USR-${String(users.value.length + 1).padStart(3, '0')}`,
-      name: form.value.name,
-      email: form.value.email,
-      phone: form.value.phone || null,
-      department: form.value.department || null,
-      role: form.value.role as User['role'], // Type assertion since we validate in template
-      status: 'pending', // Always pending for new users
-      lastLogin: null,
-      permissions: [...form.value.permissions],
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces'
-    }
-    
-    // In a real app, this would be sent to dual auth system
-    users.value.push(newUser)
-    closeModal()
-    showSuccessModal.value = true
-    
-    // Update pending approval count
-    userStats.value.pendingApproval++
-  } else {
-    // Edit existing user
-    const index = users.value.findIndex(u => u.id === form.value.id)
-    if (index !== -1 && form.value.id) {
-      users.value[index] = { 
-        id: form.value.id,
-        name: form.value.name,
-        email: form.value.email,
-        phone: form.value.phone || null,
-        department: form.value.department || null,
-        role: form.value.role as User['role'],
-        status: form.value.status,
-        lastLogin: users.value[index].lastLogin,
-        permissions: [...form.value.permissions],
-        avatar: users.value[index].avatar
-      }
-    }
-    closeModal()
   }
 }
 </script>

@@ -65,8 +65,10 @@
             </div>
           </div>
           <div class="flex items-end justify-end">
-            <button @click="resetFilters"
-              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+            <button
+              @click="resetFilters"
+              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
+            >
               Reset Filters
             </button>
           </div>
@@ -142,8 +144,8 @@
                   <div class="flex items-center space-x-3">
                     <button @click.stop="confirmToggleStatus(customer)"
                       :class="customer.status === 'blocked' 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
-                        : 'bg-orange-600 hover:bg-orange-700 text-white'"
+                        ? 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100' 
+                        : 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1"
                       :title="customer.status === 'blocked' ? 'Unblock Customer' : 'Block Customer'">
                       <!-- <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -163,11 +165,11 @@
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Previous
               </button>
               <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Next
               </button>
             </div>
@@ -180,7 +182,7 @@
               <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -190,13 +192,13 @@
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     page === currentPage
                       ? 'z-10 bg-green-50 border-green-500 text-green-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                   ]">
                     {{ page }}
                   </button>
                   <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -263,15 +265,15 @@
           <div class="flex items-center justify-center pt-4 space-x-4">
             <button
               @click="closeStatusModal"
-              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+              class="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               @click="confirmToggleCustomerStatus"
               :disabled="isProcessing"
-              class="px-4 py-2 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              :class="customerToToggle?.status === 'blocked' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'"
+              class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :class="customerToToggle?.status === 'blocked' ? 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100' : 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'"
             >
               <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="space-y-6">
       <!-- Page Header -->
       <div class="bg-white rounded-xl shadow-card p-6">
         <div class="flex items-center justify-between">
@@ -15,7 +15,6 @@
             </button>
             <div>
               <h1 class="text-2xl font-bold text-gray-900">Cancel Subscription</h1>
-              <p class="text-sm text-gray-600 mt-1">Cancel subscription and manage billing details</p>
             </div>
           </div>
 

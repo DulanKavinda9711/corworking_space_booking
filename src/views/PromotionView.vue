@@ -73,7 +73,7 @@
         <p class="mt-1 text-sm text-gray-500">Get started by creating your first promotion.</p>
         <button
           @click="showCreateModal = true"
-          class="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
         >
           Create Promotion
         </button>

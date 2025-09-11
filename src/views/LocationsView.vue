@@ -194,12 +194,26 @@
                 <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-center" @click.stop>
                   <div class="flex items-center justify-center space-x-2">
                     <button @click.stop="editLocation(location.id)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 flex items-center justify-center space-x-1"
                       title="Edit Location">
                       <span>Edit</span>
                     </button>
+                    <button @click.stop="toggleLocationStatus(location)"
+                      :disabled="toggleStatusLoading.has(location.id)"
+                      :class="[
+                        location.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
+                        toggleStatusLoading.has(location.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      ]"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                      :title="toggleStatusLoading.has(location.id) ? 'Updating...' : (location.status === 'active' ? 'Deactivate Location' : 'Activate Location')">
+                      <svg v-if="toggleStatusLoading.has(location.id)" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span v-else>{{ location.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
+                    </button>
                     <button @click.stop="confirmDeleteLocation(location)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center space-x-1"
+                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
                       title="Delete Location">
                       <span>Delete</span>
                     </button>
@@ -385,6 +399,60 @@
       </div>
     </div>
 
+    <!-- Status Change Confirmation Modal -->
+    <div v-if="showStatusConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="cancelStatusChange">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4" @click.stop>
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
+        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Confirm Status Change</h3>
+
+        <div v-if="locationToToggle" class="bg-gray-100 border-gray-200 rounded-lg p-4 mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0 h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                <path :d="mdiMapMarker" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900">{{ locationToToggle.name }}</p>
+              <p class="text-sm text-gray-500">{{ getLocationAddress(locationToToggle) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="my-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p class="text-sm text-green-700 text-center">
+            Are you sure you want to <strong>{{ locationToToggle?.status === 'active' ? 'deactivate' : 'activate' }}</strong> this location?
+          </p>
+        </div>
+
+        <div class="flex space-x-3">
+          <button
+            @click="cancelStatusChange"
+            :disabled="toggleStatusLoading.has(locationToToggle?.id || '')"
+            class="flex-1 px-4 py-2 bg-gray-100 text-gray-900 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmStatusChange"
+            :disabled="toggleStatusLoading.has(locationToToggle?.id || '')"
+            class="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 flex items-center justify-center transition-colors"
+          >
+            <svg v-if="toggleStatusLoading.has(locationToToggle?.id || '')" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ toggleStatusLoading.has(locationToToggle?.id || '') ? 'Updating...' : 'Confirm' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Success Popup Modal -->
     <div v-if="showSuccessPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showSuccessPopup = false">
       <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 transform transition-all" @click.stop>
@@ -453,6 +521,11 @@ const errorMessage = ref('')
 const showDeleteModal = ref(false)
 const locationToDelete = ref<any>(null)
 const isDeleting = ref(false)
+
+// Status change modal state
+const showStatusConfirmModal = ref(false)
+const locationToToggle = ref<any>(null)
+const toggleStatusLoading = ref<Set<string>>(new Set())
 
 // Success/Error popup states
 const showSuccessPopup = ref(false)
@@ -578,6 +651,61 @@ const navigateToLocationDetail = (locationId: string) => {
 
 const editLocation = (locationId: string) => {
   router.push(`/locations/${locationId}/edit`)
+}
+
+const toggleLocationStatus = async (location: any) => {
+  locationToToggle.value = location
+  showStatusConfirmModal.value = true
+}
+
+const confirmStatusChange = async () => {
+  if (!locationToToggle.value) return
+
+  const location = locationToToggle.value
+  const originalStatus = location.status
+  const newStatus = location.status === 'active' ? 'inactive' : 'active'
+  const isActive = newStatus === 'active'
+
+  try {
+    // Add to loading state
+    toggleStatusLoading.value.add(location.id)
+
+    // Optimistically update the UI
+    location.status = newStatus
+
+    // Call the API
+    const response = await locationApi.activateLocation(location.id, isActive)
+
+    if (response.success) {
+      console.log(`Location ${location.name} status changed to ${location.status}`)
+      const customMessage = isActive ? 'Location activated successfully' : 'Location deactivated successfully'
+      popupMessage.value = customMessage
+      showSuccessPopup.value = true
+    } else {
+      console.error('Failed to toggle location status:', response.message)
+      // Revert the status change if API call fails
+      location.status = originalStatus
+      popupMessage.value = response.message || 'Failed to update location status'
+      showErrorPopup.value = true
+    }
+  } catch (error) {
+    console.error('Error toggling location status:', error)
+    // Revert the status change if API call fails
+    location.status = originalStatus
+    popupMessage.value = 'An error occurred while updating location status'
+    showErrorPopup.value = true
+  } finally {
+    // Remove from loading state
+    toggleStatusLoading.value.delete(location.id)
+    // Close the confirmation modal
+    showStatusConfirmModal.value = false
+    locationToToggle.value = null
+  }
+}
+
+const cancelStatusChange = () => {
+  showStatusConfirmModal.value = false
+  locationToToggle.value = null
 }
 
 const confirmDeleteLocation = (location: any) => {

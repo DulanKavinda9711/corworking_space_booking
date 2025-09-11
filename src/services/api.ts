@@ -1526,6 +1526,51 @@ export const locationApi = {
       console.error('Delete location error:', error)
       return errorResponse('Network error while deleting location', [(error as Error).message])
     }
+  },
+
+  /**
+   * Activate or deactivate a location
+   */
+  async activateLocation(locationId: string | number, isActive: boolean): Promise<ApiResponse<string>> {
+    try {
+      console.log('API - Updating location activation status:', { locationId, isActive })
+
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/locations/activate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: Number(locationId),
+          is_active: isActive
+        })
+      })
+
+      console.log('API - Activate location response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`API - HTTP error! status: ${response.status}, body:`, errorText)
+        try {
+          const errorJson = JSON.parse(errorText)
+          return errorResponse(errorJson.message || `Server error: ${response.status}`)
+        } catch (e) {
+          throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+        }
+      }
+
+      const data = await response.json()
+      console.log('API - Activate location success response:', data)
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message)
+      } else {
+        return errorResponse(data.message || 'Failed to update location status', data.errors)
+      }
+    } catch (error) {
+      console.error('API - Activate location error:', error)
+      return errorResponse('Network error while updating location status', [(error as Error).message])
+    }
   }
 }
 

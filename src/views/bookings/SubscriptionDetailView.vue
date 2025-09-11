@@ -1,6 +1,6 @@
 <template>
 	<AdminLayout>
-		<div class="space-y-6" v-if="subscription">
+		<div class="space-y-6 max-w-6xl mx-auto" v-if="subscription">
 			<!-- Back Button -->
 			<div class="flex items-center">
 				<router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
@@ -12,7 +12,7 @@
 			</div>
 
 			<!-- Subscription Header -->
-			<div class="bg-white rounded-xl shadow-card p-6">
+			<div class="bg-white rounded-xl shadow-card p-6 ">
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 class="text-2xl font-bold text-gray-900">Subscription Details – {{ subscription.id }}</h1>

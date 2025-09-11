@@ -46,6 +46,9 @@ import CommissionSetupView from '@/views/CommissionSetupView.vue'
 
 // User Management
 import UserManagementView from '@/views/UserManagementView.vue'
+import UserDetailsView from '@/views/users/UserDetailsView.vue'
+import EditUserView from '@/views/users/EditUserView.vue'
+import AddUserView from '@/views/users/AddUserView.vue'
 
 // Dual Authentication
 import DualAuthView from '@/views/DualAuthView.vue'
@@ -231,6 +234,24 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/user-management/add',
+    name: 'AddUser',
+    component: AddUserView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-management/:id',
+    name: 'UserDetails',
+    component: UserDetailsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-management/:id/edit',
+    name: 'EditUser',
+    component: EditUserView,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/dual-auth',
     name: 'DualAuth',
     component: DualAuthView,
@@ -277,20 +298,37 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('auth-token')
   const passwordReset = localStorage.getItem('password-reset')
+  const onboardingComplete = localStorage.getItem('onboarding-complete')
+  const demoPasswordDisabled = localStorage.getItem('demo-password-disabled')
+  const storedPassword = localStorage.getItem('user-password')
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Not authenticated, redirect to login
     next('/login')
   } else if (to.path === '/login' && isAuthenticated) {
     // Already authenticated, check if onboarding is needed
-    if (!passwordReset) {
+    if (!passwordReset || !onboardingComplete) {
       next('/onboarding')
     } else {
       next('/dashboard')
     }
-  } else if (to.path === '/onboarding' && isAuthenticated && passwordReset) {
+  } else if (to.path === '/onboarding' && isAuthenticated && passwordReset === 'true' && onboardingComplete === 'true') {
     // User has already completed onboarding, redirect to dashboard
     next('/dashboard')
+  } else if (to.path === '/dashboard' && isAuthenticated) {
+    // Enhanced security check for dashboard access
+    if (demoPasswordDisabled === 'true' && storedPassword) {
+      // User has set a custom password - allow access
+      next()
+    } else if (passwordReset === 'true' && onboardingComplete === 'true') {
+      // Fallback for existing users who completed onboarding
+      next()
+    } else if (!passwordReset || !onboardingComplete) {
+      // Force onboarding if not completed
+      next('/onboarding')
+    } else {
+      next()
+    }
   } else {
     next()
   }

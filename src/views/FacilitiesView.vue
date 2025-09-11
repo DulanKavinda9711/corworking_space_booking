@@ -60,7 +60,7 @@
                   v-model="statusFilter" 
                   @focus="toggleDropdown('status')"
                   @blur="closeDropdown('status')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
                 >
                   <option value="">All Status</option>
                   <option value="active">Active</option>
@@ -82,10 +82,12 @@
               </div>
             </div>
             <div class="flex items-end justify-end">
-              <button @click="resetFilters"
-                class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
-                Reset Filters
-              </button>
+              <button
+              @click="resetFilters"
+              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
+            >
+              Reset Filters
+            </button>
             </div>
           </div>
         </div>
@@ -133,18 +135,18 @@
                     <div class="flex items-center justify-end space-x-2">
                       
                       <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
-                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 flex items-center justify-center space-x-1"
                         title="Edit Facility">
                         <span>Edit</span>
                       </button>
                       <button @click.stop="toggleFacilityStatus(facility)"
-                        :class="facility.status === 'active' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'"
-                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors text-white flex items-center justify-center"
+                        :class="facility.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
+                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center"
                         :title="facility.status === 'active' ? 'Deactivate Facility' : 'Activate Facility'">
                         <span>{{ facility.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
                       </button>
                       <button @click.stop="confirmDeleteFacility(facility)"
-                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
+                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 flex items-center justify-center"
                         title="Delete Facility">
                         <span>Delete</span>
                       </button>
@@ -240,11 +242,11 @@
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Previous
               </button>
               <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Next
               </button>
             </div>
@@ -257,7 +259,7 @@
               <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -267,13 +269,13 @@
                   <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
                     page === currentPage
                       ? 'z-10 bg-green-50 border-green-500 text-green-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors',
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
                   ]">
                     {{ page }}
                   </button>
                   <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -901,3 +903,10 @@ onMounted(() => {
   loadFacilities()
 })
 </script>
+<style scope>
+/* Custom dropdown styles */
+.appearance-none {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}</style>

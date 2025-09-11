@@ -2,16 +2,18 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
       <div>
+
+        <div class="mx-auto flex items-center justify-center mt-4 mb-2">
+          <img 
+            :src="logo" 
+            class="h-15 w-max "
+          />
+        </div>
         
         <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Admin Dashboard
         </h2>
-        <div class="mx-auto flex items-center justify-center mt-4 mb-2">
-          <img 
-            :src="logo" 
-            class="h-20 w-100 "
-          />
-        </div>
+        
         <p class="mt-2 text-center text-sm text-gray-600">
           Sign in to your admin account
         </p>
@@ -83,9 +85,13 @@
           </div>
 
           <div class="text-sm">
-            <a href="#" class="font-medium text-primary-600 hover:text-primary-500">
+            <button
+              type="button"
+              @click="showForgotPassword = true"
+              class="font-medium text-primary-600 hover:text-primary-500"
+            >
               Forgot your password?
-            </a>
+            </button>
           </div>
         </div>
 
@@ -106,13 +112,13 @@
         </div>
 
         <!-- Demo credentials -->
-        <!-- <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h3 class="text-sm font-medium text-blue-900 mb-2">Demo Credentials</h3>
           <div class="text-sm text-blue-700 space-y-1">
             <p><strong>Username:</strong> admin</p>
             <p><strong>Password:</strong> admin123</p>
           </div>
-        </div> -->
+        </div>
       </form>
 
       <!-- Error message -->
@@ -132,14 +138,187 @@
         </div>
       </div>
     </div>
+
+    <!-- Forgot Password Modal -->
+    <div v-if="showForgotPassword" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
+            <button
+              @click="closeForgotPasswordModal"
+              class="text-gray-400 hover:text-gray-600"
+            >
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div v-if="!forgotPasswordSuccess">
+            <p class="text-sm text-gray-600 mb-4">
+              Enter your admin email address and we'll send you instructions to reset your password.
+            </p>
+            
+            <form @submit.prevent="handleForgotPassword">
+              <div class="mb-4">
+                <label for="forgot-email" class="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Email
+                </label>
+                <input
+                  id="forgot-email"
+                  name="forgot-email"
+                  type="email"
+                  required
+                  v-model="forgotPasswordForm.email"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500"
+                  placeholder="admin@coworkingspace.com"
+                />
+              </div>
+
+              <div v-if="forgotPasswordError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-600">{{ forgotPasswordError }}</p>
+              </div>
+
+              <div class="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  @click="closeForgotPasswordModal"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  :disabled="forgotPasswordLoading"
+                  class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
+                >
+                  {{ forgotPasswordLoading ? 'Sending...' : 'Send Reset Instructions' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Success message -->
+          <div v-else class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                <path :d="mdiCheckCircle" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Reset Instructions Sent!</h3>
+            <p class="text-sm text-gray-600 mb-4">
+              We've sent password reset instructions to {{ forgotPasswordForm.email }}
+            </p>
+            <p class="text-xs text-gray-500 mb-4">
+              For demo purposes, you can now reset your password using the temporary code: <strong class="text-green-600">RESET123</strong>
+            </p>
+            <button
+              @click="showPasswordReset"
+              class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+            >
+              Enter Reset Code
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div v-if="showResetForm" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Reset Password</h3>
+            <button
+              @click="closeResetForm"
+              class="text-gray-400 hover:text-gray-600"
+            >
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="handlePasswordReset">
+            <div class="mb-4">
+              <label for="reset-code" class="block text-sm font-medium text-gray-700 mb-2">
+                Reset Code
+              </label>
+              <input
+                id="reset-code"
+                name="reset-code"
+                type="text"
+                required
+                v-model="resetForm.code"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter reset code (RESET123)"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label for="reset-new-password" class="block text-sm font-medium text-gray-700 mb-2">
+                New Password
+              </label>
+              <input
+                id="reset-new-password"
+                name="reset-new-password"
+                type="password"
+                required
+                v-model="resetForm.newPassword"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter new password"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label for="reset-confirm-password" class="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <input
+                id="reset-confirm-password"
+                name="reset-confirm-password"
+                type="password"
+                required
+                v-model="resetForm.confirmPassword"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500"
+                placeholder="Confirm new password"
+              />
+            </div>
+
+            <div v-if="resetError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm text-red-600">{{ resetError }}</p>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+              <button
+                type="button"
+                @click="closeResetForm"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                :disabled="resetLoading"
+                class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 transition-colors"
+              >
+                {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiOfficeBuilding, mdiAccount, mdiEye, mdiEyeOff, mdiAlert } from '@mdi/js'
-import logo from '@/assets/logo.jpg'
+import { mdiAccount, mdiEye, mdiEyeOff, mdiAlert, mdiCheckCircle } from '@mdi/js'
+
+const logo = '/assets/logo.png'
 
 const router = useRouter()
 
@@ -153,6 +332,21 @@ const form = ref({
 const showPassword = ref(false)
 const loading = ref(false)
 const error = ref('')
+const showForgotPassword = ref(false)
+const forgotPasswordForm = ref({
+  email: 'admin@coworkingspace.com'
+})
+const forgotPasswordLoading = ref(false)
+const forgotPasswordError = ref('')
+const forgotPasswordSuccess = ref(false)
+const showResetForm = ref(false)
+const resetForm = ref({
+  code: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+const resetLoading = ref(false)
+const resetError = ref('')
 
 // Handle login
 const handleLogin = async () => {
@@ -163,8 +357,28 @@ const handleLogin = async () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // Demo authentication
-    if (form.value.username === 'admin' && form.value.password === 'admin123') {
+    // Check if onboarding is complete and password has been changed
+    const onboardingComplete = localStorage.getItem('onboarding-complete')
+    const passwordReset = localStorage.getItem('password-reset')
+    const storedPassword = localStorage.getItem('user-password')
+
+    let isValidLogin = false
+
+    if (form.value.username === 'admin') {
+      // If onboarding is complete and password has been reset, only allow new password
+      if (onboardingComplete === 'true' && passwordReset === 'true' && storedPassword) {
+        // Only allow login with the new password
+        isValidLogin = form.value.password === storedPassword
+        if (!isValidLogin && form.value.password === 'admin123') {
+          throw new Error('Default password is no longer valid. Please use your updated password.')
+        }
+      } else {
+        // First time login - allow demo password
+        isValidLogin = form.value.password === 'admin123'
+      }
+    }
+
+    if (isValidLogin) {
       // Store token and user data in localStorage
       const token = 'demo-token-123'
       const user = {
@@ -178,14 +392,13 @@ const handleLogin = async () => {
       localStorage.setItem('auth-token', token)
       localStorage.setItem('user', JSON.stringify(user))
       
-      // Check if password needs to be reset
-      if (form.value.password === 'admin123') {
-        localStorage.setItem('password-reset', 'false')
-        // First login with default password - redirect to onboarding
+      // Check if this is first time login or onboarding is incomplete
+      if (form.value.password === 'admin123' || !onboardingComplete) {
+        // First login with default password or incomplete onboarding - redirect to onboarding
+        localStorage.removeItem('password-reset') // Remove the flag so router guard works correctly
         router.push('/onboarding')
       } else {
-        localStorage.setItem('password-reset', 'true')
-        // Password has been reset - redirect to dashboard
+        // Password has been reset and onboarding complete - redirect to dashboard
         router.push('/dashboard')
       }
     } else {
@@ -195,6 +408,93 @@ const handleLogin = async () => {
     error.value = err.message || 'Login failed'
   } finally {
     loading.value = false
+  }
+}
+
+// Forgot password functions
+const closeForgotPasswordModal = () => {
+  showForgotPassword.value = false
+  forgotPasswordError.value = ''
+  forgotPasswordSuccess.value = false
+  forgotPasswordForm.value.email = 'admin@coworkingspace.com'
+}
+
+const handleForgotPassword = async () => {
+  forgotPasswordError.value = ''
+  forgotPasswordLoading.value = true
+
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Validate admin email
+    if (forgotPasswordForm.value.email !== 'admin@coworkingspace.com') {
+      throw new Error('Invalid admin email address')
+    }
+
+    // Success - show instructions sent
+    forgotPasswordSuccess.value = true
+  } catch (err: any) {
+    forgotPasswordError.value = err.message || 'Failed to send reset instructions'
+  } finally {
+    forgotPasswordLoading.value = false
+  }
+}
+
+const showPasswordReset = () => {
+  showForgotPassword.value = false
+  showResetForm.value = true
+}
+
+// Password reset functions
+const closeResetForm = () => {
+  showResetForm.value = false
+  resetError.value = ''
+  resetForm.value = {
+    code: '',
+    newPassword: '',
+    confirmPassword: ''
+  }
+}
+
+const handlePasswordReset = async () => {
+  resetError.value = ''
+  resetLoading.value = true
+
+  try {
+    // Validate reset code
+    if (resetForm.value.code !== 'RESET123') {
+      throw new Error('Invalid reset code')
+    }
+
+    // Validate password match
+    if (resetForm.value.newPassword !== resetForm.value.confirmPassword) {
+      throw new Error('Passwords do not match')
+    }
+
+    // Validate password strength
+    if (resetForm.value.newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters long')
+    }
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Store the new password and mark as reset
+    localStorage.setItem('user-password', resetForm.value.newPassword)
+    localStorage.setItem('password-reset', 'true')
+    
+    // Remove onboarding flag since password is now set via reset
+    localStorage.setItem('onboarding-complete', 'true')
+
+    // Close modal and show success
+    closeResetForm()
+    alert('Password reset successfully! You can now log in with your new password.')
+    
+  } catch (err: any) {
+    resetError.value = err.message || 'Failed to reset password'
+  } finally {
+    resetLoading.value = false
   }
 }
 </script>

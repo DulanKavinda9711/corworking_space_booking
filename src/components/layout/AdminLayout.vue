@@ -1,25 +1,33 @@
 <template>
   <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-700" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }">
-      <div class="flex items-center justify-center h-16 px-4 bg-gray-900 border-b border-gray-700">
-        <h1 class="text-xl font-bold text-white">CoWork Admin</h1>
+    <aside
+      class="fixed inset-y-0 left-0 z-50 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-700 flex flex-col w-64"
+      :class="[
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+      ]"
+    >
+      <div class="flex items-center justify-between h-16 border-b border-gray-700 px-2">
+        <router-link to="/dashboard" class="flex items-center justify-center w-full">
+          <img src="/assets/logo1.png" alt="Logo" class="h-8 w-auto" />
+        </router-link>
       </div>
-      
-      <nav class="mt-8">
+      <nav class="mt-8 flex-1 overflow-y-auto">
         <div class="px-4 space-y-1">
           <router-link
             v-for="item in menuItems"
             :key="item.name"
             :to="item.path"
-            class="flex items-center px-4 py-3 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
-            :class="{ 'bg-green-600 text-white border-r-2 border-green-400': isActive(item.path) }"
+            class="flex items-center py-3 px-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors w-full"
+            :class="[
+              isActive(item.path) ? 'bg-green-600 text-white border-r-2 border-green-400' : '',
+            ]"
             @click="closeSidebarOnMobile"
           >
-            <svg class="w-5 h-5 mr-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path :d="item.icon" />
             </svg>
-            {{ item.name }}
+            <span class="ml-3">{{ item.name }}</span>
           </router-link>
         </div>
       </nav>
@@ -180,7 +188,7 @@ const menuItems = [
   { name: 'Payments', path: '/payments', icon: mdiCreditCard, color: 'text-teal-600' },
   { name: 'Promotions', path: '/promotions', icon: mdiBullhorn, color: 'text-pink-600' },
   { name: 'User Management', path: '/user-management', icon: mdiAccountSettings, color: 'text-yellow-600' },
-  { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600' },
+  // { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600' },
   { name: 'Reports', path: '/reports', icon: mdiChartLine, color: 'text-cyan-600' },
   { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600' }
 ]
@@ -280,7 +288,13 @@ const onSearch = () => {
 }
 
 const logout = () => {
+  // Clear all authentication and user data
   localStorage.removeItem('auth-token')
+  localStorage.removeItem('user')
+  localStorage.removeItem('user-password')
+  localStorage.removeItem('password-reset')
+  localStorage.removeItem('onboarding-complete')
+  localStorage.removeItem('company-setup')
   router.push('/login')
 }
 

@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="space-y-6">
       <!-- Page Header -->
       <div class="bg-white rounded-xl shadow-card p-6">
         <div class="flex items-center justify-between">

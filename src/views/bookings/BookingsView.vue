@@ -48,13 +48,13 @@
               <!-- Booking.com Style Date Range Picker -->
               <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
                 <div class="flex justify-between items-center mb-4">
-                  <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
+                  <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
                   </button>
                   <span class="font-medium">{{ currentMonthYear }}</span>
-                  <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
+                  <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
                     </svg>
@@ -89,14 +89,14 @@
                   <div class="flex space-x-2">
                     <button
                       @click="clearDateRange"
-                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50"
+                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors"
                     >
                       Clear
                     </button>
                     <button
                       @click="showDatePicker = false"
                       :disabled="!filters.startDate"
-                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Apply
                     </button>
@@ -372,7 +372,7 @@
                     <button
                       v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
                       @click.stop="cancelSubscription(booking)"
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-orange-600 hover:bg-orange-700 text-white flex items-center space-x-1"
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
                       title="Cancel Subscription">
                       <span>Cancel</span>
                     </button>
@@ -381,7 +381,7 @@
                     <button
                       v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
                       @click.stop="cancelBooking(booking)"
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-orange-600 hover:bg-orange-700 text-white flex items-center space-x-1"
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
                       title="Cancel Booking">
                       <span>Cancel</span>
                     </button>
@@ -390,7 +390,7 @@
                     <button 
                       v-if="activeTab === 'history'" 
                       @click.stop="confirmDeleteBooking(booking)" 
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-600 hover:bg-red-700 text-white flex items-center space-x-1" 
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center space-x-1" 
                       title="Delete Booking">
                       <span>Delete</span>
                     </button>
@@ -406,11 +406,11 @@
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Previous
               </button>
               <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
                 Next
               </button>
             </div>
@@ -423,7 +423,7 @@
               <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
@@ -434,12 +434,12 @@
                     page === currentPage
                       ? 'z-10 bg-green-50 border-green-500 text-green-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors'
                   ]">
                     {{ page }}
                   </button>
                   <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
@@ -489,14 +489,14 @@
           <div class="flex items-center justify-center pt-4 space-x-4">
             <button
               @click="closeDeleteModal"
-              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+              class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
             >
               Cancel
             </button>
             <button
               @click="deleteBooking"
               :disabled="isDeleting"
-              class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center space-x-2 transition-colors"
             >
               <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

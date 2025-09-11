@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6" v-if="booking">
+    <div class="space-y-6 max-w-6xl mx-auto" v-if="booking">
       <!-- Back Button -->
       <div class="flex items-center">
         <router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
@@ -22,13 +22,13 @@
             <span :class="getStatusClass(booking.status)" class="px-3 py-1 text-sm font-medium rounded-full">
               {{ booking.status }}
             </span>
-            <button 
+            <!-- <button 
               v-if="booking.status !== 'cancelled'"
               @click="confirmCancelBooking"
               class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
             >
               Cancel Booking
-            </button>
+            </button> -->
           </div>
         </div>
       </div>

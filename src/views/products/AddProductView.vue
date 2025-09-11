@@ -736,34 +736,85 @@
                                 </svg>
                               </button>
                             </div>
-                            
-                            <!-- Pricing Input -->
-                            <div>
-                              <label class="block text-xs font-medium text-gray-600 mb-2">Price per Hour</label>
-                              <div class="relative">
-                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                <input type="number" 
-                                       v-model.number="facility.pricePerHour"
-                                       step="0.01" min="0"
-                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
-                                       placeholder="0.00" />
+
+                            <!-- Pricing Inputs - All time periods -->
+                            <div class="grid grid-cols-2 gap-3">
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Hour</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerHour"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Day</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerDay"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Month</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerMonth"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Year</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerYear"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
                               </div>
                             </div>
-                            
+
                             <!-- Price Display -->
-                            <div class="mt-3">
-                              <span v-if="facility.pricePerHour > 0" 
-                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerHour }}/hour
+                            <div class="mt-3 flex flex-wrap gap-1">
+                              <span v-if="facility.pricePerHour > 0"
+                                class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerHour }}/hr
                               </span>
-                              <span v-else class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
-                                No price set
+                              <span v-if="facility.pricePerDay > 0"
+                                class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerDay }}/day
+                              </span>
+                              <span v-if="facility.pricePerMonth > 0"
+                                class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerMonth }}/mo
+                              </span>
+                              <span v-if="facility.pricePerYear > 0"
+                                class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerYear }}/yr
+                              </span>
+                              <span v-if="!facility.pricePerHour && !facility.pricePerDay && !facility.pricePerMonth && !facility.pricePerYear"
+                                class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
+                                No prices set
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <!-- Hot Desk & Dedicated Desk - Simplified to hourly pricing only (like Meeting Room) -->
+                        <!-- Hot Desk & Dedicated Desk - Full pricing options -->
                         <div v-if="product.type === 'Hot Desk' || product.type === 'Dedicated Desk'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div v-for="(facility, index) in product.additionalFacilities" :key="index"
                                class="bg-white border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
@@ -784,28 +835,79 @@
                                 </svg>
                               </button>
                             </div>
-                            
-                            <!-- Pricing Input - Only Hourly -->
-                            <div>
-                              <label class="block text-xs font-medium text-gray-600 mb-2">Price per Hour</label>
-                              <div class="relative">
-                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
-                                <input type="number" 
-                                       v-model.number="facility.pricePerHour"
-                                       step="0.01" min="0"
-                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
-                                       placeholder="0.00" />
+
+                            <!-- Pricing Inputs - All time periods -->
+                            <div class="grid grid-cols-2 gap-3">
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Hour</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerHour"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Day</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerDay"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Month</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerMonth"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Price per Year</label>
+                                <div class="relative">
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <input type="number"
+                                         v-model.number="facility.pricePerYear"
+                                         step="0.01" min="0"
+                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         placeholder="0.00" />
+                                </div>
                               </div>
                             </div>
-                            
+
                             <!-- Price Display -->
-                            <div class="mt-3">
-                              <span v-if="facility.pricePerHour > 0" 
-                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerHour }}/hour
+                            <div class="mt-3 flex flex-wrap gap-1">
+                              <span v-if="facility.pricePerHour > 0"
+                                class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerHour }}/hr
                               </span>
-                              <span v-else class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
-                                No price set
+                              <span v-if="facility.pricePerDay > 0"
+                                class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerDay }}/day
+                              </span>
+                              <span v-if="facility.pricePerMonth > 0"
+                                class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerMonth }}/mo
+                              </span>
+                              <span v-if="facility.pricePerYear > 0"
+                                class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                                ${{ facility.pricePerYear }}/yr
+                              </span>
+                              <span v-if="!facility.pricePerHour && !facility.pricePerDay && !facility.pricePerMonth && !facility.pricePerYear"
+                                class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
+                                No prices set
                               </span>
                             </div>
                           </div>
