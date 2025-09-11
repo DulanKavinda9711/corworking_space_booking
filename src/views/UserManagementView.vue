@@ -52,7 +52,7 @@
         <!-- Role Creation Tab -->
         <div v-if="activeTab === 'role-creation'" class="space-y-6">
           <!-- Roles Table -->
-          <div class="bg-white rounded-xl shadow-card overflow-visible">
+          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
             <div class="bg-white border b shadow-card p-6">
               <div class="flex gap-4 items-end">
                 <!-- Search Field -->
@@ -261,7 +261,7 @@
         <!-- User Creation Tab -->
         <div v-if="activeTab === 'user-creation'" class="space-y-6">
           <!-- Filters Section -->
-          <div class="bg-white rounded-xl shadow-card overflow-visible">
+          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
             <div class="bg-white border b shadow-card p-6 overflow-visible">
               <div class="flex gap-4 items-end">
                 <!-- Search Field -->

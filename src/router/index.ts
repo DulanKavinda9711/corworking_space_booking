@@ -56,9 +56,6 @@ import EditRoleView from '@/views/users/EditRoleView.vue'
 // Dual Authentication
 import DualAuthView from '@/views/DualAuthView.vue'
 
-// Reports
-import ReportsView from '@/views/ReportsView.vue'
-
 // Activity Log
 import ActivityLogView from '@/views/ActivityLogView.vue'
 
@@ -276,12 +273,6 @@ const routes: RouteRecordRaw[] = [
     path: '/dual-auth',
     name: 'DualAuth',
     component: DualAuthView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/reports',
-    name: 'Reports',
-    component: ReportsView,
     meta: { requiresAuth: true }
   },
   {

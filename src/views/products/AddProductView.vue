@@ -266,14 +266,14 @@
                   
                   <!-- Meeting Room Pricing - Hourly only -->
                   <div v-if="product.type === 'Meeting Room'" class="space-y-4">
-                    <div class="rounded-lg p-4">
+                    <div class="rounded-lg p-3">
                       <h3 class="text-md font-semibold text-gray-800 mb-4">Hourly Booking</h3>
                       <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                           Price per Hour <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                            <span class="absolute left-1 top-1/2 transform -translate-y-1/2 text-gray-500">LKR </span>
                           <input type="number" v-model.number="product.pricePerHour" step="0.01" min="0"
                             :class="[
                               'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
@@ -742,7 +742,7 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Hour</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-1 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerHour"
                                          step="0.01" min="0"

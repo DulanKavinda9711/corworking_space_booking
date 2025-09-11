@@ -38,7 +38,7 @@
       
 
       <!-- Payments Table -->
-       <div class="bg-white rounded-xl shadow-card overflow-hidden">
+       <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200 ">
         <div class="bg-white shadow-card p-6 border-b">
         <div class="flex flex-col md:flex-row md:items-end md:space-x-1 gap-4 relative">
           <div class="relative md:w-48">
@@ -51,16 +51,16 @@
               class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
               placeholder="Select Date"
             />
-            <!-- Booking.com Style Date Range Picker -->
+            <!-- Date Range Picker -->
             <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
               <div class="flex justify-between items-center mb-4">
-                <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
+                <button @click="previousMonth" class="p-1 hover:bg-green-100 rounded">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                   </svg>
                 </button>
                 <span class="font-medium">{{ currentMonthYear }}</span>
-                <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
+                <button @click="nextMonth" class="p-1 hover:bg-green-100 rounded">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
                   </svg>
@@ -80,9 +80,9 @@
                   :class="[
                     'text-sm text-center py-2 cursor-pointer rounded',
                     !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                    isDateSelected(date) ? 'bg-primary-600 text-white' : '',
-                    isDateInRange(date) ? 'bg-primary-100' : '',
-                    'hover:bg-primary-50'
+                    isDateSelected(date) ? 'bg-green-600 text-white' : '',
+                    isDateInRange(date) ? 'bg-green-100' : '',
+                    'hover:bg-green-50'
                   ]"
                 >
                   {{ date.day }}
@@ -99,7 +99,7 @@
                   <button
                     @click="showDatePicker = false"
                     :disabled="!filters.dateFrom"
-                    class="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Apply
                   </button>
@@ -167,34 +167,6 @@
             </div>
           </div>
           <div class="md:w-40">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <div class="relative">
-              <select 
-                v-model="filters.status" 
-                @focus="toggleDropdown('status')"
-                @blur="closeDropdown('status')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
-              >
-                <option value="">All Status</option>
-                <option value="paid">Paid</option>
-                <option value="pending">Pending (Subscription)</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.status ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div class="md:w-40">
             <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
             <div class="relative">
               <select 
@@ -207,7 +179,6 @@
                 <option value="amount">Amount</option>
                 <option value="booking">Booking ID</option>
                 <option value="commission">Commission</option>
-                <option value="subscriptions">Subscriptions</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg 
@@ -255,10 +226,10 @@
                   Total Amount
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  PayMedia Commission
+                  SquareHub Commission ({{ commissionSettings.SquareHubRate }}%)
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Ceylinco Commission ({{ commissionSettings.ceylincoRate }}%)
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
@@ -303,16 +274,12 @@
                   <div class="text-sm font-semibold text-gray-900">${{ payment.totalAmount }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-blue-600">${{ payment.payMediaCommission }}</div>
-                  <div class="text-sm text-gray-500">{{ payment.payMediaRate }}%</div>
+                  <div class="text-sm font-semibold text-gray-600">${{ payment.SquareHubCommission }}</div>
+                  <!-- <div class="text-sm text-gray-500">{{ payment.SquareHubRate }}%</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span 
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                    :class="getStatusClass(payment.status)"
-                  >
-                    {{ payment.status }}
-                  </span>
+                  <div class="text-sm font-semibold text-gray-600">${{ payment.ceylincoCommission }}</div>
+                  <!-- <div class="text-sm text-gray-500">{{ payment.ceylincoRate }}%</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-600">{{ payment.date }}</div>
@@ -359,8 +326,7 @@ const filters = ref({
   dateFrom: '', // startDate
   dateTo: '',   // endDate
   product: '',
-  location: '',
-  status: ''
+  location: ''
 })
 
 // Computed property for date range display
@@ -454,11 +420,29 @@ const handleClickOutside = (event: MouseEvent) => {
     showDatePicker.value = false
   }
 }
+// Watch for commission settings changes in localStorage
+const handleStorageChange = (event: StorageEvent) => {
+  if (event.key === 'commissionSettings') {
+    loadCommissionSettings()
+  }
+}
+
+// Listen for custom commission settings update event
+const handleCommissionSettingsUpdate = (event: CustomEvent) => {
+  commissionSettings.value = event.detail
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('storage', handleStorageChange)
+  window.addEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
+  loadCommissionSettings()
 })
+
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('storage', handleStorageChange)
+  window.removeEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
 })
 
 // Sorting
@@ -469,11 +453,34 @@ const sortOrder = ref('desc')
 const dropdownStates = ref({
   product: false,
   location: false,
-  status: false,
   sortBy: false
 })
 
-// Sample payments data with new commission structure
+// Commission settings
+const commissionSettings = ref({
+  SquareHubRate: 30.0,
+  ceylincoRate: 70.0
+})
+
+// Load commission settings from localStorage
+const loadCommissionSettings = () => {
+  const savedSettings = localStorage.getItem('commissionSettings')
+  if (savedSettings) {
+    try {
+      const parsedSettings = JSON.parse(savedSettings)
+      commissionSettings.value = { ...commissionSettings.value, ...parsedSettings }
+    } catch (error) {
+      console.error('Error loading commission settings:', error)
+    }
+  }
+}
+
+// Calculate commission for a given amount
+const calculateCommission = (amount: number, rate: number) => {
+  return Math.round((amount * rate / 100) * 100) / 100 // Round to 2 decimal places
+}
+
+// Sample payments data with dynamic commission calculation
 const payments = ref([
   {
     id: 'PAY-001',
@@ -489,12 +496,6 @@ const payments = ref([
       { name: 'Catering', price: 10 }
     ],
     totalAmount: 150,
-    // Updated commission structure
-    payMediaCommission: 75.00,
-    payMediaRate: 50.0,
-    ceylincoCommission: 75.00,
-    ceylincoRate: 50.0,
-    totalCommission: 150.00,
     status: 'paid',
     date: '2025-08-15',
     time: '10:30 AM'
@@ -512,12 +513,6 @@ const payments = ref([
       { name: 'Monitor', price: 10 }
     ],
     totalAmount: 60,
-    // Updated commission structure
-    payMediaCommission: 30.00,
-    payMediaRate: 50.0,
-    ceylincoCommission: 30.00,
-    ceylincoRate: 50.0,
-    totalCommission: 60.00,
     status: 'paid',
     date: '2025-08-15',
     time: '2:15 PM'
@@ -536,13 +531,7 @@ const payments = ref([
       { name: 'Phone Line', price: 25 }
     ],
     totalAmount: 400,
-    // Updated commission structure
-    payMediaCommission: 200.00,
-    payMediaRate: 50.0,
-    ceylincoCommission: 200.00,
-    ceylincoRate: 50.0,
-    totalCommission: 400.00,
-    status: 'pending',
+    status: 'paid',
     date: '2025-08-14',
     time: '9:45 AM'
   },
@@ -557,12 +546,6 @@ const payments = ref([
     baseAmount: 50,
     additionalFacilities: [],
     totalAmount: 50,
-    // Updated commission structure
-    payMediaCommission: 25.00,
-    payMediaRate: 50.0,
-    ceylincoCommission: 25.00,
-    ceylincoRate: 50.0,
-    totalCommission: 50.00,
     status: 'paid',
     date: '2025-08-14',
     time: '3:20 PM'
@@ -580,21 +563,27 @@ const payments = ref([
       { name: 'Video Conference', price: 30 }
     ],
     totalAmount: 180,
-    // Updated commission structure
-    payMediaCommission: 90.00,
-    payMediaRate: 50.0,
-    ceylincoCommission: 90.00,
-    ceylincoRate: 50.0,
-    totalCommission: 180.00,
-    status: 'pending',
+    status: 'paid',
     date: '2025-08-13',
     time: '11:00 AM'
   }
 ])
 
+// Computed payments with dynamic commission calculation
+const paymentsWithCommission = computed(() => {
+  return payments.value.map(payment => ({
+    ...payment,
+    SquareHubCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate),
+    SquareHubRate: commissionSettings.value.SquareHubRate,
+    ceylincoCommission: calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate),
+    ceylincoRate: commissionSettings.value.ceylincoRate,
+    totalCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate) + calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate)
+  }))
+})
+
 // Computed properties
 const filteredPayments = computed(() => {
-  let filtered = payments.value
+  let filtered = paymentsWithCommission.value
 
   // Apply date filters
   if (filters.value.dateFrom) {
@@ -629,11 +618,6 @@ const filteredPayments = computed(() => {
     )
   }
 
-  // Apply status filter
-  if (filters.value.status) {
-    filtered = filtered.filter(payment => payment.status === filters.value.status)
-  }
-
   return filtered
 })
 
@@ -657,12 +641,8 @@ const sortedPayments = computed(() => {
         bVal = b.bookingId
         break
       case 'commission':
-        aVal = a.payMediaCommission
-        bVal = b.payMediaCommission
-        break
-      case 'subscriptions':
-        aVal = a.status === 'pending' ? 1 : 0
-        bVal = b.status === 'pending' ? 1 : 0
+        aVal = a.SquareHubCommission
+        bVal = b.SquareHubCommission
         break
       default:
         aVal = a.date
@@ -689,24 +669,12 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case 'paid':
-      return 'bg-green-100 text-green-800'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
 const resetFilters = () => {
   filters.value = {
     dateFrom: '',
     dateTo: '',
     product: '',
-    location: '',
-    status: ''
+    location: ''
   }
   sortBy.value = 'date'
   sortOrder.value = 'desc'
@@ -737,9 +705,10 @@ const exportToCSV = () => {
     product: payment.productType,
     additionalFacilities: payment.additionalFacilities.map((f: any) => f.name).join('; '),
     totalAmount: payment.totalAmount,
-    payMediaCommission: payment.payMediaCommission,
-    payMediaRate: payment.payMediaRate,
-    status: payment.status,
+    SquareHubCommission: payment.SquareHubCommission,
+    SquareHubRate: payment.SquareHubRate,
+    ceylincoCommission: payment.ceylincoCommission,
+    ceylincoRate: payment.ceylincoRate,
     date: payment.date,
     time: payment.time
   }))
@@ -768,6 +737,11 @@ const exportToCSV = () => {
 const goToCommissionSetup = () => {
   // Navigate to the commission setup page
   router.push('/payments/commission-setup')
+}
+
+// Refresh commission settings when returning from commission setup
+const refreshCommissionSettings = () => {
+  loadCommissionSettings()
 }
 
 const navigateToPaymentDetail = (paymentId: string) => {

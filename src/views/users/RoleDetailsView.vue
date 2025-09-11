@@ -31,7 +31,7 @@
       <!-- Main Role Card -->
       <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
         <!-- Role Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8">
+        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
           <div class="flex items-center space-x-6">
             <div class="flex-shrink-0 w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@
             <!-- Role Information -->
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
                   <path :d="mdiInformationOutline" />
                 </svg>
                 <span>Role Information</span>
@@ -92,7 +92,7 @@
             <!-- Activity Stats -->
             <div class="space-y-4">
               <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
                   <path :d="mdiChartBar" />
                 </svg>
                 <span>Activity Information</span>
@@ -127,7 +127,7 @@
           <!-- Permissions Section -->
           <div class="border-t border-gray-200 pt-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="black" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <span>Permissions</span>
@@ -140,11 +140,11 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
                     <div v-for="permission in category.permissions" :key="permission"
                          v-show="role?.permissions?.includes(permission)"
-                         class="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
-                      <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                         class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                         <path :d="mdiCheckCircle" />
                       </svg>
-                      <span class="text-sm font-medium text-blue-800">{{ permission }}</span>
+                      <span class="text-sm font-medium text-green-800">{{ permission }}</span>
                     </div>
                   </div>
                 </div>

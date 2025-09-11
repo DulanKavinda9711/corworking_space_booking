@@ -27,7 +27,7 @@
             </span>
             <button 
               @click="downloadInvoice"
-              class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -142,7 +142,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-lg font-semibold text-gray-900">Total Amount</span>
-            <span class="text-lg font-bold text-primary-600">${{ payment.totalAmount }}</span>
+            <span class="text-lg font-bold text-gray-900">${{ payment.totalAmount }}</span>
           </div>
         </div>
 
@@ -151,35 +151,47 @@
           <h3 class="text-sm font-medium text-gray-900 mb-3">Commission Details</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- PayMedia Commission -->
-            <div class="bg-blue-50 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-blue-900 mb-3">PayMedia Commission</h4>
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-900 mb-3">PayMedia Commission</h4>
               <div class="space-y-2">
                 <div class="flex justify-between">
-                  <span class="text-sm text-blue-700">Commission Rate</span>
-                  <span class="text-sm font-semibold text-blue-900">{{ payMediaCommissionRate }}%</span>
+                  <span class="text-sm text-gray-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ payment.SquareHubRate }}%</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-sm text-blue-700">Commission Amount</span>
-                  <span class="text-sm font-semibold text-green-600">${{ payMediaCommissionAmount }}</span>
+                  <span class="text-sm text-gray-700">Commission Amount</span>
+                  <span class="text-sm font-semibold text-gray-900">${{ payment.SquareHubCommission }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Ceylinco Commission -->
-            <div class="bg-purple-50 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-purple-900 mb-3">Ceylinco Commission</h4>
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-900 mb-3">Ceylinco Commission</h4>
               <div class="space-y-2">
                 <div class="flex justify-between">
-                  <span class="text-sm text-purple-700">Commission Rate</span>
-                  <span class="text-sm font-semibold text-purple-900">{{ ceylincoCommissionRate }}%</span>
+                  <span class="text-sm text-gray-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ payment.ceylincoRate }}%</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-sm text-purple-700">Commission Amount</span>
-                  <span class="text-sm font-semibold text-green-600">${{ ceylincoCommissionAmount }}</span>
+                  <span class="text-sm text-gray-700">Commission Amount</span>
+                  <span class="text-sm font-semibold text-gray-900">${{ payment.ceylincoCommission }}</span>
                 </div>
               </div>
             </div>
           </div>
+          
+          <!-- Total Commission Summary -->
+          <!-- <div class="mt-4 bg-gray-50 rounded-lg p-4">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium text-gray-900">Total Commission</span>
+              <span class="text-lg font-bold text-primary-600">${{ payment.totalCommission }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-sm text-gray-600">Net Amount to Partner</span>
+              <span class="text-sm font-semibold text-gray-900">${{ (payment.totalAmount - payment.totalCommission).toFixed(2) }}</span>
+            </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -220,8 +232,8 @@ const payment = ref({
   ],
   totalAmount: 150,
   // Updated commission structure
-  payMediaCommission: 75.00,
-  payMediaRate: 50.0,
+  SquareHubCommission: 75.00,
+  SquareHubRate: 50.0,
   ceylincoCommission: 75.00,
   ceylincoRate: 50.0,
   totalCommission: 150.00,
@@ -250,17 +262,17 @@ const loadCommissionSettings = () => {
   }
   // Default settings if nothing saved
   return {
-    payMediaRate: 50.0,
-    payMediaFixedFee: 0.00,
+    SquareHubRate: 50.0,
+    SquareHubFixedFee: 0.00,
     ceylincoRate: 50.0,
     ceylincoFixedFee: 0.00
   }
 }
 
-const commissionSettings = loadCommissionSettings()
+const commissionSettings = ref(loadCommissionSettings())
 
-const payMediaCommissionRate = computed(() => commissionSettings.payMediaRate)
-const ceylincoCommissionRate = computed(() => commissionSettings.ceylincoRate)
+const payMediaCommissionRate = computed(() => commissionSettings.value.SquareHubRate)
+const ceylincoCommissionRate = computed(() => commissionSettings.value.ceylincoRate)
 const totalCommissionRate = computed(() => payMediaCommissionRate.value + ceylincoCommissionRate.value)
 
 const payMediaCommissionAmount = computed(() => {
@@ -336,9 +348,9 @@ const downloadInvoice = () => {
         </div>
         <div class="section">
           <div class="row"><strong>Total Amount</strong><span>$${p.totalAmount}</span></div>
-          <div class="row"><strong>PayMedia Commission</strong><span>$${p.payMediaCommission} (${p.payMediaRate}%)</span></div>
+          <div class="row"><strong>PayMedia Commission</strong><span>$${p.SquareHubCommission} (${p.SquareHubRate}%)</span></div>
           <div class="row"><strong>Ceylinco Commission</strong><span>$${p.ceylincoCommission} (${p.ceylincoRate}%)</span></div>
-          <div class="row"><strong>Total Commission</strong><span>$${p.totalCommission} (${p.payMediaRate + p.ceylincoRate}%)</span></div>
+          <div class="row"><strong>Total Commission</strong><span>$${p.totalCommission} (${p.SquareHubRate + p.ceylincoRate}%)</span></div>
           <div class="row"><strong>Net to Partner</strong><span>$${(p.totalAmount - p.totalCommission).toFixed(2)}</span></div>
         </div>
     ` + printScript + `
@@ -377,8 +389,8 @@ onMounted(() => {
       ],
       totalAmount: 150,
       // Updated commission structure
-      payMediaCommission: 75.00,
-      payMediaRate: 50.0,
+      SquareHubCommission: 75.00,
+      SquareHubRate: 50.0,
       ceylincoCommission: 75.00,
       ceylincoRate: 50.0,
       totalCommission: 150.00,
@@ -401,8 +413,8 @@ onMounted(() => {
       ],
       totalAmount: 60,
       // Updated commission structure
-      payMediaCommission: 30.00,
-      payMediaRate: 50.0,
+      SquareHubCommission: 30.00,
+      SquareHubRate: 50.0,
       ceylincoCommission: 30.00,
       ceylincoRate: 50.0,
       totalCommission: 60.00,
@@ -417,5 +429,12 @@ onMounted(() => {
   if (foundPayment) {
     payment.value = foundPayment
   }
+
+  // Listen for commission settings updates
+  const handleCommissionSettingsUpdate = (event: CustomEvent) => {
+    // Update commission settings and trigger recalculation
+    commissionSettings.value = { ...commissionSettings.value, ...event.detail }
+  }
+  window.addEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
 })
 </script>

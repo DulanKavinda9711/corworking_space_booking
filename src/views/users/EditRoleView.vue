@@ -244,7 +244,7 @@ const getBackNavigationPath = () => {
 }
 
 const getBackNavigationLabel = () => {
-  return 'Back to Role Details'
+  return 
 }
 
 // Methods

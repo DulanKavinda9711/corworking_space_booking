@@ -22,75 +22,14 @@
         </div>
 
         <form class="p-6 space-y-8">
-          <!-- Commission Rates Section -->
-          <div>
-            <h3 class="text-lg font-medium text-gray-900 mb-6">Commission Rates</h3>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <!-- PayMedia Commission -->
-              <div class="border border-gray-200 rounded-lg p-6 bg-green-50">
-                <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-lg font-medium text-green-900">PayMedia Commission</h4>
-                  <span class="text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full">Primary Platform</span>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-green-700 mb-2">Commission Rate (%)</label>
-                    <input
-                      type="number"
-                      v-model="commissionSettings.payMediaRate"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      :disabled="!isEditing"
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="50.0"
-                    />
-                    <p class="text-xs text-green-600 mt-1">Percentage of total payment amount</p>
-                  </div>
-
-                  
-                </div>
-              </div>
-
-              <!-- Ceylinco Commission -->
-              <div class="border border-gray-200 rounded-lg p-6 bg-emerald-50">
-                <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-lg font-medium text-emerald-900">Ceylinco Commission</h4>
-                  <span class="text-sm text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">Partner Platform</span>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-emerald-700 mb-2">Commission Rate (%)</label>
-                    <input
-                      type="number"
-                      v-model="commissionSettings.ceylincoRate"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      :disabled="!isEditing"
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      placeholder="50.0"
-                    />
-                    <p class="text-xs text-emerald-600 mt-1">Percentage of total payment amount</p>
-                  </div>
-
-                  
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Commission Summary -->
-          <div class="border-t border-gray-200 pt-6">
+          <div>
             <h3 class="text-lg font-medium text-gray-900 mb-4">Commission Summary</h3>
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-50 rounded-lg p-6 border border-gray-200">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="text-center">
-                  <label class="block text-sm font-medium text-gray-500 mb-2">PayMedia Rate</label>
-                  <span class="text-2xl font-bold text-green-600">{{ commissionSettings.payMediaRate }}%</span>
+                  <label class="block text-sm font-medium text-gray-500 mb-2">SquareHub Rate</label>
+                  <span class="text-2xl font-bold text-green-600">{{ commissionSettings.SquareHubRate }}%</span>
                 </div>
                 <div class="text-center">
                   <label class="block text-sm font-medium text-gray-500 mb-2">Ceylinco Rate</label>
@@ -102,10 +41,77 @@
                 </div>
               </div>
 
-              <div v-if="totalCommissionRate !== 100" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-sm text-red-700">
-                  ⚠️ Total commission rate must equal 100%. Please adjust the rates accordingly.
+              <div v-if="totalCommissionRate !== 100" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-sm text-yellow-700">
+                  ℹ️ Commission rates are automatically adjusted to maintain a total of 100%.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-gray-200"></div>
+
+          <!-- Commission Rates Section -->
+          <div>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Commission Rates</h3>
+        
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- SquareHub Commission -->
+              <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-lg font-medium text-gray-500">SquareHub Commission</h4>
+
+                </div>
+
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-green-700 mb-2">Commission Rate (%)</label>
+                    <div class="relative">
+                      <input
+                        type="number"
+                        v-model="commissionSettings.SquareHubRate"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        :disabled="!isEditing"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="50.0"
+                      />
+                    </div>
+                  </div>
+
+                  
+                </div>
+              </div>
+
+              <!-- Ceylinco Commission -->
+              <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-lg font-medium text-gray-500">Ceylinco Commission</h4>
+                  
+                </div>
+
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-emerald-700 mb-2">Commission Rate (%)</label>
+                    <div class="relative">
+                      <input
+                        type="number"
+                        v-model="commissionSettings.ceylincoRate"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        :disabled="!isEditing"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-12 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="50.0"
+                      />
+                    </div>
+                  </div>
+
+                  
+                </div>
               </div>
             </div>
           </div>
@@ -129,8 +135,7 @@
               </button>
               <button
                 @click="saveCommissionSettings"
-                :disabled="totalCommissionRate !== 100"
-                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 Save Changes
               </button>
@@ -145,14 +150,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { mdiCog } from '@mdi/js'
 
-// Commission settings - PayMedia and Ceylinco only
+// Commission settings - SquareHub and Ceylinco only
 const commissionSettings = ref({
-  payMediaRate: 50.0,
-  payMediaFixedFee: 0.00,
+  SquareHubRate: 50.0,
+  SquareHubFixedFee: 0.00,
   ceylincoRate: 50.0,
   ceylincoFixedFee: 0.00
 })
@@ -163,12 +168,12 @@ const originalSettings = ref({ ...commissionSettings.value })
 
 // Computed properties for commission calculations
 const totalCommissionRate = computed(() => {
-  return commissionSettings.value.payMediaRate + commissionSettings.value.ceylincoRate
+  return commissionSettings.value.SquareHubRate + commissionSettings.value.ceylincoRate
 })
 
 // Sample calculations for preview
-const samplePayMediaCommission = computed(() => {
-  const rate = commissionSettings.value.payMediaRate / 100
+const sampleSquareHubCommission = computed(() => {
+  const rate = commissionSettings.value.SquareHubRate / 100
   return (150 * rate).toFixed(2)
 })
 
@@ -178,13 +183,13 @@ const sampleCeylincoCommission = computed(() => {
 })
 
 const sampleNetToPartner = computed(() => {
-  const payMediaAmount = parseFloat(samplePayMediaCommission.value)
+  const SquareHubAmount = parseFloat(sampleSquareHubCommission.value)
   const ceylincoAmount = parseFloat(sampleCeylincoCommission.value)
-  return (150 - payMediaAmount - ceylincoAmount).toFixed(2)
+  return (150 - SquareHubAmount - ceylincoAmount).toFixed(2)
 })
 
-const samplePayMediaCommission300 = computed(() => {
-  const rate = commissionSettings.value.payMediaRate / 100
+const sampleSquareHubCommission300 = computed(() => {
+  const rate = commissionSettings.value.SquareHubRate / 100
   return (300 * rate).toFixed(2)
 })
 
@@ -194,9 +199,34 @@ const sampleCeylincoCommission300 = computed(() => {
 })
 
 const sampleNetToPartner300 = computed(() => {
-  const payMediaAmount = parseFloat(samplePayMediaCommission300.value)
+  const SquareHubAmount = parseFloat(sampleSquareHubCommission300.value)
   const ceylincoAmount = parseFloat(sampleCeylincoCommission300.value)
-  return (300 - payMediaAmount - ceylincoAmount).toFixed(2)
+  return (300 - SquareHubAmount - ceylincoAmount).toFixed(2)
+})
+
+// Flag to prevent infinite watcher loops
+let isAutoAdjusting = false
+
+// Watch for SquareHub rate changes and auto-adjust Ceylinco rate
+watch(() => commissionSettings.value.SquareHubRate, (newSquareHubRate) => {
+  if (isEditing.value && !isAutoAdjusting) {
+    isAutoAdjusting = true
+    const adjustedCeylincoRate = Math.max(0, Math.min(100, 100 - newSquareHubRate))
+    commissionSettings.value.ceylincoRate = adjustedCeylincoRate
+    // Reset flag after a short delay to allow DOM updates
+    setTimeout(() => { isAutoAdjusting = false }, 0)
+  }
+})
+
+// Watch for Ceylinco rate changes and auto-adjust SquareHub rate
+watch(() => commissionSettings.value.ceylincoRate, (newCeylincoRate) => {
+  if (isEditing.value && !isAutoAdjusting) {
+    isAutoAdjusting = true
+    const adjustedSquareHubRate = Math.max(0, Math.min(100, 100 - newCeylincoRate))
+    commissionSettings.value.SquareHubRate = adjustedSquareHubRate
+    // Reset flag after a short delay to allow DOM updates
+    setTimeout(() => { isAutoAdjusting = false }, 0)
+  }
 })
 
 // Methods
@@ -231,13 +261,13 @@ const saveCommissionSettings = () => {
   // In a real app, this would also save to the backend
   console.log('Saving commission settings:', commissionSettings.value)
 
+  // Dispatch custom event to notify other components
+  window.dispatchEvent(new CustomEvent('commissionSettingsUpdated', {
+    detail: commissionSettings.value
+  }))
+
   // Show success message and exit edit mode
   alert('Commission settings saved successfully! Changes will apply to all payment calculations.')
   isEditing.value = false
 }
-
-// Load settings on component mount
-onMounted(() => {
-  loadCommissionSettings()
-})
 </script>

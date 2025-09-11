@@ -231,16 +231,16 @@
         <div class="space-y-3">
           <div class="flex justify-between">
             <span class="text-gray-600">Base Price</span>
-            <span class="text-gray-900">${{ booking.basePrice }}</span>
+            <span class="text-gray-900">LKR {{ booking.basePrice }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Additional Facilities</span>
-            <span class="text-gray-900">${{ booking.additionalFacilities }}</span>
+            <span class="text-gray-900">LKR {{ booking.additionalFacilities }}</span>
           </div>
           <div class="border-t border-gray-200 pt-3">
             <div class="flex justify-between">
               <span class="text-lg font-semibold text-gray-900">Total</span>
-              <span class="text-lg font-bold text-primary-600">${{ booking.totalPrice }}</span>
+              <span class="text-lg font-bold text-primary-600">LKR {{ booking.totalPrice }}</span>
             </div>
           </div>
         </div>
@@ -1147,8 +1147,8 @@ const sendMessage = async () => {
     sentMessages.push(newMessage)
     localStorage.setItem('sentCustomerMessages', JSON.stringify(sentMessages))
     
-    console.log('✅ Message sent successfully to:', recipientContact)
-    console.log('📧 Message details:', newMessage)
+    console.log('Message sent successfully to:', recipientContact)
+    console.log('Message details:', newMessage)
     
     // Close modal and show success
     closeSendMessageModal()
@@ -1162,7 +1162,7 @@ const sendMessage = async () => {
     alert(`Message sent successfully to ${booking.value.customerName} via ${contactType}!\n\nContact: ${contactDisplay}\nSubject: ${messageForm.value.subject}`)
     
   } catch (error) {
-    console.error('❌ Error sending message:', error)
+    console.error('rror sending message:', error)
     alert('Failed to send message. Please try again.')
   } finally {
     isSendingMessage.value = false

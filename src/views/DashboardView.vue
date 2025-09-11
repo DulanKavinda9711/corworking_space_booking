@@ -92,7 +92,7 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">Total Revenue Today</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">${{ stats.todayRevenue.toLocaleString() }}</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.todayRevenue.toLocaleString() }}</p>
               <p class="text-xs text-green-600 mt-1 font-medium">+55% since yesterday</p>
             </div>
             <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center border border-orange-100">
@@ -115,13 +115,13 @@
           </div>
         </div>
 
-        <!-- Card: PayMedia Commission (white card with icon) -->
+        <!-- Card: SquareHub Commission (white card with icon) -->
         <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm text-gray-500">PayMedia Commission</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">${{ stats.payMediaCommission.toLocaleString() }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ stats.payMediaPeriod }}</p>
+              <p class="text-sm text-gray-500">SquareHub Commission</p>
+              <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.SquareHubCommission.toLocaleString() }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ stats.SquareHubPeriod }}</p>
             </div>
             <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center border border-yellow-100">
               <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCashMultiple"/></svg>
@@ -486,8 +486,8 @@ const stats = ref({
   upcomingBookings: 18,
   cancellations: 2,
   todayRevenue: 1250,
-  payMediaCommission: 875,
-  payMediaPeriod: 'This week: $875 | This month: $3,420'
+  SquareHubCommission: 875,
+  SquareHubPeriod: 'This week: LKR 875 | This month: LKR 3,420'
 })
 
 // Recent bookings data
