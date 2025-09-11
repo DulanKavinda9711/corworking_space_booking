@@ -52,11 +52,11 @@
 							<div>
 								<h3 class="text-sm font-medium text-gray-900">{{ subscription.customerName }}</h3>
 								<p class="text-sm text-gray-500">{{ subscription.customerEmail }}</p>
-								<div v-if="getCustomerDetails(subscription).isRegistered" class="flex items-center space-x-2 mt-1">
+								<!-- <div v-if="getCustomerDetails(subscription).isRegistered" class="flex items-center space-x-2 mt-1">
 									<span class="text-xs text-blue-600 font-medium">ID: {{ getCustomerDetails(subscription).customerId }}</span>
 									<span class="text-xs text-gray-400">•</span>
 									<span class="text-xs text-gray-600">{{ getCustomerDetails(subscription).totalBookings }} total bookings</span>
-								</div>
+								</div> -->
 							</div>
 						</div>
 						<div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
@@ -64,7 +64,7 @@
 								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</label>
 								<p class="text-sm text-gray-900">{{ subscription.customerPhone }}</p>
 							</div>
-							<div>
+							<!-- <div>
 								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">User Type</label>
 								<div class="flex items-center space-x-2 mt-1">
 									<span :class="subscription.userType === 'registered' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'" 
@@ -77,7 +77,7 @@
 										{{ getCustomerDetails(subscription).customerStatus || 'inactive' }}
 									</span>
 								</div>
-							</div>
+							</div> -->
 						</div>
 						<div v-if="subscription.customerMessage" class="pt-4 border-t border-gray-200">
 							<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Message</label>

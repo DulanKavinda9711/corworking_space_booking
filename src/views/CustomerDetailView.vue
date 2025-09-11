@@ -158,13 +158,13 @@
         </div>
         
         <div class="overflow-x-auto">
-          <!-- Loading state for bookings -->
+      
           <div v-if="loading" class="flex items-center justify-center py-12">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             <span class="ml-2 text-gray-600">Loading booking history...</span>
           </div>
           
-          <!-- Bookings table -->
+         
           <table v-else class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -235,7 +235,7 @@
           </table>
         </div>
 
-        <!-- Empty State for Bookings -->
+       
         <div v-if="!loading && filteredBookings.length === 0" class="text-center py-12">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

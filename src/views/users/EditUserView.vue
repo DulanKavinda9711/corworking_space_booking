@@ -39,6 +39,19 @@
                 />
               </div>
               <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                <input
+                  type="text"
+                  v-model="form.username"
+                  required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  placeholder="Enter username"
+                />
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                 <input
                   type="email"
@@ -48,9 +61,6 @@
                   placeholder="Enter email address"
                 />
               </div>
-            </div>
-
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                 <input
@@ -160,6 +170,7 @@ import { mdiAccountDetails, mdiAccountCog, mdiShieldCheck } from '@mdi/js'
 interface User {
   id: string
   name: string
+  username: string
   email: string
   phone: string | null
   department: string | null
@@ -179,6 +190,7 @@ const isLoading = ref(false)
 const user = ref<User | null>(null)
 const form = ref({
   name: '',
+  username: '',
   email: '',
   phone: '',
   role: '' as User['role'],
@@ -299,6 +311,7 @@ const loadUser = () => {
     {
       id: 'USR-001',
       name: 'John Administrator',
+      username: 'john.admin',
       email: 'john.admin@cowork.com',
       phone: '+1 (555) 123-4567',
       department: 'IT',
@@ -311,6 +324,7 @@ const loadUser = () => {
     {
       id: 'USR-002',
       name: 'Sarah Manager',
+      username: 'sarah.manager',
       email: 'sarah.manager@cowork.com',
       phone: '+1 (555) 987-6543',
       department: 'Operations',
@@ -323,6 +337,7 @@ const loadUser = () => {
     {
       id: 'USR-003',
       name: 'Mike Operator',
+      username: 'mike.operator',
       email: 'mike.operator@cowork.com',
       phone: '+1 (555) 456-7890',
       department: 'Customer Service',
@@ -335,6 +350,7 @@ const loadUser = () => {
     {
       id: 'USR-004',
       name: 'Emma Support',
+      username: 'emma.support',
       email: 'emma.support@cowork.com',
       phone: '+1 (555) 234-5678',
       department: 'Support',
@@ -347,6 +363,7 @@ const loadUser = () => {
     {
       id: 'USR-005',
       name: 'David Analyst',
+      username: 'david.analyst',
       email: 'david.analyst@cowork.com',
       phone: '+1 (555) 345-6789',
       department: 'Analytics',
@@ -363,6 +380,7 @@ const loadUser = () => {
   if (user.value) {
     form.value = {
       name: user.value.name,
+      username: user.value.username,
       email: user.value.email,
       phone: user.value.phone || '',
       role: user.value.role,
@@ -383,6 +401,7 @@ const saveUserChanges = async () => {
 
     // Update user data
     user.value.name = form.value.name
+    user.value.username = form.value.username
     user.value.email = form.value.email
     user.value.phone = form.value.phone || null
     user.value.role = form.value.role

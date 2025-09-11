@@ -64,6 +64,28 @@
               </h3>
               <div class="space-y-3">
                 <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiAccount" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Full Name</p>
+                    <p class="text-sm font-medium text-gray-900">{{ user?.name }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiAccountOutline" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Username</p>
+                    <p class="text-sm font-medium text-gray-900">{{ user?.username || 'Not set' }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
                   <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiEmail" />
@@ -171,7 +193,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { mdiEmail, mdiPhone, mdiShieldCheck, mdiAccountCheck, mdiCardAccountDetailsOutline, mdiChartBar } from '@mdi/js'
+import { mdiEmail, mdiPhone, mdiShieldCheck, mdiAccountCheck, mdiCardAccountDetailsOutline, mdiChartBar, mdiAccount, mdiAccountOutline } from '@mdi/js'
 import {
   mdiCheckCircle
 } from '@mdi/js'
@@ -180,6 +202,7 @@ import {
 interface User {
   id: string
   name: string
+  username: string
   email: string
   phone: string | null
   department: string | null
@@ -358,6 +381,7 @@ const loadUser = () => {
     {
       id: 'USR-001',
       name: 'John Administrator',
+      username: 'john.admin',
       email: 'john.admin@cowork.com',
       phone: '+1 (555) 123-4567',
       department: 'IT',
@@ -371,6 +395,7 @@ const loadUser = () => {
     {
       id: 'USR-002',
       name: 'Sarah Manager',
+      username: 'sarah.manager',
       email: 'sarah.manager@cowork.com',
       phone: '+1 (555) 987-6543',
       department: 'Operations',
@@ -384,6 +409,7 @@ const loadUser = () => {
     {
       id: 'USR-003',
       name: 'Mike Operator',
+      username: 'mike.operator',
       email: 'mike.operator@cowork.com',
       phone: '+1 (555) 456-7890',
       department: 'Customer Service',
@@ -397,6 +423,7 @@ const loadUser = () => {
     {
       id: 'USR-004',
       name: 'Emma Support',
+      username: 'emma.support',
       email: 'emma.support@cowork.com',
       phone: '+1 (555) 234-5678',
       department: 'Support',
@@ -410,6 +437,7 @@ const loadUser = () => {
     {
       id: 'USR-005',
       name: 'David Analyst',
+      username: 'david.analyst',
       email: 'david.analyst@cowork.com',
       phone: '+1 (555) 345-6789',
       department: 'Analytics',

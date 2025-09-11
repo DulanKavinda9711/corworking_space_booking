@@ -46,7 +46,6 @@
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
                 <option value="blocked">Blocked</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">

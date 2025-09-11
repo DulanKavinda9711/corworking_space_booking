@@ -45,7 +45,7 @@
                 class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
                 placeholder="Select Date"
               />
-              <!-- Booking.com Style Date Range Picker -->
+              <!-- Date Range Picker -->
               <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
                 <div class="flex justify-between items-center mb-4">
                   <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">

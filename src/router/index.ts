@@ -49,6 +49,9 @@ import UserManagementView from '@/views/UserManagementView.vue'
 import UserDetailsView from '@/views/users/UserDetailsView.vue'
 import EditUserView from '@/views/users/EditUserView.vue'
 import AddUserView from '@/views/users/AddUserView.vue'
+import AddRoleView from '@/views/users/AddRoleView.vue'
+import RoleDetailsView from '@/views/users/RoleDetailsView.vue'
+import EditRoleView from '@/views/users/EditRoleView.vue'
 
 // Dual Authentication
 import DualAuthView from '@/views/DualAuthView.vue'
@@ -237,6 +240,24 @@ const routes: RouteRecordRaw[] = [
     path: '/user-management/add',
     name: 'AddUser',
     component: AddUserView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-management/add-role',
+    name: 'AddRole',
+    component: AddRoleView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-management/role/:id',
+    name: 'RoleDetails',
+    component: RoleDetailsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user-management/role/:id/edit',
+    name: 'EditRole',
+    component: EditRoleView,
     meta: { requiresAuth: true }
   },
   {
