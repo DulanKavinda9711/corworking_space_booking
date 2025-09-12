@@ -46,7 +46,7 @@
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
-                <option value="blocked">Blocked</option>
+                <option value="blocked">Inactive</option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg 
@@ -136,21 +136,21 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(customer.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                    {{ customer.status }}
+                    {{ customer.status === 'active' ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <button @click.stop="confirmToggleStatus(customer)"
-                      :class="customer.status === 'blocked' 
-                        ? 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100' 
-                        : 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'"
+                      :class="customer.status === 'active' 
+                        ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' 
+                        : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1"
-                      :title="customer.status === 'blocked' ? 'Unblock Customer' : 'Block Customer'">
+                      :title="customer.status === 'active' ? 'Make Customer Inactive' : 'Make Customer Active'">
                       <!-- <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="customer.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
+                        <path :d="customer.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
                       </svg> -->
-                      <span>{{ customer.status === 'blocked' ? 'Unblock' : 'Block' }}</span>
+                      <span>{{ customer.status === 'active' ? 'Inactive' : 'Active' }}</span>
                     </button>
                   </div>
                 </td>
@@ -226,19 +226,19 @@
     <div v-if="showStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusModal">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
         <div class="mt-3">
-          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="customerToToggle?.status === 'blocked' ? 'bg-green-100' : 'bg-orange-100'">
-            <svg class="w-6 h-6" :class="customerToToggle?.status === 'blocked' ? 'text-green-600' : 'text-orange-600'" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="customerToToggle?.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="customerToToggle?.status === 'active' ? 'bg-amber-100' : 'bg-green-100'">
+            <svg class="w-6 h-6" :class="customerToToggle?.status === 'active' ? 'text-amber-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="customerToToggle?.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
             </svg>
           </div>
           <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
-            {{ customerToToggle?.status === 'blocked' ? 'Unblock' : 'Block' }} Customer
+            {{ customerToToggle?.status === 'active' ? 'Make Inactive' : 'Make Active' }} Customer
           </h3>
           <div class="mt-2 px-7 py-3">
             <p class="text-sm text-gray-500 text-center">
-              Are you sure you want to {{ customerToToggle?.status === 'blocked' ? 'unblock' : 'block' }} this customer?
+              Are you sure you want to {{ customerToToggle?.status === 'active' ? 'make inactive' : 'make active' }} this customer?
             </p>
-                <div v-if="customerToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div v-if="customerToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div class="text-sm space-y-1">
                 <div class="flex items-center space-x-3">
                   <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -250,14 +250,14 @@
                     <div class="font-medium text-gray-900">{{ customerToToggle.name }}</div>
                     <div class="text-gray-500">{{ customerToToggle.email }}</div>
                     <div class="text-gray-500">{{ customerToToggle.phone }}</div>
-                    <div class="text-gray-500">Total Bookings: {{ customerToToggle.totalBookings }}</div>
+                    <!-- <div class="text-gray-500">Total Bookings: {{ customerToToggle.totalBookings }}</div> -->
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="customerToToggle?.status !== 'blocked'" class="mt-3 p-2 bg-orange-50 border border-orange-200 rounded-lg">
-              <p class="text-xs text-orange-700">
-                <strong>Note:</strong> Blocking will prevent the customer from making new bookings and accessing their account.
+            <div v-if="customerToToggle?.status === 'active'" class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+              <p class="text-xs text-amber-700">
+                <strong>Note:</strong> Making inactive will prevent the customer from making new bookings and accessing their account.
               </p>
             </div>
           </div>
@@ -272,13 +272,13 @@
               @click="confirmToggleCustomerStatus"
               :disabled="isProcessing"
               class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              :class="customerToToggle?.status === 'blocked' ? 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100' : 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100'"
+              :class="customerToToggle?.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
             >
               <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isProcessing ? 'Processing...' : (customerToToggle?.status === 'blocked' ? 'Unblock' : 'Block') }}</span>
+              <span>{{ isProcessing ? 'Processing...' : (customerToToggle?.status === 'active' ? 'Inactive' : 'Active') }}</span>
             </button>
           </div>
         </div>
@@ -383,7 +383,6 @@ const getStatusClass = (status: string) => {
     case 'active':
       return 'bg-green-100 text-green-800'
     case 'inactive':
-      return 'bg-yellow-100 text-yellow-800'
     case 'blocked':
       return 'bg-red-100 text-red-800'
     default:
@@ -442,7 +441,7 @@ const confirmToggleCustomerStatus = async () => {
     
     const newStatus = toggleStatus(customerToToggle.value.id)
     if (newStatus) {
-      const action = newStatus === 'blocked' ? 'blocked' : 'unblocked'
+      const action = newStatus === 'blocked' ? 'made inactive' : 'made active'
       console.log(`Customer ${customerToToggle.value.name} has been ${action} successfully`)
     }
     

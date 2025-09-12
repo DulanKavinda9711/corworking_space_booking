@@ -50,8 +50,8 @@
           </h2>
           <div class="space-y-3">
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiAccount" />
                 </svg>
               </div>

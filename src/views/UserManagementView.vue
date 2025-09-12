@@ -174,7 +174,7 @@
                       class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
                       <option value="">All Status</option>
                       <option value="active">Active</option>
-                      <option value="blocked">Blocked</option>
+                      <option value="inactive">Inactive</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg class="h-4 w-4 text-gray-400 transform transition-transform"
@@ -235,11 +235,20 @@
                         {{ role.status }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center" @click.stop>
-                      <button @click.stop="toggleRoleStatus(role)"
-                        :class="role.status === 'active' ? 'text-amber-600 hover:text-amber-900' : 'text-green-600 hover:text-green-900'">
-                        {{ role.status === 'active' ? 'Block' : 'Unblock' }}
-                      </button>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
+                      <div class="flex items-center justify-end space-x-2">
+                        <button @click.stop="toggleRoleStatus(role)"
+                          :class="role.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                          :title="role.status === 'active' ? 'Make Role Inactive' : 'Make Role Active'">
+                          <span>{{ role.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                        </button>
+                        <button @click.stop="confirmDeleteRole(role)"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
+                          title="Delete Role">
+                          <span>Delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -383,7 +392,7 @@
                       class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
                       <option value="">All Status</option>
                       <option value="active">Active</option>
-                      <option value="blocked">Blocked</option>
+                      <option value="inactive">Inactive</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg class="h-4 w-4 text-gray-400 transform transition-transform"
@@ -455,22 +464,11 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
-                        <button @click.stop="toggleUserStatus(user)" :disabled="toggleStatusLoading.has(user.id)"
-                          :class="[
-                            user.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
-                            toggleStatusLoading.has(user.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                          ]"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                          :title="toggleStatusLoading.has(user.id) ? 'Updating...' : (user.status === 'active' ? 'Block User' : 'Unblock User')">
-                          <svg v-if="toggleStatusLoading.has(user.id)" class="animate-spin h-3 w-3 text-current"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                          </svg>
-                          <span v-else>{{ user.status === 'active' ? 'Block' : 'Unblock' }}</span>
+                        <button @click.stop="toggleUserStatus(user)"
+                          :class="user.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border cursor-pointer flex items-center justify-center space-x-1"
+                          :title="user.status === 'active' ? 'Make User Inactive' : 'Make User Active'">
+                          <span>{{ user.status === 'active' ? 'Inactive' : 'Active' }}</span>
                         </button>
                         <button @click.stop="confirmDeleteUser(user)"
                           class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
@@ -500,6 +498,129 @@
 
     </div>
   </AdminLayout>
+
+  <!-- Status Toggle Confirmation Modal -->
+  <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div class="mt-3">
+        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'bg-red-100' : 'bg-green-100'">
+          <svg class="w-6 h-6" :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'text-red-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' : 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
+          {{ (selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'Make Inactive' : 'Make Active' }} {{ selectedUser ? 'User' : 'Role' }}
+        </h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500 text-center">
+            Are you sure you want to {{ (selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'make inactive' : 'make active' }} {{ selectedUser ? selectedUser.name : selectedRole?.name }}?
+          </p>
+          <div v-if="selectedUser" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="text-sm space-y-1">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900">{{ selectedUser.name }}</div>
+                  <div class="text-gray-500">{{ selectedUser.email }}</div>
+                  <div class="text-gray-500">{{ selectedUser.username }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="selectedRole" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="text-sm space-y-1">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900">{{ selectedRole.name }}</div>
+                  <div class="text-gray-500">{{ selectedRole.permissions.length }} permissions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-center pt-4 space-x-4">
+          <button
+            @click="closeStatusToggleModal"
+            class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmStatusToggle"
+            :disabled="isTogglingStatus"
+            class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'"
+          >
+            <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ isTogglingStatus ? 'Processing...' : ((selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'Make Inactive' : 'Make Active') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Success Modal -->
+  <div v-if="showStatusSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusSuccessModal">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div class="mt-3">
+        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
+          <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Success!</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
+        </div>
+        <div class="flex items-center justify-center pt-4">
+          <button
+            @click="closeStatusSuccessModal"
+            class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Error Modal -->
+  <div v-if="showStatusErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusErrorModal">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+      <div class="mt-3">
+        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
+          <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Error</h3>
+        <div class="mt-2 px-7 py-3">
+          <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
+        </div>
+        <div class="flex items-center justify-center pt-4">
+          <button
+            @click="closeStatusErrorModal"
+            class="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -515,7 +636,7 @@ interface Role {
   permissions: string[]
   createdAt: string
   updatedAt: string
-  status: 'active' | 'blocked'
+  status: 'active' | 'inactive'
 }
 
 // User interface
@@ -527,7 +648,7 @@ interface User {
   phone: string | null
   department: string | null
   role: 'super-admin' | 'admin' | 'manager' | 'operator'
-  status: 'active' | 'blocked'
+  status: 'active' | 'inactive'
   lastLogin: string | null
   permissions: string[]
   avatar: string
@@ -681,7 +802,7 @@ const roles = ref<Role[]>([
     ],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
-    status: 'blocked'
+    status: 'inactive'
   }
 ])
 
@@ -689,6 +810,15 @@ const roles = ref<Role[]>([
 const router = useRouter()
 const searchQuery = ref('')
 const toggleStatusLoading = ref(new Set<string>())
+
+// Modal state
+const showStatusToggleModal = ref(false)
+const isTogglingStatus = ref(false)
+const showStatusSuccessModal = ref(false)
+const showStatusErrorModal = ref(false)
+const statusModalMessage = ref('')
+const selectedUser = ref<User | null>(null)
+const selectedRole = ref<Role | null>(null)
 
 // Date picker state
 const showDatePicker = ref(false)
@@ -888,7 +1018,7 @@ const users = ref<User[]>([
     phone: '+1 (555) 345-6789',
     department: 'Analytics',
     role: 'operator',
-    status: 'blocked',
+    status: 'inactive',
     lastLogin: '2024-08-10T12:15:00Z',
     permissions: [
       'Dashboard Access',
@@ -1042,8 +1172,10 @@ const getStatusClass = (status: string) => {
   switch (status) {
     case 'active':
       return 'bg-green-100 text-green-800'
-    case 'blocked':
+    case 'inactive':
       return 'bg-red-100 text-red-800'
+    // case 'blocked':
+    //   return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
   }
@@ -1101,20 +1233,9 @@ const viewRole = (role: Role) => {
 }
 
 const toggleUserStatus = (user: User) => {
-  const action = user.status === 'blocked' ? 'unblock' : 'block'
-
-  if (confirm(`Are you sure you want to ${action} ${user.name}?`)) {
-    toggleStatusLoading.value.add(user.id)
-
-    // Simulate async operation
-    setTimeout(() => {
-      const index = users.value.findIndex(u => u.id === user.id)
-      if (index !== -1) {
-        users.value[index].status = user.status === 'blocked' ? 'active' : 'blocked'
-      }
-      toggleStatusLoading.value.delete(user.id)
-    }, 1000)
-  }
+  selectedUser.value = user
+  selectedRole.value = null
+  showStatusToggleModal.value = true
 }
 
 const confirmDeleteUser = (user: User) => {
@@ -1334,10 +1455,75 @@ const getRolePermissions = (role: string) => {
 }
 
 const toggleRoleStatus = (role: Role) => {
-  const index = roles.value.findIndex(r => r.id === role.id)
-  if (index !== -1) {
-    roles.value[index].status = role.status === 'active' ? 'blocked' : 'active'
-    roles.value[index].updatedAt = new Date().toISOString()
+  selectedRole.value = role
+  selectedUser.value = null
+  showStatusToggleModal.value = true
+}
+
+const confirmDeleteRole = (role: Role) => {
+  if (confirm(`Are you sure you want to delete ${role.name}? This action cannot be undone.`)) {
+    const index = roles.value.findIndex(r => r.id === role.id)
+    if (index !== -1) {
+      roles.value.splice(index, 1)
+    }
+  }
+}
+
+// Modal handler functions
+const closeStatusToggleModal = () => {
+  showStatusToggleModal.value = false
+  selectedUser.value = null
+  selectedRole.value = null
+}
+
+const closeStatusSuccessModal = () => {
+  showStatusSuccessModal.value = false
+  statusModalMessage.value = ''
+}
+
+const closeStatusErrorModal = () => {
+  showStatusErrorModal.value = false
+  statusModalMessage.value = ''
+}
+
+const confirmStatusToggle = async () => {
+  if (!selectedUser.value && !selectedRole.value) return
+
+  isTogglingStatus.value = true
+  showStatusToggleModal.value = false
+
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    if (selectedUser.value) {
+      const index = users.value.findIndex(u => u.id === selectedUser.value!.id)
+      if (index !== -1) {
+        const newStatus = users.value[index].status === 'inactive' ? 'active' : 'inactive'
+        users.value[index].status = newStatus
+        const action = newStatus === 'active' ? 'made active' : 'made inactive'
+        statusModalMessage.value = `User ${selectedUser.value.name} has been successfully ${action}.`
+      }
+    } else if (selectedRole.value) {
+      const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
+      if (index !== -1) {
+        const newStatus = roles.value[index].status === 'inactive' ? 'active' : 'inactive'
+        roles.value[index].status = newStatus
+        roles.value[index].updatedAt = new Date().toISOString()
+        const action = newStatus === 'active' ? 'made active' : 'made inactive'
+        statusModalMessage.value = `Role ${selectedRole.value.name} has been successfully ${action}.`
+      }
+    }
+
+    showStatusSuccessModal.value = true
+  } catch (error) {
+    console.error('Error toggling status:', error)
+    statusModalMessage.value = 'Failed to update status. Please try again.'
+    showStatusErrorModal.value = true
+  } finally {
+    isTogglingStatus.value = false
+    selectedUser.value = null
+    selectedRole.value = null
   }
 }
 

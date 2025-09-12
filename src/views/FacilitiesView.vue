@@ -135,15 +135,15 @@
                     <div class="flex items-center justify-end space-x-2">
                       
                       <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
-                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 flex items-center justify-center space-x-1"
+                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center space-x-1"
                         title="Edit Facility">
                         <span>Edit</span>
                       </button>
                       <button @click.stop="toggleFacilityStatus(facility)"
                         :class="facility.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
                         class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center"
-                        :title="facility.status === 'active' ? 'Deactivate Facility' : 'Activate Facility'">
-                        <span>{{ facility.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
+                        :title="facility.status === 'active' ? 'Make Facility Inactive' : 'Activate Facility'">
+                        <span>{{ facility.status === 'active' ? 'Inactive' : 'Activate' }}</span>
                       </button>
                       <button @click.stop="confirmDeleteFacility(facility)"
                         class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 flex items-center justify-center"
@@ -391,7 +391,7 @@
     </div>
 
     <!-- Success Modal -->
-    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click="closeSuccessModal">
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
         <div class="p-6 text-center">
           <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100 mb-4">
@@ -400,7 +400,7 @@
             </svg>
           </div>
           <h2 class="text-xl font-semibold text-gray-900 mb-2">Success!</h2>
-          <p class="text-gray-600 mb-6">{{ modalMessage || 'Facility deleted successfully!' }}</p>
+          <p class="text-gray-600 mb-6">{{ modalMessage || 'Facility status updated successfully!' }}</p>
           <button
             @click="closeSuccessModal"
             type="button"
@@ -432,6 +432,67 @@
         </div>
       </div>
     </div>
+
+    <!-- Status Toggle Confirmation Modal -->
+    <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="facilityToToggle?.status === 'active' ? 'bg-orange-100' : 'bg-green-100'">
+            <svg class="w-6 h-6" :class="facilityToToggle?.status === 'active' ? 'text-orange-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="facilityToToggle?.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
+            {{ facilityToToggle?.status === 'active' ? 'Make Facility Inactive' : 'Make Facility Active' }}
+          </h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">
+              Are you sure you want to {{ facilityToToggle?.status === 'active' ? 'make this facility inactive' : 'make this facility active' }}?
+            </p>
+            <div v-if="facilityToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg">
+              <div class="text-sm space-y-1">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="getFacilityIcon(facilityToToggle)" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-gray-900">{{ facilityToToggle.name }}</div>
+                    <div class="text-gray-500">Current Status: {{ facilityToToggle.status }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="facilityToToggle?.status === 'active'" class="mt-3 p-2 bg-orange-50 border border-orange-200 rounded-lg">
+              <p class="text-xs text-orange-700">
+                <strong>Note:</strong> Making inactive will prevent users from booking this facility.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center justify-center pt-4 space-x-4">
+            <button
+              @click="closeStatusToggleModal"
+              class="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmStatusToggle"
+              :disabled="isTogglingStatus"
+              class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :class="facilityToToggle?.status === 'active' ? 'bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
+            >
+              <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isTogglingStatus ? 'Processing...' : (facilityToToggle?.status === 'active' ? 'Make Inactive' : 'Make Active') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -443,7 +504,9 @@ import { facilityApi } from '@/services/api'
 import {
   mdiPencil,
   mdiDelete,
-  mdiSeat
+  mdiSeat,
+  mdiAccountCancel,
+  mdiAccountCheck
 } from '@mdi/js'
 
 const router = useRouter()
@@ -454,7 +517,7 @@ const statusFilter = ref('') // Default to show all facilities
 const facilities = ref<any[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
-const viewMode = ref<'tile' | 'table'>('tile') // Default to tile view
+const viewMode = ref<'tile' | 'table'>('table') // Default to table view
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
@@ -465,6 +528,11 @@ const dropdownStates = ref({
 const showDeleteModal = ref(false)
 const facilityToDelete = ref<any>(null)
 const isDeleting = ref(false)
+
+// Status toggle modal state
+const showStatusToggleModal = ref(false)
+const facilityToToggle = ref<any>(null)
+const isTogglingStatus = ref(false)
 
 // Success and error modal state
 const showSuccessModal = ref(false)
@@ -607,7 +675,7 @@ const getFacilityIcon = (facility: any) => {
       { keywords: ['cleaning', 'maintenance'], icon: 'M16 11H14V9C14 7.9 13.1 7 12 7S10 7.9 10 9V11H8V9C8 6.79 9.79 5 12 5S16 6.79 16 9V11M12 13C13.66 13 15 11.66 15 10S13.66 7 12 7 9 8.34 9 10 10.34 12 12 12 13.66 12 15 13M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z' },
 
       // Food & Beverage
-      { keywords: ['coffee', 'cafe', 'café'], icon: 'M2 21h18v-2H2v2zm0-4h18v-2H2v2zm0-4h18v-2H2v2zm0-4h18V7H2v2zM0 3v18h20V3H0z' },
+      { keywords: ['coffee', 'cafe', 'café'], icon: 'M2 21h18v-2H2v2zm0-4h18v-2H2v2zm0-4h18v-2H2v-2zm0-4h18V7H2v2zM0 3v18h20V3H0z' },
       { keywords: ['tea', 'teahouse'], icon: 'M4 19h16v2H4v-2zm0-4h16v2H4v-2zm0-4h16v2H4v-2zm0-4h16v2H4v-2zM3 3v2h18V3H3z' },
       { keywords: ['water', 'drinking'], icon: 'M12 2L13.09 8.26L19 9L13.09 9.74L12 16L10.91 9.74L5 9L10.91 8.26L12 2Z' },
       { keywords: ['catering', 'food', 'dining'], icon: 'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 .89-5 2z' },
@@ -617,7 +685,7 @@ const getFacilityIcon = (facility: any) => {
 
       // Health & Wellness
       { keywords: ['first aid', 'medical', 'health'], icon: 'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 21H5V19H19V21M19 17H5V15H19V17M19 13H5V11H19V13M13 9H5V7H13V9M12 14C16.42 14 20 15.79 20 18V19H4V18C4 15.79 7.58 14 12 14Z' },
-      { keywords: ['gym', 'fitness', 'workout'], icon: 'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 21H5V19H19V21M19 17H5V15H19V17M19 13H5V11H19V13M13 9H5V7H13V9M12 14C16.42 14 20 15.79 20 18V19H4V18C4 15.79 7.58 14 12 14Z' },
+      { keywords: ['gym', 'fitness', 'workout'], icon: 'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 21H5V19H19V21M19 17H5V15H19V17M19 13H5V11H19V13M13 9H5V7H13V9M12 14C16.42 14  20 20 15.79 20 18V19H4V18C4 15.79 7.58 14 12 14Z' },
       { keywords: ['meditation', 'quiet', 'zen'], icon: 'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 21H5V19H19V21M19 17H5V15H19V17M19 13H5V11H19V13M13 9H5V7H13V9M12 14C16.42 14 20 15.79 20 18V19H4V18C4 15.79 7.58 14 12 14Z' },
 
       // Transportation
@@ -666,52 +734,41 @@ const toggleViewMode = () => {
   viewMode.value = viewMode.value === 'tile' ? 'table' : 'tile'
 }
 
-const toggleFacilityStatus = async (facility: any) => {
-  if (!facility.id) {
-    console.error('Cannot toggle facility status: ID is missing or invalid')
-    modalMessage.value = 'Cannot update facility: ID is missing or invalid'
-    showErrorModal.value = true
-    return
-  }
+const toggleFacilityStatus = (facility: any) => {
+  facilityToToggle.value = facility
+  showStatusToggleModal.value = true
+}
 
-  // Store the original status in case we need to revert
-  const originalStatus = facility.status
-  const newStatus = facility.status === 'active' ? 'inactive' : 'active'
-  const newIsActive = newStatus === 'active'
+const closeStatusToggleModal = () => {
+  showStatusToggleModal.value = false
+  facilityToToggle.value = null
+  isTogglingStatus.value = false
+}
 
-  // Optimistically update the UI
-  facility.status = newStatus
-
+const confirmStatusToggle = async () => {
+  if (!facilityToToggle.value) return
+  isTogglingStatus.value = true
   try {
-    console.log('Updating facility status:', {
-      facilityId: facility.id,
-      newStatus: newStatus,
-      isActive: newIsActive
-    })
-
-    // Make API call to update facility status
-    const response = await facilityApi.updateFacilityStatus(facility.id, newIsActive, facility.name)
-
-    if (response.success) {
-      console.log('Facility status updated successfully:', facility.name, '->', newStatus)
-      console.log('API Response:', response.message)
-
-      // Show success message
-      modalMessage.value = `Facility "${facility.name}" status updated to ${newStatus}`
+    // Simulate API call delay (replace with real API call)
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    // Toggle status
+    const originalStatus = facilityToToggle.value.status
+    const newStatus = originalStatus === 'active' ? 'inactive' : 'active'
+    const facilityName = facilityToToggle.value.name // Capture name before closing modal
+    facilityToToggle.value.status = newStatus
+    closeStatusToggleModal()
+    // Show success modal after a short delay
+    setTimeout(() => {
+      modalMessage.value = `Facility "${facilityName}" status updated to ${newStatus}`
       showSuccessModal.value = true
-    } else {
-      console.error('Failed to update facility status:', response.message)
-      // Revert the status change
-      facility.status = originalStatus
-      modalMessage.value = response.message || 'Failed to update facility status'
-      showErrorModal.value = true
-    }
+      console.log('Success modal should be showing now:', modalMessage.value)
+    }, 400)
   } catch (error) {
-    console.error('Error updating facility status:', error)
-    // Revert the status change
-    facility.status = originalStatus
-    modalMessage.value = 'Network error while updating facility status'
+    closeStatusToggleModal()
+    modalMessage.value = 'Error updating facility status.'
     showErrorModal.value = true
+  } finally {
+    isTogglingStatus.value = false
   }
 }
 

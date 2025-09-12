@@ -31,7 +31,7 @@
       <!-- Main Role Card -->
       <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
         <!-- Role Header -->
-        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
+        <!-- <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
           <div class="flex items-center space-x-6">
             <div class="flex-shrink-0 w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,7 +50,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Role Details -->
         <div class="px-6 py-6">

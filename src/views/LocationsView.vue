@@ -83,24 +83,24 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
             <div class="relative">
               <select 
-                v-model="filters.company" 
-                @focus="toggleDropdown('company')"
-                @blur="closeDropdown('company')"
+                v-model="filters.location" 
+                @focus="toggleDropdown('location')"
+                @blur="closeDropdown('location')"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
               >
-                <option value="">All Companies</option>
-                <option value="workhub">WorkHub Co.</option>
-                <option value="flexspace">FlexSpace Inc.</option>
-                <option value="creativespaces">Creative Spaces LLC</option>
+                <option value="">All Locations</option>
+                <option v-for="location in locations" :key="location.id" :value="location.id">
+                  {{ location.name }}
+                </option>
               </select>
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg 
                   :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.company ? 'transform rotate-180' : ''
+                    dropdownStates.location ? 'transform rotate-180' : ''
                   ]"
                   fill="none" 
                   stroke="currentColor" 
@@ -205,12 +205,12 @@
                         toggleStatusLoading.has(location.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                       ]"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                      :title="toggleStatusLoading.has(location.id) ? 'Updating...' : (location.status === 'active' ? 'Deactivate Location' : 'Activate Location')">
+                      :title="toggleStatusLoading.has(location.id) ? 'Updating...' : (location.status === 'active' ? 'Make Location Inactive' : 'Make Location Active')">
                       <svg v-if="toggleStatusLoading.has(location.id)" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span v-else>{{ location.status === 'active' ? 'Deactivate' : 'Activate' }}</span>
+                      <span v-else>{{ location.status === 'active' ? 'Inactive' : 'Active' }}</span>
                     </button>
                     <button @click.stop="confirmDeleteLocation(location)"
                       class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
@@ -426,7 +426,7 @@
 
         <div class="my-3 p-3 bg-green-50 border border-green-200 rounded-lg">
           <p class="text-sm text-green-700 text-center">
-            Are you sure you want to <strong>{{ locationToToggle?.status === 'active' ? 'deactivate' : 'activate' }}</strong> this location?
+            Are you sure you want to <strong>{{ locationToToggle?.status === 'active' ? 'make this location inactive' : 'make this location active' }}</strong>?
           </p>
         </div>
 
@@ -535,13 +535,13 @@ const popupMessage = ref('')
 // Filters
 const filters = ref({
   status: '',
-  company: ''
+  location: ''
 })
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   status: false,
-  company: false
+  location: false
 })
 
 // Form data
@@ -588,14 +588,9 @@ const filteredLocations = computed(() => {
     filtered = filtered.filter(location => location.status === filters.value.status)
   }
 
-  // Apply company filter
-  if (filters.value.company) {
-    const companyMap: Record<string, string> = {
-      'workhub': 'WorkHub Co.',
-      'flexspace': 'FlexSpace Inc.',
-      'creativespaces': 'Creative Spaces LLC'
-    }
-    filtered = filtered.filter(location => location.companyName === companyMap[filters.value.company])
+  // Apply location filter
+  if (filters.value.location) {
+    filtered = filtered.filter(location => location.id === filters.value.location)
   }
 
   return filtered
@@ -624,7 +619,7 @@ const resetFilters = () => {
   searchQuery.value = ''
   filters.value = {
     status: '',
-    company: ''
+    location: ''
   }
 }
 
@@ -678,7 +673,7 @@ const confirmStatusChange = async () => {
 
     if (response.success) {
       console.log(`Location ${location.name} status changed to ${location.status}`)
-      const customMessage = isActive ? 'Location activated successfully' : 'Location deactivated successfully'
+      const customMessage = isActive ? 'Location made active successfully' : 'Location made inactive successfully'
       popupMessage.value = customMessage
       showSuccessPopup.value = true
     } else {

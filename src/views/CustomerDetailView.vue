@@ -119,7 +119,7 @@
                       {{ customer.customerType }}
                     </span>
                     <span :class="getStatusClass(customer.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                      {{ customer.status }}
+                      {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
                     </span>
                   </div>
                 </div>
@@ -136,7 +136,7 @@
               <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="customer.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
               </svg>
-              <span>{{ customer.status === 'blocked' ? 'Unblock User' : 'Block User' }}</span>
+              <span>{{ customer.status === 'blocked' ? 'Active User' : 'Inactive User' }}</span>
             </button>
             
             <button 
@@ -282,7 +282,7 @@
                   </div>
                 </div>
                 <div class="text-xs text-gray-600">
-                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status }}
+                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
                 </div>
               </div>
             </div>
@@ -379,6 +379,114 @@
       </div>
     </div>
 
+    <!-- Status Toggle Confirmation Modal -->
+    <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="customer?.status === 'blocked' ? 'bg-green-100' : 'bg-red-100'">
+            <svg class="w-6 h-6" :class="customer?.status === 'blocked' ? 'text-green-600' : 'text-red-600'" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="customer?.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
+            {{ customer?.status === 'blocked' ? 'Make Active' : 'Make Inactive' }} Customer
+          </h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">
+              Are you sure you want to {{ customer?.status === 'blocked' ? 'make active' : 'make inactive' }} {{ customer?.name }}?
+            </p>
+            <div v-if="customer" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div class="text-sm space-y-1">
+                <div class="flex items-center space-x-3">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiAccount" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-medium text-gray-900">{{ customer.name }}</div>
+                    <div class="text-gray-500">{{ customer.email }}</div>
+                    <div class="text-gray-500">{{ customer.phone }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-center pt-4 space-x-4">
+            <button
+              @click="closeStatusToggleModal"
+              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmStatusToggle"
+              :disabled="isTogglingStatus"
+              class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :class="customer?.status === 'blocked' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700'"
+            >
+              <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isTogglingStatus ? 'Processing...' : (customer?.status === 'blocked' ? 'Make Active' : 'Make Inactive') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Success Modal -->
+    <div v-if="showStatusSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusSuccessModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Success!</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
+          </div>
+          <div class="flex items-center justify-center pt-4">
+            <button
+              @click="closeStatusSuccessModal"
+              class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Error Modal -->
+    <div v-if="showStatusErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusErrorModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
+            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Error</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
+          </div>
+          <div class="flex items-center justify-center pt-4">
+            <button
+              @click="closeStatusErrorModal"
+              class="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading state -->
     <!-- <div v-else class="flex items-center justify-center h-64">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -429,6 +537,13 @@ const messageForm = ref({
   recipientEmail: '',
   recipientPhone: ''
 })
+
+// Status toggle modal state
+const showStatusToggleModal = ref(false)
+const isTogglingStatus = ref(false)
+const showStatusSuccessModal = ref(false)
+const showStatusErrorModal = ref(false)
+const statusModalMessage = ref('')
 
 // Get customer data from shared store
 const customerId = route.params.id as string
@@ -491,7 +606,7 @@ const getStatusClass = (status: string) => {
     case 'active':
       return 'bg-green-100 text-green-800'
     case 'inactive':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-red-100 text-red-800'
     case 'blocked':
       return 'bg-red-100 text-red-800'
     default:
@@ -523,10 +638,7 @@ const formatDate = (dateString: string) => {
 
 const toggleCustomerStatus = () => {
   if (!customer.value) return
-  const action = customer.value.status === 'blocked' ? 'unblock' : 'block'
-  if (confirm(`Are you sure you want to ${action} ${customer.value.name}?`)) {
-    toggleStatus(customer.value.id)
-  }
+  showStatusToggleModal.value = true
 }
 
 const resetPassword = () => {
@@ -560,6 +672,49 @@ const closeSendMessageModal = () => {
     recipientEmail: '',
     recipientPhone: ''
   }
+}
+
+const confirmStatusToggle = async () => {
+  if (!customer.value) return
+
+  isTogglingStatus.value = true
+  showStatusToggleModal.value = false
+
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Toggle the status
+    const newStatus = toggleStatus(customer.value.id)
+
+    if (newStatus) {
+      const action = newStatus === 'blocked' ? 'made inactive' : 'made active'
+      statusModalMessage.value = `Customer ${customer.value.name} has been successfully ${action}.`
+      showStatusSuccessModal.value = true
+    } else {
+      throw new Error('Failed to update customer status')
+    }
+  } catch (error) {
+    console.error('Error toggling customer status:', error)
+    statusModalMessage.value = 'Failed to update customer status. Please try again.'
+    showStatusErrorModal.value = true
+  } finally {
+    isTogglingStatus.value = false
+  }
+}
+
+const closeStatusToggleModal = () => {
+  showStatusToggleModal.value = false
+}
+
+const closeStatusSuccessModal = () => {
+  showStatusSuccessModal.value = false
+  statusModalMessage.value = ''
+}
+
+const closeStatusErrorModal = () => {
+  showStatusErrorModal.value = false
+  statusModalMessage.value = ''
 }
 
 const sendMessage = async () => {
