@@ -309,10 +309,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiEye, mdiEyeOff, mdiAlert, mdiCheckCircle } from '@mdi/js'
+import { useAuthStore } from '@/stores/auth'
 
 const logo = '/assets/logo.png'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // Form state
 const form = ref({
@@ -361,8 +363,8 @@ const handleLogin = async () => {
         role: 'super-admin'
       }
 
-      localStorage.setItem('auth-token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      authStore.setAuthToken(token)
+      authStore.setUser(user)
       
       // Direct access to dashboard for super admin
       router.push('/dashboard')
@@ -370,9 +372,9 @@ const handleLogin = async () => {
     }
 
     // Check if onboarding is complete and password has been changed
-    const onboardingComplete = localStorage.getItem('onboarding-complete')
-    const passwordReset = localStorage.getItem('password-reset')
-    const storedPassword = localStorage.getItem('user-password')
+    const onboardingComplete = authStore.onboardingComplete
+    const passwordReset = authStore.passwordReset
+    const storedPassword = authStore.userPassword
 
     let isValidLogin = false
 
@@ -391,7 +393,7 @@ const handleLogin = async () => {
     }
 
     if (isValidLogin) {
-      // Store token and user data in localStorage
+      // Store token and user data using auth store
       const token = 'demo-token-123'
       const user = {
         id: '1',
@@ -401,13 +403,13 @@ const handleLogin = async () => {
         role: 'admin'
       }
 
-      localStorage.setItem('auth-token', token)
-      localStorage.setItem('user', JSON.stringify(user))
+      authStore.setAuthToken(token)
+      authStore.setUser(user)
       
       // Check if this is first time login or onboarding is incomplete
-      if (form.value.password === 'admin123' || !onboardingComplete) {
+      if (form.value.password === 'admin123' || !onboardingComplete || onboardingComplete !== 'true') {
         // First login with default password or incomplete onboarding - redirect to onboarding
-        localStorage.removeItem('password-reset') // Remove the flag so router guard works correctly
+        authStore.setPasswordReset(null) // Remove the flag so router guard works correctly
         router.push('/onboarding')
       } else {
         // Password has been reset and onboarding complete - redirect to dashboard
@@ -493,11 +495,11 @@ const handlePasswordReset = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Store the new password and mark as reset
-    localStorage.setItem('user-password', resetForm.value.newPassword)
-    localStorage.setItem('password-reset', 'true')
+    authStore.setUserPassword(resetForm.value.newPassword)
+    authStore.setPasswordReset('true')
     
     // Remove onboarding flag since password is now set via reset
-    localStorage.setItem('onboarding-complete', 'true')
+    authStore.setOnboardingComplete('true')
 
     // Close modal and show success
     closeResetForm()

@@ -515,9 +515,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert, mdiOfficeBuilding, mdiAccount, mdiClockOutline } from '@mdi/js'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const logo = '/assets/logo.png'
 
@@ -618,8 +620,8 @@ const handlePasswordChange = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Store the new password securely (in a real app, this would be hashed and stored server-side)
-    localStorage.setItem('user-password', passwordForm.value.newPassword)
-    localStorage.setItem('password-reset', 'true')
+    authStore.setUserPassword(passwordForm.value.newPassword)
+    authStore.setPasswordReset('true')
     
     // Move to company setup
     currentStep.value = 2
@@ -646,8 +648,8 @@ const handleCompanySetup = async () => {
     await new Promise(resolve => setTimeout(resolve, 1500))
 
     // Store company setup data (in a real app, this would be sent to the backend)
-    localStorage.setItem('company-setup', JSON.stringify(companyForm.value))
-    localStorage.setItem('onboarding-complete', 'true')
+    authStore.setCompanySetup(JSON.stringify(companyForm.value))
+    authStore.setOnboardingComplete('true')
     
     // Move to success step
     currentStep.value = 3
