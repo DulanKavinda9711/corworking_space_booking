@@ -446,9 +446,7 @@
             {{ facilityToToggle?.status === 'active' ? 'Make Facility Inactive' : 'Make Facility Active' }}
           </h3>
           <div class="mt-2 px-7 py-3">
-            <p class="text-sm text-gray-500 text-center">
-              Are you sure you want to {{ facilityToToggle?.status === 'active' ? 'make this facility inactive' : 'make this facility active' }}?
-            </p>
+            
             <div v-if="facilityToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg">
               <div class="text-sm space-y-1">
                 <div class="flex items-center space-x-3">
@@ -464,9 +462,14 @@
                 </div>
               </div>
             </div>
-            <div v-if="facilityToToggle?.status === 'active'" class="mt-3 p-2 bg-orange-50 border border-orange-200 rounded-lg">
+            <!-- <div v-if="facilityToToggle?.status === 'active'" class="mt-3 p-2 bg-orange-50 border border-orange-200 rounded-lg">
               <p class="text-xs text-orange-700">
                 <strong>Note:</strong> Making inactive will prevent users from booking this facility.
+              </p>
+            </div> -->
+            <div class="my-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p class="text-sm text-green-700 text-center">
+                Are you sure you want to <strong>{{ facilityToToggle?.status === 'active' ? 'make this facility inactive' : 'make this facility active' }}</strong>?
               </p>
             </div>
           </div>
@@ -487,7 +490,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isTogglingStatus ? 'Processing...' : (facilityToToggle?.status === 'active' ? 'Make Inactive' : 'Make Active') }}</span>
+              <span>{{ isTogglingStatus ? 'Processing...' : (facilityToToggle?.status === 'active' ? 'Inactive' : 'Active') }}</span>
             </button>
           </div>
         </div>

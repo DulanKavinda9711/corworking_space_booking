@@ -314,12 +314,19 @@ router.beforeEach((to, from, next) => {
   const demoPasswordDisabled = localStorage.getItem('demo-password-disabled')
   const storedPassword = localStorage.getItem('user-password')
   
+  // Check if user is super admin
+  const userData = localStorage.getItem('user')
+  const isSuperAdmin = userData ? JSON.parse(userData).role === 'super-admin' : false
+  
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Not authenticated, redirect to login
     next('/login')
   } else if (to.path === '/login' && isAuthenticated) {
     // Already authenticated, check if onboarding is needed
-    if (!passwordReset || !onboardingComplete) {
+    if (isSuperAdmin) {
+      // Super admin bypasses onboarding
+      next('/dashboard')
+    } else if (!passwordReset || !onboardingComplete) {
       next('/onboarding')
     } else {
       next('/dashboard')
@@ -329,7 +336,10 @@ router.beforeEach((to, from, next) => {
     next('/dashboard')
   } else if (to.path === '/dashboard' && isAuthenticated) {
     // Enhanced security check for dashboard access
-    if (demoPasswordDisabled === 'true' && storedPassword) {
+    if (isSuperAdmin) {
+      // Super admin has direct access
+      next()
+    } else if (demoPasswordDisabled === 'true' && storedPassword) {
       // User has set a custom password - allow access
       next()
     } else if (passwordReset === 'true' && onboardingComplete === 'true') {

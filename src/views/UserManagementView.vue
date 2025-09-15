@@ -215,7 +215,20 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                   <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-gray-50 cursor-pointer" @click="viewRole(role)">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ role.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                          <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path :d="mdiShieldAccount" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">{{ role.name }}</div>
+                        </div>
+                      </div>
+                    </td>
                     <td class="px-6 py-4">
                       <div class="flex flex-wrap gap-1">
                         <span v-for="permission in role.permissions.slice(0, 2)" :key="permission"
@@ -627,6 +640,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { mdiShieldAccount } from '@mdi/js'
 
 // Role interface
 interface Role {

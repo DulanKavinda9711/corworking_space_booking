@@ -235,9 +235,7 @@
             {{ customerToToggle?.status === 'active' ? 'Make Inactive' : 'Make Active' }} Customer
           </h3>
           <div class="mt-2 px-7 py-3">
-            <p class="text-sm text-gray-500 text-center">
-              Are you sure you want to {{ customerToToggle?.status === 'active' ? 'make inactive' : 'make active' }} this customer?
-            </p>
+            
                 <div v-if="customerToToggle" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div class="text-sm space-y-1">
                 <div class="flex items-center space-x-3">
@@ -255,9 +253,14 @@
                 </div>
               </div>
             </div>
-            <div v-if="customerToToggle?.status === 'active'" class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+            <!-- <div v-if="customerToToggle?.status === 'active'" class="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
               <p class="text-xs text-amber-700">
                 <strong>Note:</strong> Making inactive will prevent the customer from making new bookings and accessing their account.
+              </p>
+            </div> -->
+            <div class="my-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p class="text-sm text-green-700 text-center">
+                Are you sure you want to <strong>{{ customerToToggle?.status === 'active' ? 'make this customer inactive' : 'make this customer active' }}</strong>?
               </p>
             </div>
           </div>
@@ -279,6 +282,54 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               <span>{{ isProcessing ? 'Processing...' : (customerToToggle?.status === 'active' ? 'Inactive' : 'Active') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeSuccessModal">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all" @click.stop>
+        <div class="p-6">
+          <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100 mb-4">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          </div>
+          <div class="text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Success!</h3>
+            <p class="text-sm text-gray-600">{{ successMessage }}</p>
+          </div>
+          <div class="mt-6 flex justify-center">
+            <button @click="closeSuccessModal" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeErrorModal">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all" @click.stop>
+        <div class="p-6">
+          <div class="flex items-center justify-center mb-4">
+            <div class="flex-shrink-0">
+              <svg class="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Error!</h3>
+            <p class="text-sm text-gray-600">{{ errorMessage }}</p>
+          </div>
+          <div class="mt-6 flex justify-center">
+            <button @click="closeErrorModal" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors">
+              OK
             </button>
           </div>
         </div>
@@ -309,6 +360,12 @@ const itemsPerPage = 10
 const showStatusModal = ref(false)
 const customerToToggle = ref<any>(null)
 const isProcessing = ref(false)
+
+// Success and Error modal state
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
 
 // Dropdown states for arrow rotation
 const dropdownStates = ref({
@@ -430,6 +487,27 @@ const closeStatusModal = () => {
   isProcessing.value = false
 }
 
+// Success and Error modal helper functions
+const showSuccessModalWithMessage = (message: string) => {
+  successMessage.value = message
+  showSuccessModal.value = true
+}
+
+const showErrorModalWithMessage = (message: string) => {
+  errorMessage.value = message
+  showErrorModal.value = true
+}
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  successMessage.value = ''
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
+}
+
 const confirmToggleCustomerStatus = async () => {
   if (!customerToToggle.value) return
   
@@ -441,13 +519,17 @@ const confirmToggleCustomerStatus = async () => {
     
     const newStatus = toggleStatus(customerToToggle.value.id)
     if (newStatus) {
-      const action = newStatus === 'blocked' ? 'made inactive' : 'made active'
-      console.log(`Customer ${customerToToggle.value.name} has been ${action} successfully`)
+      const action = newStatus === 'active' ? 'activated' : 'made inactive'
+      const message = `Customer ${customerToToggle.value.name} has been ${action} successfully.`
+      showSuccessModalWithMessage(message)
+    } else {
+      showErrorModalWithMessage('Failed to update customer status. Please try again.')
     }
     
     closeStatusModal()
   } catch (error) {
     console.error('Error toggling customer status:', error)
+    showErrorModalWithMessage('An error occurred while updating customer status. Please try again.')
   } finally {
     isProcessing.value = false
   }
@@ -458,9 +540,19 @@ const toggleCustomerStatus = (customer: any) => {
   confirmToggleStatus(customer)
 }
 
-const resetPassword = (customer: any) => {
+const resetPassword = async (customer: any) => {
   if (confirm(`Are you sure you want to reset the password for ${customer.name}?`)) {
-    alert(`Password reset link has been sent to ${customer.email}`)
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Simulate successful password reset
+      const message = `Password reset link has been sent to ${customer.email}`
+      showSuccessModalWithMessage(message)
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      showErrorModalWithMessage('Failed to send password reset link. Please try again.')
+    }
   }
 }
 

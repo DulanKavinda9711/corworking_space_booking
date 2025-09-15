@@ -112,13 +112,13 @@
         </div>
 
         <!-- Demo credentials -->
-        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <!-- <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h3 class="text-sm font-medium text-blue-900 mb-2">Demo Credentials</h3>
           <div class="text-sm text-blue-700 space-y-1">
             <p><strong>Username:</strong> admin</p>
             <p><strong>Password:</strong> admin123</p>
           </div>
-        </div>
+        </div> -->
       </form>
 
       <!-- Error message -->
@@ -356,6 +356,26 @@ const handleLogin = async () => {
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Special case for Super Admin - direct dashboard access
+    if (form.value.username === 'Superadmin' && form.value.password === '123456') {
+      // Store token and user data in localStorage
+      const token = 'super-admin-token-123'
+      const user = {
+        id: 'super-admin',
+        username: 'Superadmin',
+        email: 'superadmin@coworkingspace.com',
+        name: 'Super Administrator',
+        role: 'super-admin'
+      }
+
+      localStorage.setItem('auth-token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      
+      // Direct access to dashboard for super admin
+      router.push('/dashboard')
+      return
+    }
 
     // Check if onboarding is complete and password has been changed
     const onboardingComplete = localStorage.getItem('onboarding-complete')

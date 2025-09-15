@@ -244,8 +244,16 @@
                 class="hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ payment.bookingId }}</div>
-                 
+                    <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiCreditCard" />
+                      </svg>
+                      </div>
+                    </div>
+                    <div class="text-sm font-medium text-gray-900 ml-3">{{ payment.bookingId }}</div>
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -312,7 +320,9 @@ import {
   mdiCog, 
   mdiMapMarker, 
   mdiEye,
-  mdiWallet
+  mdiWallet,
+  mdiTicket,
+  mdiCreditCard
 } from '@mdi/js'
 
 const router = useRouter()
