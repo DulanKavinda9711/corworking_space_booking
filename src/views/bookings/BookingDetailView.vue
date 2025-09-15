@@ -394,16 +394,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { useCustomers } from '@/composables/useCustomers'
-import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiCancel, mdiEye, mdiMessage } from '@mdi/js'
+import { useCustomers, type Customer } from '@/composables/useCustomers'
+import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiEye, mdiMessage } from '@mdi/js'
 
 const route = useRoute()
 const router = useRouter()
 const { customers } = useCustomers()
 
 // Modal state
-const showCancelModal = ref(false)
-const isCancelling = ref(false)
 
 // Send message modal state
 const showSendMessageModal = ref(false)
@@ -981,7 +979,7 @@ const getCustomerDetails = (booking: any) => {
   
   if (booking.userType === 'registered') {
     // Find customer by email match
-    const customerData = customers.value.find(customer => 
+    const customerData = customers.value.find((customer: Customer) => 
       customer.email.toLowerCase() === booking.customerEmail?.toLowerCase()
     )
     
@@ -1057,17 +1055,6 @@ const formatSubscriptionDate = (dateString: string) => {
 }
 
 // Modal functions
-const confirmCancelBooking = () => {
-  if (booking.value) {
-    // Navigate to the cancel booking page
-    router.push(`/bookings/${booking.value.id}/cancel`)
-  }
-}
-
-const closeCancelModal = () => {
-  showCancelModal.value = false
-  isCancelling.value = false
-}
 
 
 

@@ -110,7 +110,7 @@
               <div v-if="showUserMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                 <div class="py-1">
                   <router-link to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="showUserMenu = false">Profile</router-link>
-                  <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="showUserMenu = false">Settings</router-link>
+                  <!-- <router-link to="/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="showUserMenu = false">Settings</router-link> -->
                   <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Sign out
                   </button>
@@ -132,16 +132,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { 
-  mdiViewDashboard, 
-  mdiCalendarCheck, 
-  mdiAccountGroup, 
-  mdiCog, 
-  mdiMapMarker, 
-  mdiCreditCard, 
-  mdiAccountSettings, 
-  mdiShieldCheck, 
-  mdiChartLine, 
+import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
+import {
+  mdiViewDashboard,
+  mdiCalendarCheck,
+  mdiAccountGroup,
+  mdiCog,
+  mdiMapMarker,
+  mdiCreditCard,
+  mdiAccountSettings,
+  mdiShieldCheck,
+  mdiChartLine,
   mdiHistory,
   mdiBell,
   mdiBookOpen,
@@ -157,7 +159,6 @@ const router = useRouter()
 const sidebarOpen = ref(false)
 const showNotifications = ref(false)
 const showUserMenu = ref(false)
-const searchQuery = ref('')
 
 // MDI Icons
 const mdiIcons = {
@@ -212,39 +213,13 @@ const notifications = ref([
   }
 ])
 
+const authStore = useAuthStore()
+const themeStore = useThemeStore()
+
 const notificationCount = computed(() => notifications.value.length)
 
-// Theme (light / dark) - persisted to localStorage and applied to document element
-let _initialTheme: 'light' | 'dark' = 'light'
-try {
-  const saved = localStorage.getItem('theme')
-  if (saved === 'dark') _initialTheme = 'dark'
-} catch (e) {
-  // ignore
-}
-const theme = ref<'light' | 'dark'>(_initialTheme)
-
-const applyTheme = (t: 'light' | 'dark') => {
-  try {
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  } catch (e) {
-    // ignore (server-side rendering etc.)
-  }
-}
-
-const toggleTheme = () => {
-  theme.value = theme.value === 'dark' ? 'light' : 'dark'
-  try {
-    localStorage.setItem('theme', theme.value)
-  } catch (e) {
-    // ignore
-  }
-  applyTheme(theme.value)
-}
+// Use theme from store
+const theme = computed(() => themeStore.theme)
 
 // Get current page name based on route
 const currentPageName = computed(() => {
@@ -281,19 +256,9 @@ const isActive = (path: string) => {
   return route.path === path || route.path.startsWith(path + '/')
 }
 
-const onSearch = () => {
-  // Emit search event or handle search logic
-  console.log('Searching for:', searchQuery.value)
-}
-
 const logout = () => {
-  // Clear all authentication and user data
-  localStorage.removeItem('auth-token')
-  localStorage.removeItem('user')
-  localStorage.removeItem('user-password')
-  localStorage.removeItem('password-reset')
-  localStorage.removeItem('onboarding-complete')
-  localStorage.removeItem('company-setup')
+  // Clear all authentication and user data using auth store
+  authStore.clearAuth()
   router.push('/login')
 }
 
@@ -331,8 +296,7 @@ const handleClickOutside = (event: Event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  // apply stored theme on mount
-  applyTheme(theme.value)
+  // Theme is handled by the theme store
 })
 
 onUnmounted(() => {

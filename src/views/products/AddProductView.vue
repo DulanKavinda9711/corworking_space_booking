@@ -535,12 +535,19 @@
                       </div>
                       
                       <!-- Facilities dropdown with checkboxes -->
-                      <div v-else class="mb-4 relative">
+                      <div v-else class="mb-4 relative facility-dropdown">
                         <div class="relative">
-                          <button type="button" @click="toggleDefaultDropdown(idx)"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
+                          <div @click="toggleDefaultDropdown(idx)" class="cursor-pointer facility-dropdown-trigger w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between"
+                            :class="[
+                              showDefaultDropdown[idx] 
+                                ? 'border-green-500 bg-green-50' 
+                                : 'border-gray-300 bg-white'
+                            ]"
                           >
-                            <span v-if="product.defaultFacilities.length === 0" class="text-gray-500">
+                            <span v-if="showDefaultDropdown[idx]" class="text-gray-500">
+                              Select facilities below...
+                            </span>
+                            <span v-else-if="product.defaultFacilities.length === 0" class="text-gray-500">
                               Select free facilities to add
                             </span>
                             <span v-else class="text-gray-900">
@@ -551,12 +558,12 @@
                               fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                          </button>
+                          </div>
                           
                           <!-- Dropdown content -->
                           <div v-show="showDefaultDropdown[idx]" 
                             class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            <div v-if="getAvailableDefaultFacilities(idx).length === 0" class="px-4 py-3 text-gray-500 text-sm">
+                            <div v-if="availableFacilities.length === 0" class="px-4 py-3 text-gray-500 text-sm">
                               No facilities available
                             </div>
                             <div v-else class="py-2">
@@ -572,6 +579,12 @@
                                   <div v-if="facility.description" class="text-xs text-gray-500">
                                     {{ facility.description }}
                                   </div>
+                                </div>
+                                <!-- Show checkmark for selected facilities -->
+                                <div v-if="product.defaultFacilities.includes(facility.id)" class="ml-2">
+                                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                  </svg>
                                 </div>
                               </label>
                             </div>
@@ -651,12 +664,19 @@
                       </div>
                       
                       <!-- Additional Facilities dropdown with checkboxes -->
-                      <div v-else class="mb-4 relative">
+                      <div v-else class="mb-4 relative facility-dropdown">
                         <div class="relative">
-                          <button type="button" @click="toggleAdditionalDropdown(idx)"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
+                          <div @click="toggleAdditionalDropdown(idx)" class="cursor-pointer facility-dropdown-trigger w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between"
+                            :class="[
+                              showAdditionalDropdown[idx] 
+                                ? 'border-blue-500 bg-blue-50' 
+                                : 'border-gray-300 bg-white'
+                            ]"
                           >
-                            <span v-if="product.additionalFacilities.length === 0" class="text-gray-500">
+                            <span v-if="showAdditionalDropdown[idx]" class="text-gray-500">
+                              Select facilities below...
+                            </span>
+                            <span v-else-if="product.additionalFacilities.length === 0" class="text-gray-500">
                               Select premium facilities to add
                             </span>
                             <span v-else class="text-gray-900">
@@ -667,12 +687,12 @@
                               fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                          </button>
+                          </div>
                           
                           <!-- Dropdown content -->
                           <div v-show="showAdditionalDropdown[idx]" 
                             class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            <div v-if="getAvailableAdditionalFacilities(idx).length === 0" class="px-4 py-3 text-gray-500 text-sm">
+                            <div v-if="availableFacilities.length === 0" class="px-4 py-3 text-gray-500 text-sm">
                               No facilities available
                             </div>
                             <div v-else class="py-2">
@@ -688,6 +708,12 @@
                                   <div v-if="facility.description" class="text-xs text-gray-500">
                                     {{ facility.description }}
                                   </div>
+                                </div>
+                                <!-- Show checkmark for selected facilities -->
+                                <div v-if="product.additionalFacilities.some(f => f.id === facility.id)" class="ml-2">
+                                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                  </svg>
                                 </div>
                               </label>
                             </div>
@@ -1189,7 +1215,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { locationApi, facilityApi, productApi } from '@/services/api'
@@ -1293,37 +1319,6 @@ const products = ref([
 const showValidation = ref([false])
 
 // Computed properties
-const isFormValid = computed(() => {
-  const basicValidation = products.value.every(product => 
-    product.locationId && 
-    product.type && 
-    product.name.trim() && 
-    product.maxSeatingCapacity > 0 &&
-    product.openDays.length > 0 &&
-    // Check that all selected days have valid hours
-    product.openDays.every((day: DayOfWeek) => 
-      product.dayHours[day] && 
-      product.dayHours[day].start && 
-      product.dayHours[day].end
-    )
-  )
-
-  if (!basicValidation) return false
-
-  // Product-specific pricing validation
-  return products.value.every(product => {
-    switch (product.type) {
-      case 'Meeting Room':
-        return product.pricePerHour > 0
-      case 'Hot Desk':
-        return product.pricePerHour > 0 && product.pricePerDay > 0
-      case 'Dedicated Desk':
-        return product.pricePerMonth > 0 && product.pricePerYear > 0
-      default:
-        return false
-    }
-  })
-})
 
 // Check if we can add another product (current product must be valid)
 const canAddAnotherProduct = computed(() => {
@@ -1368,31 +1363,30 @@ const canAddAnotherProduct = computed(() => {
 
 // Helper functions for per-product facility management
 const getAvailableDefaultFacilities = (productIndex: number) => {
-  return availableFacilities.value.filter(facility => 
-    !products.value[productIndex].defaultFacilities.includes(facility.id)
-  )
+  // Return all facilities instead of filtering out selected ones
+  return availableFacilities.value
 }
 
 const getAvailableAdditionalFacilities = (productIndex: number) => {
-  return availableFacilities.value.filter(facility => 
-    !products.value[productIndex].additionalFacilities.some(f => f.id === facility.id)
-  )
+  // Filter out facilities that are already selected as default facilities
+  const defaultFacilityIds = products.value[productIndex].defaultFacilities
+  return availableFacilities.value.filter(facility => !defaultFacilityIds.includes(facility.id))
 }
 
 const toggleDefaultDropdown = (productIndex: number) => {
+  // Only open the dropdown if it's closed, don't close it when clicking the button
   if (!showDefaultDropdown.value[productIndex]) {
     showDefaultDropdown.value[productIndex] = true
-  } else {
-    showDefaultDropdown.value[productIndex] = false
   }
+  // If already open, do nothing - user must use "Done" button to close
 }
 
 const toggleAdditionalDropdown = (productIndex: number) => {
+  // Only open the dropdown if it's closed, don't close it when clicking the button
   if (!showAdditionalDropdown.value[productIndex]) {
     showAdditionalDropdown.value[productIndex] = true
-  } else {
-    showAdditionalDropdown.value[productIndex] = false
   }
+  // If already open, do nothing - user must use "Done" button to close
 }
 
 // Multi-select dropdown methods
@@ -1453,26 +1447,6 @@ const removeAdditionalFacility = (index: number, productIndex: number) => {
 }
 
 // Time picker helper functions
-const formatTime = (hour: number, minute: number, period: string) => {
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-  return `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${period}`
-}
-
-const parseTimeToComponents = (timeString: string) => {
-  const [time, period] = timeString.split(' ')
-  const [hourStr, minuteStr] = time.split(':')
-  let hour = parseInt(hourStr)
-  const minute = parseInt(minuteStr)
-  
-  if (period === 'PM' && hour !== 12) {
-    hour += 12
-  } else if (period === 'AM' && hour === 12) {
-    hour = 0
-  }
-  
-  return { hour, minute, period }
-}
-
 const convertTo12Hour = (time24: string) => {
   const [hourStr, minuteStr] = time24.split(':')
   let hour = parseInt(hourStr)
@@ -1605,19 +1579,6 @@ const syncLocationToAllProducts = () => {
   })
 }
 
-// Get location address helper
-const getLocationAddress = (location: any) => {
-  const addressParts = [
-    location.street,
-    location.street2,
-    location.town,
-    location.district,
-    location.postalCode
-  ].filter(part => part && part.trim()) // Remove null, undefined, and empty strings
-  
-  return addressParts.join(', ') || 'Address not available'
-}
-
 // Dropdown control functions
 const toggleDropdown = (dropdown: string) => {
   dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
@@ -1627,12 +1588,6 @@ const closeDropdown = (dropdown: string) => {
   setTimeout(() => {
     dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
   }, 150)
-}
-
-const closeAllDropdowns = () => {
-  Object.keys(dropdownStates.value).forEach(key => {
-    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-  })
 }
 
 // Fetch locations from API
@@ -1683,10 +1638,6 @@ const fetchFacilities = async () => {
   } finally {
     isLoadingFacilities.value = false
   }
-}
-
-const onCompanyChange = () => {
-  // Remove this method since we no longer have company selection
 }
 
 const onProductTypeChange = (index: number) => {
@@ -1849,51 +1800,6 @@ const removeProductForm = (index: number) => {
     showValidation.value.splice(index, 1)
     showDefaultDropdown.value.splice(index, 1)
     showAdditionalDropdown.value.splice(index, 1)
-  }
-}
-
-const cancelProduct = (index: number) => {
-  // If multiple forms exist, remove the selected one. Otherwise reset the single form.
-  if (products.value.length > 1) {
-    removeProductForm(index)
-  } else {
-    // Reset the first form to initial blank values
-    products.value[0] = {
-      locationId: '',
-      type: '',
-      images: [] as string[],
-      name: '',
-      description: '',
-      maxSeatingCapacity: 1,
-      pricePerHour: 0,
-      pricePerDay: 0,
-      pricePerWeek: 0,
-      pricePerMonth: 0,
-      pricePerYear: 0,
-      openDays: [] as DayOfWeek[],
-      dayHours: {
-        Monday: { start: '09:00', end: '17:00' },
-        Tuesday: { start: '09:00', end: '17:00' },
-        Wednesday: { start: '09:00', end: '17:00' },
-        Thursday: { start: '09:00', end: '17:00' },
-        Friday: { start: '09:00', end: '17:00' },
-        Saturday: { start: '09:00', end: '17:00' },
-        Sunday: { start: '09:00', end: '17:00' }
-      } as DayHours,
-      defaultFacilities: [] as number[],
-      additionalFacilities: [] as Array<{
-        id: number
-        name: string
-        pricePerHour: number
-        pricePerDay: number
-        pricePerMonth: number
-        pricePerYear: number
-      }> ,
-      status: 'active'
-    }
-    showValidation.value = [false]
-    showDefaultDropdown.value = [false]
-    showAdditionalDropdown.value = [false]
   }
 }
 
@@ -2122,7 +2028,8 @@ onMounted(() => {
   // Close dropdowns when clicking outside
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement
-    if (!target.closest('.relative')) {
+    // Don't close facility dropdowns if clicking within them or their triggers
+    if (!target.closest('.facility-dropdown') && !target.closest('.facility-dropdown-trigger')) {
       showDefaultDropdown.value.fill(false)
       showAdditionalDropdown.value.fill(false)
     }

@@ -342,8 +342,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { useCustomers } from '@/composables/useCustomers'
-import { mdiAccount, mdiEye, mdiAccountCheck, mdiAccountCancel, mdiKeyVariant } from '@mdi/js'
+import { useCustomers, type Customer } from '@/composables/useCustomers'
+import { mdiAccount, mdiAccountCheck, mdiAccountCancel } from '@mdi/js'
 
 // Use router for navigation
 const router = useRouter()
@@ -380,12 +380,12 @@ const filters = ref({
 // Computed properties
 const filteredCustomers = computed(() => {
   // Start with only registered customers
-  let filtered = customers.value.filter(customer => customer.customerType === 'registered')
+  let filtered = customers.value.filter((customer: Customer) => customer.customerType === 'registered')
 
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(customer =>
+    filtered = filtered.filter((customer: Customer) =>
       customer.name.toLowerCase().includes(query) ||
       customer.email.toLowerCase().includes(query) ||
       customer.phone.includes(query)
@@ -394,7 +394,7 @@ const filteredCustomers = computed(() => {
 
   // Apply status filter
   if (filters.value.status) {
-    filtered = filtered.filter(customer => customer.status === filters.value.status)
+    filtered = filtered.filter((customer: Customer) => customer.status === filters.value.status)
   }
 
   return filtered
@@ -532,27 +532,6 @@ const confirmToggleCustomerStatus = async () => {
     showErrorModalWithMessage('An error occurred while updating customer status. Please try again.')
   } finally {
     isProcessing.value = false
-  }
-}
-
-const toggleCustomerStatus = (customer: any) => {
-  // This method is now replaced by the modal workflow
-  confirmToggleStatus(customer)
-}
-
-const resetPassword = async (customer: any) => {
-  if (confirm(`Are you sure you want to reset the password for ${customer.name}?`)) {
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Simulate successful password reset
-      const message = `Password reset link has been sent to ${customer.email}`
-      showSuccessModalWithMessage(message)
-    } catch (error) {
-      console.error('Error resetting password:', error)
-      showErrorModalWithMessage('Failed to send password reset link. Please try again.')
-    }
   }
 }
 

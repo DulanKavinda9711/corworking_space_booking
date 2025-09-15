@@ -1,10 +1,12 @@
 /**
  * Migration Helper Utilities
- * 
+ *
  * This file contains utility functions to help migrate from localStorage to centralized API
  */
 
 import api from '@/services/api'
+import { useBookingsStore } from '@/stores/bookings'
+import { useCustomersStore } from '@/stores/customers'
 
 /**
  * Migrate localStorage bookings to API format
@@ -13,20 +15,21 @@ import api from '@/services/api'
 export const migrateBookingsData = async () => {
   try {
     console.log('🔄 Starting bookings data migration...')
-    
+
+    const bookingsStore = useBookingsStore()
+
     // Get existing localStorage data
     const localBookings = localStorage.getItem('allBookings')
     if (localBookings) {
       const bookings = JSON.parse(localBookings)
       console.log(`📦 Found ${bookings.length} bookings in localStorage`)
-      
-      // The API mock data store will automatically load from localStorage
-      // No additional migration needed for mock data
+
+      // The bookings store will automatically load from localStorage
       console.log('✅ Bookings data migration completed')
-      
+
       return { success: true, message: 'Migration completed successfully' }
     }
-    
+
     console.log('ℹ️ No bookings found in localStorage to migrate')
     return { success: true, message: 'No data to migrate' }
   } catch (error) {
@@ -41,16 +44,18 @@ export const migrateBookingsData = async () => {
 export const migrateCustomersData = async () => {
   try {
     console.log('🔄 Starting customers data migration...')
-    
+
+    const customersStore = useCustomersStore()
+
     const localCustomers = localStorage.getItem('customers')
     if (localCustomers) {
       const customers = JSON.parse(localCustomers)
       console.log(`📦 Found ${customers.length} customers in localStorage`)
-      
+
       console.log('✅ Customers data migration completed')
       return { success: true, message: 'Migration completed successfully' }
     }
-    
+
     console.log('ℹ️ No customers found in localStorage to migrate')
     return { success: true, message: 'No data to migrate' }
   } catch (error) {
@@ -99,18 +104,20 @@ export const testApiConnectivity = async () => {
  */
 export const validateDataConsistency = async () => {
   console.log('🔍 Validating data consistency...')
-  
+
   try {
+    const bookingsStore = useBookingsStore()
+
     // Compare localStorage bookings with API bookings
     const localBookings = JSON.parse(localStorage.getItem('allBookings') || '[]')
     const apiResponse = await api.booking.getAllBookings()
-    
+
     if (apiResponse.success && apiResponse.data) {
       const apiBookings = apiResponse.data
-      
+
       console.log(`📦 localStorage bookings: ${localBookings.length}`)
       console.log(`🌐 API bookings: ${apiBookings.length}`)
-      
+
       if (localBookings.length === apiBookings.length) {
         console.log('✅ Booking count matches')
       } else {
@@ -200,27 +207,47 @@ export const runCompleteMigration = async () => {
  * Use with caution!
  */
 export const clearAllLocalStorageData = () => {
+  const bookingsStore = useBookingsStore()
+  const customersStore = useCustomersStore()
+
   const keys = [
     'allBookings',
     'customers',
     'bookingStatuses',
+    'customerStatuses',
+    'commissionSettings',
+    'theme',
+    'auth-token',
+    'user',
+    'user-password',
+    'password-reset',
+    'onboarding-complete',
+    'demo-password-disabled',
+    'company-setup',
+    'deletedProducts',
     'deletedBookings',
     'cancellationRequests',
     'sentCustomerMessages',
     'bookingViewLogs',
     'bookingAdditionLogs'
   ]
-  
+
   console.log('🗑️ Clearing localStorage data...')
-  
+
   keys.forEach(key => {
     if (localStorage.getItem(key)) {
       localStorage.removeItem(key)
       console.log(`   Removed: ${key}`)
     }
   })
-  
-  console.log('✅ localStorage cleared')
+
+  // Clear stores
+  bookingsStore.allBookings = []
+  bookingsStore.bookingStatuses = {}
+  customersStore.customers = []
+  customersStore.customerStatuses = {}
+
+  console.log('✅ localStorage and stores cleared')
 }
 
 /**

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 // Auth
 import LoginView from '@/views/auth/LoginView.vue'
@@ -66,7 +67,7 @@ import SettingsView from '@/views/SettingsView.vue'
 import AdminProfileView from '@/views/AdminProfileView.vue'
 
 // Placeholder views
-import PlaceholderView from '@/views/PlaceholderView.vue'
+// import PlaceholderView from '@/views/PlaceholderView.vue'
 
 // Promotions
 import PromotionView from '@/views/PromotionView.vue'
@@ -308,15 +309,17 @@ const router = createRouter({
 
 // Auth guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('auth-token')
-  const passwordReset = localStorage.getItem('password-reset')
-  const onboardingComplete = localStorage.getItem('onboarding-complete')
-  const demoPasswordDisabled = localStorage.getItem('demo-password-disabled')
-  const storedPassword = localStorage.getItem('user-password')
-  
+  const authStore = useAuthStore()
+
+  const isAuthenticated = authStore.authToken
+  const passwordReset = authStore.passwordReset
+  const onboardingComplete = authStore.onboardingComplete
+  const demoPasswordDisabled = authStore.demoPasswordDisabled
+  const storedPassword = authStore.userPassword
+
   // Check if user is super admin
-  const userData = localStorage.getItem('user')
-  const isSuperAdmin = userData ? JSON.parse(userData).role === 'super-admin' : false
+  const userData = authStore.user
+  const isSuperAdmin = userData ? userData.role === 'super-admin' : false
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Not authenticated, redirect to login

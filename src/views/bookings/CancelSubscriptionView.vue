@@ -519,20 +519,6 @@ const calculateDaysUntilEnd = () => {
   return Math.max(0, diffDays)
 }
 
-const calculateProratedRefund = () => {
-  if (!subscription.value) return 0
-  
-  const today = new Date()
-  const endDate = new Date(subscription.value.nextBillingDate)
-  const startDate = new Date(subscription.value.subscribedDate)
-  
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-  const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
-  
-  const dailyRate = subscription.value.totalPrice / totalDays
-  return Math.round(dailyRate * remainingDays)
-}
-
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]

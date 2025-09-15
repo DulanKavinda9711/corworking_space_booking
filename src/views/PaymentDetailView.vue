@@ -207,13 +207,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { 
-  mdiAccount, 
-  mdiMapMarker, 
+import { useCommissionStore } from '@/stores/commission'
+import {
+  mdiAccount,
+  mdiMapMarker,
   mdiCurrencyUsd
 } from '@mdi/js'
 
 const route = useRoute()
+const commissionStore = useCommissionStore()
 
 // Sample payment data based on payments view structure
 const payment = ref({
@@ -250,46 +252,17 @@ const additionalFacilitiesTotal = computed(() => {
   return payment.value.additionalFacilities.reduce((total, facility) => total + facility.price, 0)
 })
 
-// Commission calculations - Load from localStorage or use defaults
+// Commission calculations - Load from commission store
 const loadCommissionSettings = () => {
-  const savedSettings = localStorage.getItem('commissionSettings')
-  if (savedSettings) {
-    try {
-      return JSON.parse(savedSettings)
-    } catch (error) {
-      console.error('Error loading commission settings:', error)
-    }
-  }
-  // Default settings if nothing saved
   return {
-    SquareHubRate: 50.0,
+    SquareHubRate: commissionStore.commissionSettings.SquareHubRate,
     SquareHubFixedFee: 0.00,
-    ceylincoRate: 50.0,
+    ceylincoRate: commissionStore.commissionSettings.ceylincoRate,
     ceylincoFixedFee: 0.00
   }
 }
 
 const commissionSettings = ref(loadCommissionSettings())
-
-const payMediaCommissionRate = computed(() => commissionSettings.value.SquareHubRate)
-const ceylincoCommissionRate = computed(() => commissionSettings.value.ceylincoRate)
-const totalCommissionRate = computed(() => payMediaCommissionRate.value + ceylincoCommissionRate.value)
-
-const payMediaCommissionAmount = computed(() => {
-  const rate = payMediaCommissionRate.value / 100
-  return (payment.value.totalAmount * rate).toFixed(2)
-})
-
-const ceylincoCommissionAmount = computed(() => {
-  const rate = ceylincoCommissionRate.value / 100
-  return (payment.value.totalAmount * rate).toFixed(2)
-})
-
-const netAmountToPartner = computed(() => {
-  const payMediaAmount = parseFloat(payMediaCommissionAmount.value)
-  const ceylincoAmount = parseFloat(ceylincoCommissionAmount.value)
-  return (payment.value.totalAmount - payMediaAmount - ceylincoAmount).toFixed(2)
-})
 
 // Methods
 const formatDate = (dateString: string) => {

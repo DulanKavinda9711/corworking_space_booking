@@ -349,16 +349,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { useCustomers } from '@/composables/useCustomers'
-import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiCancel, mdiEye, mdiMessage } from '@mdi/js'
+import { useCustomers, type Customer } from '@/composables/useCustomers'
+import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiEye, mdiMessage } from '@mdi/js'
 
 const route = useRoute()
 const router = useRouter()
 const { customers } = useCustomers()
 
 // Modal state
-const showCancelModal = ref(false)
-const isCancelling = ref(false)
 
 // Send message modal state
 const showSendMessageModal = ref(false)
@@ -440,7 +438,7 @@ const subscription = computed<Subscription | null>(() => {
 const getCustomerDetails = (subscription: any) => {
 	if (!subscription) return { isRegistered: false, customerData: null, customerId: null }
 	if (subscription.userType === 'registered') {
-		const customerData = customers.value.find(customer => 
+		const customerData = customers.value.find((customer: Customer) => 
 			customer.email.toLowerCase() === subscription.customerEmail?.toLowerCase()
 		)
 		if (customerData) {
@@ -480,19 +478,6 @@ const getStatusClass = (status: string) => {
 	}
 }
 
-const getCustomerStatusClass = (status: string) => {
-	switch (status) {
-		case 'active':
-			return 'bg-green-100 text-green-800'
-		case 'inactive':
-			return 'bg-yellow-100 text-yellow-800'
-		case 'blocked':
-			return 'bg-red-100 text-red-800'
-		default:
-			return 'bg-gray-100 text-gray-800'
-	}
-}
-
 const formatSubscriptionType = (type: string) => {
 	return type.charAt(0).toUpperCase() + type.slice(1)
 }
@@ -513,10 +498,6 @@ const confirmCancelSubscription = () => {
 	}
 }
 
-const closeCancelModal = () => {
-	showCancelModal.value = false
-	isCancelling.value = false
-}
 
 const viewCustomerProfile = () => {
 	if (!subscription.value) return
@@ -585,7 +566,7 @@ const sendMessage = async () => {
 			? messageForm.value.recipientEmail || subscription.value.customerEmail
 			: messageForm.value.recipientPhone || subscription.value.customerPhone
 		alert(`Message sent successfully to ${subscription.value.customerName} via ${contactType}!\n\nContact: ${contactDisplay}\nSubject: ${messageForm.value.subject}`)
-	} catch (error) {
+	} catch {
 		alert('Failed to send message. Please try again.')
 	} finally {
 		isSendingMessage.value = false
@@ -593,21 +574,6 @@ const sendMessage = async () => {
 }
 
 // Navigation methods for determining correct back button destination
-const isHistoricalSubscription = (subscription: any) => {
-	if (!subscription) return false
-	const today = new Date()
-	const todayStr = today.toISOString().split('T')[0]
-	if (subscription.status === 'cancelled') {
-		return true
-	}
-	if (subscription.status === 'completed') {
-		return true
-	}
-	if (subscription.status === 'confirmed' && subscription.subscribedDate && subscription.subscribedDate < todayStr) {
-		return true
-	}
-	return false
-}
 
 const getBackNavigationPath = () => {
 	// Always return to BookingsView with subscriptions tab
@@ -628,7 +594,7 @@ onMounted(() => {
 			if (Array.isArray(subscriptions) && subscriptions.length > 0) {
 				allSubscriptions.value = subscriptions
 			}
-		} catch (error) {
+		} catch {
 			// fallback: keep default
 		}
 	}

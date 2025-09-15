@@ -515,7 +515,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert, mdiCircleOutline, mdiOfficeBuilding, mdiAccount, mdiClockOutline } from '@mdi/js'
+import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert, mdiOfficeBuilding, mdiAccount, mdiClockOutline } from '@mdi/js'
 
 const router = useRouter()
 
@@ -623,7 +623,7 @@ const handlePasswordChange = async () => {
     
     // Move to company setup
     currentStep.value = 2
-  } catch (err) {
+  } catch {
     error.value = 'An error occurred. Please try again.'
   } finally {
     loading.value = false
@@ -651,7 +651,7 @@ const handleCompanySetup = async () => {
     
     // Move to success step
     currentStep.value = 3
-  } catch (err) {
+  } catch {
     error.value = 'An error occurred. Please try again.'
   } finally {
     loading.value = false

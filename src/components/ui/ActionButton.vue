@@ -28,10 +28,6 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md'
 })
 
-const emit = defineEmits<{
-  click: [event: Event]
-}>()
-
 const isLink = computed(() => !!props.to)
 
 const buttonClass = computed(() => {

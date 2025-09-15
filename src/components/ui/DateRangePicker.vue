@@ -55,6 +55,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+
+interface DateObject {
+  day: number
+  dateString: string
+  isCurrentMonth: boolean
+}
+
 const props = defineProps<{ modelValue: { start: string, end: string } }>()
 const emit = defineEmits(['update:modelValue'])
 
@@ -85,10 +92,9 @@ const currentMonthYear = computed(() => {
   return `${today.toLocaleString('default', { month: 'long' })} ${currentYear.value}`
 })
 
-const calendarDates = computed(() => {
+const calendarDates = computed((): DateObject[] => {
   // Generate dates for the current month (simplified)
-  const dates = []
-  const firstDay = new Date(currentYear.value, currentMonth.value, 1)
+  const dates: DateObject[] = []
   const lastDay = new Date(currentYear.value, currentMonth.value + 1, 0)
   for (let i = 1; i <= lastDay.getDate(); i++) {
     const dateObj = new Date(currentYear.value, currentMonth.value, i)
@@ -117,7 +123,7 @@ function nextMonth() {
     currentMonth.value++
   }
 }
-function selectDate(date: any) {
+function selectDate(date: DateObject) {
   if (!startDate.value || (startDate.value && endDate.value)) {
     startDate.value = date.dateString
     endDate.value = ''
@@ -130,11 +136,11 @@ function selectDate(date: any) {
     }
   }
 }
-function isDateSelected(date: any) {
+function isDateSelected(date: DateObject): boolean {
   return date.dateString === startDate.value || date.dateString === endDate.value
 }
-function isDateInRange(date: any) {
-  return startDate.value && endDate.value && date.dateString > startDate.value && date.dateString < endDate.value
+function isDateInRange(date: DateObject): boolean {
+  return Boolean(startDate.value && endDate.value && date.dateString > startDate.value && date.dateString < endDate.value)
 }
 function clearDateRange() {
   startDate.value = ''

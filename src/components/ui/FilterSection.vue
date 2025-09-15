@@ -32,10 +32,6 @@ const props = withDefaults(defineProps<Props>(), {
   showResetButton: true
 })
 
-const emit = defineEmits<{
-  reset: []
-}>()
-
 const gridClass = computed(() => {
   const gridCols = {
     1: 'grid-cols-1',

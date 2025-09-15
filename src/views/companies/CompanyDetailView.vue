@@ -223,13 +223,6 @@ const getStatusClass = (status: string) => {
     : 'bg-red-100 text-red-800'
 }
 
-const editCompany = () => {
-  // Navigate to edit page or open modal
-  if (company.value) {
-    console.log('Edit company:', company.value.id)
-  }
-}
-
 const toggleStatus = () => {
   if (company.value) {
     toggleCompanyStatus(company.value.id)

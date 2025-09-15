@@ -3,18 +3,18 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-primary-50 border border-primary-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
-            <svg class="w-5 h-5 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiHistory" />
             </svg>
-            <span class="text-sm font-medium text-primary-700">
+            <span class="text-sm font-medium text-green-700">
               Total Activities:
-              <span class="font-bold text-primary-800">{{ activities.length }}</span>
+              <span class="font-bold text-green-800">{{ activities.length }}</span>
             </span>
           </div>
         
         <div class="flex items-center space-x-3">
-          <button
+          <!-- <button
             @click="exportActivityLog"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
           >
@@ -22,7 +22,7 @@
               <path :d="mdiDownload" />
             </svg>
             <span>Export Log</span>
-          </button>
+          </button> -->
           <button
             @click="refreshLog"
             class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
@@ -176,72 +176,55 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/4">
                   Timestamp
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-1/3">
                   User
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Activity Type
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Details
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IP Address
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-5/12">
+                  Activity Details
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="activity in paginatedActivities" :key="activity.id" class="hover:bg-gray-50">
+              <tr v-for="activity in paginatedActivities" :key="activity.id" class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ formatDateTime(activity.timestamp) }}</div>
-                  <div class="text-sm text-gray-500">{{ getTimeAgo(activity.timestamp) }}</div>
+                  <div class="flex flex-col">
+                    <div class="text-sm font-medium text-gray-900">{{ formatDateTime(activity.timestamp) }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ getTimeAgo(activity.timestamp) }}</div>
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-8 w-8">
-                      <img v-if="activity.userAvatar" class="h-8 w-8 rounded-full object-cover" :src="activity.userAvatar" :alt="activity.user">
-                      <div v-else class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                <td class="px-6 py-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                      <img v-if="activity.userAvatar" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200" :src="activity.userAvatar" :alt="activity.user">
+                      <div v-else class="h-10 w-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-200">
+                        <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="activity.activityType === 'system' ? mdiCog : mdiAccount" />
                         </svg>
                       </div>
                     </div>
-                    <div class="ml-3">
-                      <div class="text-sm font-medium text-gray-900">{{ activity.user }}</div>
-                      <div class="text-sm text-gray-500">{{ activity.userRole }}</div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-sm font-semibold text-gray-900 truncate">{{ activity.user }}</div>
+                      <div class="text-xs text-gray-500 uppercase tracking-wide">{{ activity.userRole }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getActivityTypeClass(activity.activityType)" class="px-2 py-1 text-xs font-medium rounded-full">
-                    {{ formatActivityType(activity.activityType) }}
-                  </span>
-                </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm font-medium text-gray-900">{{ activity.action }}</div>
-                  <div class="text-sm text-gray-500">{{ activity.module }}</div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900 max-w-xs truncate">{{ activity.details }}</div>
-                  <div v-if="activity.resourceId" class="text-sm text-gray-500">ID: {{ activity.resourceId }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900 font-mono">{{ activity.ipAddress }}</div>
-                  <div class="text-sm text-gray-500">{{ activity.userAgent }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getStatusClass(activity.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                    {{ activity.status }}
-                  </span>
+                  <div class="space-y-2">
+                    <div class="text-sm text-gray-900 leading-relaxed">{{ activity.details }}</div>
+                    <!-- <div v-if="activity.resourceId" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                      </svg>
+                      ID: {{ activity.resourceId }}
+                    </div> -->
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -340,7 +323,6 @@ import {
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 20
-const autoRefresh = ref(false)
 const refreshInterval = ref<ReturnType<typeof setTimeout> | null>(null)
 const showDatePicker = ref(false)
 const currentDate = ref(new Date())
@@ -713,17 +695,6 @@ const refreshLog = () => {
   // In a real app, this would fetch the latest activities from the server
   console.log('Refreshing activity log...')
   alert('Activity log refreshed successfully!')
-}
-
-const toggleAutoRefresh = () => {
-  if (autoRefresh.value) {
-    refreshInterval.value = setInterval(refreshLog, 30000) // Refresh every 30 seconds
-  } else {
-    if (refreshInterval.value) {
-      clearInterval(refreshInterval.value)
-      refreshInterval.value = null
-    }
-  }
 }
 
 // Pagination methods

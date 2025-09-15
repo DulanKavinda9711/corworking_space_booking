@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import {
   mdiPencil,
@@ -129,8 +129,7 @@ import {
   mdiContentSave,
   mdiCamera,
   mdiClockOutline,
-  mdiCalendarPlus,
-  mdiCheck
+  mdiCalendarPlus
 } from '@mdi/js'
 
 // State
@@ -158,16 +157,6 @@ const formatDate = (dateString: string) => {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  })
-}
-
-const formatDateTime = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
   })
 }
 

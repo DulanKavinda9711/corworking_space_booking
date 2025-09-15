@@ -500,26 +500,22 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers } from '@/composables/useCustomers'
 import { useBookings } from '@/composables/useBookings'
-import { customerApi } from '@/services/api'
 import type { Booking } from '@/services/api'
 import { 
   mdiAccount, 
   mdiEmail, 
   mdiPhone, 
   mdiCalendarAccount, 
-  mdiAccountCheck, 
+  mdiAccountCheck,
   mdiAccountCancel, 
-  mdiKeyVariant,
   mdiCalendarCheck,
   mdiCurrencyUsd,
   mdiCalendarClock,
   mdiCancel,
-  mdiEye,
   mdiMessage
 } from '@mdi/js'
 
 const route = useRoute()
-const bookingFilter = ref('')
 const { getCustomerById, toggleCustomerStatus: toggleStatus, loadPersistedStatuses } = useCustomers()
 const { allBookings } = useBookings()
 
@@ -585,15 +581,6 @@ const customerStats = computed(() => {
   }
 })
 
-// Only show booking history for real customers
-const bookingHistory = computed(() => customer.value ? customerBookings.value : [])
-
-// Computed properties
-const filteredBookings = computed(() => {
-  if (!bookingFilter.value) return bookingHistory.value
-  return bookingHistory.value.filter(booking => booking.status === bookingFilter.value)
-})
-
 // Methods
 const getCustomerTypeClass = (type: string) => {
   return type === 'registered' 
@@ -614,19 +601,6 @@ const getStatusClass = (status: string) => {
   }
 }
 
-const getBookingStatusClass = (status: string) => {
-  switch (status) {
-    case 'confirmed':
-      return 'bg-green-100 text-green-800'
-    case 'completed':
-      return 'bg-gray-100 text-gray-800'
-    case 'cancelled':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -639,13 +613,6 @@ const formatDate = (dateString: string) => {
 const toggleCustomerStatus = () => {
   if (!customer.value) return
   showStatusToggleModal.value = true
-}
-
-const resetPassword = () => {
-  if (!customer.value) return
-  if (confirm(`Are you sure you want to reset the password for ${customer.value.name}?`)) {
-    alert(`Password reset link has been sent to ${customer.value.email}`)
-  }
 }
 
 // Send message functions
@@ -745,7 +712,7 @@ const fetchCustomerBookings = async () => {
   try {
     // Use booking page data for history
     if (customer.value) {
-      customerBookings.value = allBookings.value.filter(booking => {
+      customerBookings.value = allBookings.value.filter((booking: Booking) => {
         if (!customer.value) return false
         return booking.customerEmail === customer.value.email || booking.customerName === customer.value.name
       })

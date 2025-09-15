@@ -122,7 +122,7 @@ export interface Location {
 }
 
 export interface Facility {
-  id: Number
+  id: number
   name: string
   status: 'active' | 'inactive' | 'maintenance'
   Icon?: string
@@ -266,25 +266,6 @@ const errorResponse = (message: string, errors?: string[]): ApiResponse => {
     success: false,
     message,
     errors
-  }
-}
-
-/**
- * Paginate array data
- */
-const paginate = <T>(data: T[], page: number = 1, limit: number = 10) => {
-  const startIndex = (page - 1) * limit
-  const endIndex = startIndex + limit
-  const paginatedData = data.slice(startIndex, endIndex)
-  
-  return {
-    data: paginatedData,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(data.length / limit),
-      totalItems: data.length,
-      itemsPerPage: limit
-    }
   }
 }
 
@@ -599,7 +580,7 @@ export const bookingApi = {
   /**
    * Create new booking
    */
-  async createBooking(bookingData: Omit<Booking, 'id' | 'status'>): Promise<ApiResponse<Booking>> {
+  async createBooking(_bookingData: Omit<Booking, 'id' | 'status'>): Promise<ApiResponse<Booking>> {
     await delay(1000)
 
     // Real API call - uncomment when backend is ready
@@ -642,7 +623,7 @@ export const bookingApi = {
   /**
    * Update booking status
    */
-  async updateBookingStatus(id: string, status: Booking['status']): Promise<ApiResponse<Booking>> {
+  async updateBookingStatus(_id: string, _status: Booking['status']): Promise<ApiResponse<Booking>> {
     await delay(800)
 
     // Real API call - uncomment when backend is ready
@@ -696,7 +677,7 @@ export const bookingApi = {
   /**
    * Cancel booking
    */
-  async cancelBooking(id: string, reason: string): Promise<ApiResponse<Booking>> {
+  async cancelBooking(id: string, _reason: string): Promise<ApiResponse<Booking>> {
     await delay(1000)
 
     // Real API call - uncomment when backend is ready
@@ -749,7 +730,7 @@ export const bookingApi = {
   /**
    * Delete booking (admin only)
    */
-  async deleteBooking(id: string): Promise<ApiResponse> {
+  async deleteBooking(_id: string): Promise<ApiResponse> {
     await delay(800)
 
     // Real API call - uncomment when backend is ready
@@ -883,7 +864,7 @@ export const subscriptionApi = {
   /**
    * Cancel subscription
    */
-  async cancelSubscription(id: string, cancellationData: {
+  async cancelSubscription(_id: string, _cancellationData: {
     reason: string
     additionalNotes?: string
     refundRequested: boolean
@@ -1032,7 +1013,7 @@ export const customerApi = {
   /**
    * Get customer by ID
    */
-  async getCustomerById(id: string): Promise<ApiResponse<Customer>> {
+  async getCustomerById(_id: string): Promise<ApiResponse<Customer>> {
     await delay(500)
 
     // Real API call - uncomment when backend is ready
@@ -1075,7 +1056,7 @@ export const customerApi = {
   /**
    * Update customer status
    */
-  async updateCustomerStatus(id: string, status: Customer['status']): Promise<ApiResponse<Customer>> {
+  async updateCustomerStatus(_id: string, _status: Customer['status']): Promise<ApiResponse<Customer>> {
     await delay(700)
 
     // Real API call - uncomment when backend is ready
@@ -1127,7 +1108,7 @@ export const customerApi = {
   /**
    * Get customer booking history
    */
-  async getCustomerBookings(customerId: string): Promise<ApiResponse<Booking[]>> {
+  async getCustomerBookings(_customerId: string): Promise<ApiResponse<Booking[]>> {
     await delay(600)
 
     // Real API call - uncomment when backend is ready
@@ -1185,7 +1166,7 @@ export const companyApi = {
   /**
    * Get company by ID
    */
-  async getCompanyById(id: number): Promise<ApiResponse<Company>> {
+  async getCompanyById(_id: number): Promise<ApiResponse<Company>> {
     await delay(500)
 
     return errorResponse('Company not found')
@@ -1194,7 +1175,7 @@ export const companyApi = {
   /**
    * Create new company
    */
-  async createCompany(companyData: Omit<Company, 'id'>): Promise<ApiResponse<Company>> {
+  async createCompany(_companyData: Omit<Company, 'id'>): Promise<ApiResponse<Company>> {
     await delay(800)
 
     return errorResponse('Company creation not implemented', ['Real API not yet implemented'])
@@ -1203,7 +1184,7 @@ export const companyApi = {
   /**
    * Update company
    */
-  async updateCompany(id: number, companyData: Partial<Company>): Promise<ApiResponse<Company>> {
+  async updateCompany(_id: number, _companyData: Partial<Company>): Promise<ApiResponse<Company>> {
     await delay(800)
 
     return errorResponse('Company update not implemented', ['Real API not yet implemented'])
@@ -1244,7 +1225,7 @@ export const locationApi = {
           const district = location.district || ''
 
           // Build combined address string
-          const addressParts = [street, street2, postalCode, town, district].filter(part => part.trim() !== '')
+          // const addressParts = [street, street2, postalCode, town, district].filter(part => part.trim() !== '')
 
           return {
             id: location.id.toString(),
@@ -1388,7 +1369,7 @@ export const locationApi = {
           const errorData = await response.text()
           console.log('Error response body:', errorData)
           errorMessage += ` - ${errorData}`
-        } catch (e) {
+        } catch {
           console.log('Could not read error response body')
         }
         throw new Error(errorMessage)
@@ -1464,7 +1445,7 @@ export const locationApi = {
           const errorData = await response.text()
           console.log('Update error response body:', errorData)
           errorMessage += ` - ${errorData}`
-        } catch (e) {
+        } catch {
           console.log('Could not read error response body')
         }
         throw new Error(errorMessage)
@@ -1508,7 +1489,7 @@ export const locationApi = {
           const errorData = await response.text()
           console.log('Delete error response body:', errorData)
           errorMessage += ` - ${errorData}`
-        } catch (e) {
+        } catch {
           console.log('Could not read error response body')
         }
         throw new Error(errorMessage)
@@ -1554,7 +1535,7 @@ export const locationApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -1603,7 +1584,7 @@ export const facilityApi = {
 
       if (data.status_code === 200 && data.data) {
         // Transform API response to match our Facility interface
-        const facilities: Facility[] = data.data.map((facility: any, index: number) => ({
+        const facilities: Facility[] = data.data.map((facility: any) => ({
           id: facility.facility_id,
           name: facility.facility_name || facility.name || '',
           status: facility.is_active ? 'active' : 'inactive',
@@ -1625,7 +1606,7 @@ export const facilityApi = {
   /**
    * Get facility by ID
    */
-  async getFacilityById(id: string): Promise<ApiResponse<Facility>> {
+  async getFacilityById(_id: string): Promise<ApiResponse<Facility>> {
     await delay(500)
 
     return errorResponse('Facility not found')
@@ -1716,7 +1697,7 @@ export const facilityApi = {
           // Try to parse the error response as JSON
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -1775,7 +1756,7 @@ export const facilityApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -1831,7 +1812,7 @@ export const facilityApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -1897,7 +1878,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -1961,7 +1942,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -2061,7 +2042,7 @@ export const productApi = {
     PricePerYear?: number
     OpeningTime: string
     ClosingTime: string
-    DefaultFacilities: Number[]
+    DefaultFacilities: number[]
     AdditionalFacilities: Array<{
       id: number
       name: string
@@ -2223,7 +2204,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -2257,7 +2238,7 @@ export const productApi = {
     PricePerYear?: number
     OpeningTime: string
     ClosingTime: string
-    DefaultFacilities: Number[]
+    DefaultFacilities: number[]
     AdditionalFacilities: Array<{
       id: number
       name: string
@@ -2426,7 +2407,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -2471,7 +2452,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -2515,7 +2496,7 @@ export const productApi = {
         try {
           const errorJson = JSON.parse(errorText)
           return errorResponse(errorJson.message || `Server error: ${response.status}`)
-        } catch (e) {
+        } catch {
           throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
         }
       }
@@ -2565,7 +2546,7 @@ export const paymentApi = {
   /**
    * Get payment by ID
    */
-  async getPaymentById(id: string): Promise<ApiResponse<Payment>> {
+  async getPaymentById(_id: string): Promise<ApiResponse<Payment>> {
     await delay(500)
 
     return errorResponse('Payment not found')
@@ -2650,7 +2631,7 @@ export const dashboardApi = {
   /**
    * Search across all entities
    */
-  async globalSearch(query: string): Promise<ApiResponse<{
+  async globalSearch(_query: string): Promise<ApiResponse<{
     bookings: Booking[]
     customers: Customer[]
     companies: Company[]
@@ -2658,7 +2639,7 @@ export const dashboardApi = {
   }>> {
     await delay(600)
 
-    const searchTerm = query.toLowerCase()
+    // const searchTerm = query.toLowerCase()
 
     // For now, return empty arrays since MockDataStore is removed
     const bookings: Booking[] = []

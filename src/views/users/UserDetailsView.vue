@@ -219,17 +219,7 @@ const route = useRoute()
 const router = useRouter()
 
 // State
-const showEditModal = ref(false)
 const user = ref<User | null>(null)
-const editForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  department: '',
-  role: '' as User['role'],
-  status: 'active' as User['status'],
-  permissions: [] as string[]
-})
 
 // Available permissions
 const availablePermissions = [
@@ -362,18 +352,6 @@ const formatRole = (role?: string) => {
   return roleMap[role || ''] || role || ''
 }
 
-const formatDate = (dateString?: string | null) => {
-  if (!dateString) return 'Never'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
 // Mock user data - in a real app, this would be fetched from an API
 const loadUser = () => {
   // Sample users data (same as in UserManagementView)
@@ -460,17 +438,6 @@ const hasPermissionsInCategory = (category: { category: string; permissions: str
 const editUser = () => {
   if (!user.value) return
   router.push(`/user-management/${userId.value}/edit`)
-}
-
-const toggleUserStatus = () => {
-  if (!user.value) return
-
-  const action = user.value.status === 'blocked' ? 'unblock' : 'block'
-
-  if (confirm(`Are you sure you want to ${action} ${user.value.name}?`)) {
-    user.value.status = user.value.status === 'blocked' ? 'active' : 'blocked'
-    // In a real app, you would make an API call here
-  }
 }
 
 // Lifecycle

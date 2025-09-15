@@ -293,16 +293,7 @@ const availablePermissions = [
 const userId = computed(() => route.params.id as string)
 
 // Methods
-const getStatusClass = (status?: string) => {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-800'
-    case 'blocked':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
+
 
 // Mock user data - in a real app, this would be fetched from an API
 const loadUser = () => {

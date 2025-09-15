@@ -178,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { facilityApi } from '@/services/api'
@@ -205,9 +205,9 @@ const successMessage = ref('')
 const isLoading = ref(false)
 
 // Form validation
-const isFormValid = computed(() => {
-  return form.value.name.trim() !== '' && form.value.selectedIcon !== ''
-})
+// const isFormValid = computed(() => {
+//   return form.value.name.trim() !== '' && form.value.selectedIcon !== ''
+// })
 
 // Available icons for selection
 const availableIcons = ref([
@@ -329,7 +329,7 @@ const handleClickOutside = (event: Event) => {
 }
 
 // Watch form changes
-watch(form, (newForm, oldForm) => {
+watch(form, () => {
   // Form data changed - no logging needed
 }, { deep: true })
 
@@ -368,6 +368,9 @@ const saveFacility = async () => {
     // Call the API to create the facility
     const response = await facilityApi.createFacility(facilityData)
 
+    // Add delay to increase loading time (4 seconds)
+    await new Promise(resolve => setTimeout(resolve, 4000))
+
     if (response.success) {
       // Show success modal
       successMessage.value = 'Facility created successfully!'
@@ -377,7 +380,7 @@ const saveFacility = async () => {
       successMessage.value = `Failed to create facility: ${response.message || 'Unknown error'}`
       showSuccessModal.value = true
     }
-  } catch (error) {
+  } catch {
     successMessage.value = 'Network error while creating facility. Please try again.'
     showSuccessModal.value = true
   } finally {

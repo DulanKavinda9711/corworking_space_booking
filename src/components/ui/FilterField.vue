@@ -31,11 +31,11 @@ interface Props {
   placeholder?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   placeholder: 'All'
 })
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: string]
 }>()
 </script>

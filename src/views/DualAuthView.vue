@@ -484,8 +484,6 @@ import {
   mdiCheck,
   mdiClose,
   mdiAccount,
-  mdiOfficeBuilding,
-  mdiCalendarCheck,
   mdiCog
 } from '@mdi/js'
 

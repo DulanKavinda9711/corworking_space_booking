@@ -34,10 +34,6 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md'
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
 const inputClass = computed(() => {
   const baseClass = 'pl-10 pr-4 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black'
   

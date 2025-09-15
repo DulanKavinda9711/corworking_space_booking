@@ -91,12 +91,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { mdiCog, mdiPencil } from '@mdi/js'
 
 const route = useRoute()
-const router = useRouter()
 
 // Facility data
 const facility = ref<any>(null)

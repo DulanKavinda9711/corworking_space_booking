@@ -484,7 +484,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { productApi, type Product, type OperationSchedule } from '@/services/api'
 import { 
@@ -501,7 +501,6 @@ import {
 } from '@mdi/js'
 
 const route = useRoute()
-const router = useRouter()
 
 // State
 const product = ref<Product | null>(null)
@@ -744,33 +743,6 @@ const deleteProduct = async () => {
 }
 
 // Methods for handling daily schedule
-const getDailySchedule = (): OperationSchedule[] => {
-  if (!product.value?.operation_schedule) {
-    // Return a default schedule for all days if no operation_schedule exists
-    return allDays.map(day => ({
-      day,
-      start_time: '',
-      end_time: '',
-      is_enabled: product.value?.openDays?.includes(day) || false
-    }))
-  }
-  
-  // Create a map of existing schedules
-  const scheduleMap = new Map<string, OperationSchedule>()
-  product.value.operation_schedule.forEach((schedule: OperationSchedule) => {
-    scheduleMap.set(schedule.day, schedule)
-  })
-  
-  // Return complete schedule for all days, filling in missing days
-  return allDays.map(day => {
-    return scheduleMap.get(day) || {
-      day,
-      start_time: '',
-      end_time: '',
-      is_enabled: false
-    }
-  })
-}
 
 const getOpenDaysSchedule = (): OperationSchedule[] => {
   if (!product.value?.operation_schedule) {

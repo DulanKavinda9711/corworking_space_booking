@@ -1017,10 +1017,6 @@ const isLoading = ref(true)
 const isSaving = ref(false)
 const originalProduct = ref<any>(null)
 
-// Facility selection
-const selectedDefaultFacility = ref('')
-const selectedAdditionalFacility = ref('')
-
 // Loading states for external data
 const isLoadingFacilities = ref(false)
 const facilitiesError = ref('')
@@ -1117,13 +1113,6 @@ const isFormValid = computed(() => {
       return form.value.pricePerMonth > 0 && form.value.pricePerYear > 0
     default:
       return false
-  }
-})
-
-const isProductActive = computed({
-  get: () => form.value.status === 'active',
-  set: (value: boolean) => {
-    form.value.status = value ? 'active' : 'inactive'
   }
 })
 
@@ -1417,31 +1406,14 @@ const closeAdditionalDropdown = () => {
 }
 
 // Default facility methods
-const addDefaultFacility = () => {
-  if (selectedDefaultFacility.value && !form.value.defaultFacilities.includes(parseInt(selectedDefaultFacility.value))) {
-    form.value.defaultFacilities.push(parseInt(selectedDefaultFacility.value))
-    selectedDefaultFacility.value = ''
-  }
-}
+
 
 const removeDefaultFacility = (index: number) => {
   form.value.defaultFacilities.splice(index, 1)
 }
 
 // Additional facility methods  
-const addAdditionalFacility = () => {
-  if (selectedAdditionalFacility.value && !form.value.additionalFacilities.some(f => f.id === parseInt(selectedAdditionalFacility.value))) {
-    const facility = availableFacilities.value.find(f => f.id === parseInt(selectedAdditionalFacility.value))
-    if (facility) {
-      form.value.additionalFacilities.push({
-        id: facility.id,
-        name: facility.name,
-        pricePerHour: 0
-      })
-    }
-    selectedAdditionalFacility.value = ''
-  }
-}
+
 
 const removeAdditionalFacility = (index: number) => {
   form.value.additionalFacilities.splice(index, 1)
@@ -1454,25 +1426,7 @@ const getFacilityName = (facilityId: number) => {
 }
 
 // Time picker helper functions
-const formatTime = (hour: number, minute: number, period: string) => {
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-  return `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${period}`
-}
 
-const parseTimeToComponents = (timeString: string) => {
-  const [time, period] = timeString.split(' ')
-  const [hourStr, minuteStr] = time.split(':')
-  let hour = parseInt(hourStr)
-  const minute = parseInt(minuteStr)
-  
-  if (period === 'PM' && hour !== 12) {
-    hour += 12
-  } else if (period === 'AM' && hour === 12) {
-    hour = 0
-  }
-  
-  return { hour, minute, period }
-}
 
 const convertTo12Hour = (time24: string) => {
   const [hourStr, minuteStr] = time24.split(':')

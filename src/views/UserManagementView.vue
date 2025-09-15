@@ -823,7 +823,6 @@ const roles = ref<Role[]>([
 // State
 const router = useRouter()
 const searchQuery = ref('')
-const toggleStatusLoading = ref(new Set<string>())
 
 // Modal state
 const showStatusToggleModal = ref(false)
@@ -1141,7 +1140,6 @@ const calendarDates = computed(() => {
   const month = currentDate.value.getMonth()
 
   const firstDay = new Date(year, month, 1)
-  const lastDay = new Date(year, month + 1, 0)
   const startCalendar = new Date(firstDay)
   startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
 
@@ -1300,17 +1298,9 @@ const isDateInRange = (date: any) => {
   return date.dateString > filters.value.startDate && date.dateString < filters.value.endDate
 }
 
-const isDateCurrentMonth = (date: any) => {
-  return date.isCurrentMonth
-}
-
 const clearDateRange = () => {
   filters.value.startDate = ''
   filters.value.endDate = ''
-  showDatePicker.value = false
-}
-
-const applyDateRange = () => {
   showDatePicker.value = false
 }
 
@@ -1348,125 +1338,6 @@ const getTabCount = (tabId: string) => {
 const activeTab = ref('role-creation')
 
 // Additional methods for roles and users
-const getRolePermissions = (role: string) => {
-  const rolePermissions: Record<string, string[]> = {
-    'super-admin': [
-      'Dashboard Access',
-      'User Management - Create',
-      'User Management - Edit',
-      'User Management - Update',
-      'User Management - Delete',
-      'User Management - Block/Unblock',
-      'System Settings',
-      'Audit Trail',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Booking History - Delete',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    'admin': [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    'manager': [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - View',
-      'Products - View',
-      'Products - Update',
-      'Locations - View',
-      'Locations - Update',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Activity Logs'
-    ],
-    'operator': [
-      'Dashboard Access',
-      'Customer Profile - View',
-      'Customer Management - View',
-      'Facilities - View',
-      'Products - View',
-      'Locations - View',
-      'Payments - View',
-      'Activity Logs'
-    ]
-  }
-  return rolePermissions[role] || []
-}
 
 const toggleRoleStatus = (role: Role) => {
   selectedRole.value = role

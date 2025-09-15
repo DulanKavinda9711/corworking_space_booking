@@ -154,7 +154,7 @@
             </div>
           </div>
           <div class="relative">
-            <apexchart
+            <apex-chart
               type="area"
               :options="chartOptions"
               :series="chartSeries"
@@ -194,12 +194,12 @@
           <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <h3 class="text-md font-medium text-gray-900 mb-3">Quick Actions</h3>
             <div class="grid grid-cols-2 gap-3">
-              <router-link to="/companies" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+              <!-- <router-link to="/companies" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
                 <div class="w-8 h-8 bg-blue-50 rounded-md flex items-center justify-center mb-2">
                   <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiOfficeBuilding"/></svg>
                 </div>
                 <p class="text-xs text-gray-700">Add Company</p>
-              </router-link>
+              </router-link> -->
               <router-link to="/bookings" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
                 <div class="w-8 h-8 bg-green-50 rounded-md flex items-center justify-center mb-2">
                   <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarPlus"/></svg>
@@ -212,12 +212,12 @@
                 </div>
                 <p class="text-xs text-gray-700">Add Location</p>
               </router-link>
-              <router-link to="/reports" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
+              <!-- <router-link to="/reports" class="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:shadow-sm">
                 <div class="w-8 h-8 bg-yellow-50 rounded-md flex items-center justify-center mb-2">
                   <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiChartLine"/></svg>
                 </div>
                 <p class="text-xs text-gray-700">View Reports</p>
-              </router-link>
+              </router-link> -->
             </div>
           </div>
         </div>
@@ -230,9 +230,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import VueApexCharts from 'vue3-apexcharts'
 import {
-  mdiEmail,
   mdiCalendarCheck,
   mdiCalendarClock,
   mdiCancel,
@@ -242,8 +240,7 @@ import {
   mdiOfficeBuilding,
   mdiCalendarPlus,
   mdiMapMarker,
-  mdiChartLine,
-  mdiEye
+  mdiChartLine
 } from '@mdi/js'
 
 const router = useRouter()

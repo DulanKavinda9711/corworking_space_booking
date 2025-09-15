@@ -315,17 +315,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCommissionStore } from '@/stores/commission'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { 
+import {
   mdiCog, 
-  mdiMapMarker, 
-  mdiEye,
   mdiWallet,
-  mdiTicket,
   mdiCreditCard
 } from '@mdi/js'
 
 const router = useRouter()
+const commissionStore = useCommissionStore()
 
 // State
 const showDatePicker = ref(false)
@@ -432,27 +431,21 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 // Watch for commission settings changes in localStorage
 const handleStorageChange = (event: StorageEvent) => {
-  if (event.key === 'commissionSettings') {
-    loadCommissionSettings()
-  }
+  // Commission settings are handled by the store
 }
 
 // Listen for custom commission settings update event
 const handleCommissionSettingsUpdate = (event: CustomEvent) => {
-  commissionSettings.value = event.detail
+  // Commission settings are handled by the store
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  window.addEventListener('storage', handleStorageChange)
-  window.addEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
-  loadCommissionSettings()
+  // Commission settings are handled by the store
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('storage', handleStorageChange)
-  window.removeEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
 })
 
 // Sorting
@@ -466,24 +459,8 @@ const dropdownStates = ref({
   sortBy: false
 })
 
-// Commission settings
-const commissionSettings = ref({
-  SquareHubRate: 30.0,
-  ceylincoRate: 70.0
-})
-
-// Load commission settings from localStorage
-const loadCommissionSettings = () => {
-  const savedSettings = localStorage.getItem('commissionSettings')
-  if (savedSettings) {
-    try {
-      const parsedSettings = JSON.parse(savedSettings)
-      commissionSettings.value = { ...commissionSettings.value, ...parsedSettings }
-    } catch (error) {
-      console.error('Error loading commission settings:', error)
-    }
-  }
-}
+// Commission settings from store
+const commissionSettings = computed(() => commissionStore.commissionSettings)
 
 // Calculate commission for a given amount
 const calculateCommission = (amount: number, rate: number) => {
@@ -670,14 +647,14 @@ const sortedPayments = computed(() => {
 })
 
 // Methods
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+// const formatDate = (dateString: string) => {
+//   const date = new Date(dateString)
+//   return date.toLocaleDateString('en-US', {
+//     year: 'numeric',
+//     month: 'short',
+//     day: 'numeric'
+//   })
+// }
 
 const resetFilters = () => {
   filters.value = {
@@ -701,11 +678,11 @@ const closeDropdown = (dropdown: string) => {
   }, 150)
 }
 
-const closeAllDropdowns = () => {
-  Object.keys(dropdownStates.value).forEach(key => {
-    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-  })
-}
+// const closeAllDropdowns = () => {
+//   Object.keys(dropdownStates.value).forEach(key => {
+//     dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+//   })
+// }
 
 const exportToCSV = () => {
   // Fallback CSV export (no xlsx dependency)
@@ -750,9 +727,9 @@ const goToCommissionSetup = () => {
 }
 
 // Refresh commission settings when returning from commission setup
-const refreshCommissionSettings = () => {
-  loadCommissionSettings()
-}
+// const refreshCommissionSettings = () => {
+//   loadCommissionSettings()
+// }
 
 const navigateToPaymentDetail = (paymentId: string) => {
   // Navigate to the payment detail page

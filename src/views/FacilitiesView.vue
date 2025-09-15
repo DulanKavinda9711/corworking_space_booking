@@ -322,12 +322,12 @@
           <p class="mt-1 text-sm text-gray-500">
             {{ facilities.length === 0 ? 'No facilities have been created yet.' : 'No facilities match the current search and filters.' }}
           </p>
-          <router-link v-if="facilities.length === 0" to="/facilities/add" class="mt-4 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+          <!-- <router-link v-if="facilities.length === 0" to="/facilities/add" class="mt-4 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
             Create First Facility
-          </router-link>
+          </router-link> -->
         </div>
       </div>
     </div>
@@ -501,7 +501,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { facilityApi } from '@/services/api'
 import {
@@ -511,8 +510,6 @@ import {
   mdiAccountCancel,
   mdiAccountCheck
 } from '@mdi/js'
-
-const router = useRouter()
 
 // State
 const searchQuery = ref('')
@@ -766,7 +763,7 @@ const confirmStatusToggle = async () => {
       showSuccessModal.value = true
       console.log('Success modal should be showing now:', modalMessage.value)
     }, 400)
-  } catch (error) {
+  } catch {
     closeStatusToggleModal()
     modalMessage.value = 'Error updating facility status.'
     showErrorModal.value = true
@@ -790,12 +787,6 @@ const closeDropdown = (dropdown: string) => {
   setTimeout(() => {
     dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
   }, 150)
-}
-
-const closeAllDropdowns = () => {
-  Object.keys(dropdownStates.value).forEach(key => {
-    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-  })
 }
 
 // Pagination methods
@@ -851,23 +842,6 @@ const loadFacilities = async () => {
   } finally {
     isLoading.value = false
     console.log('Finished loading facilities, isLoading:', isLoading.value)
-  }
-}
-
-const createFacility = async (facilityData: { FacilityName: string; IsActive: boolean; Icon?: string }) => {
-  try {
-    const response = await facilityApi.createFacility(facilityData)
-
-    if (response.success) {
-      // Reload facilities after successful creation
-      await loadFacilities()
-      return { success: true, message: response.message }
-    } else {
-      return { success: false, message: response.message || 'Failed to create facility' }
-    }
-  } catch (err) {
-    console.error('Error creating facility:', err)
-    return { success: false, message: 'Network error while creating facility' }
   }
 }
 

@@ -508,7 +508,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { locationApi } from '@/services/api'
-import { mdiMapMarker, mdiEye, mdiPencil, mdiDelete } from '@mdi/js'
+import { mdiMapMarker } from '@mdi/js'
 
 const router = useRouter()
 
@@ -633,12 +633,6 @@ const closeDropdown = (dropdown: string) => {
   setTimeout(() => {
     dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
   }, 150)
-}
-
-const closeAllDropdowns = () => {
-  Object.keys(dropdownStates.value).forEach(key => {
-    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-  })
 }
 
 const navigateToLocationDetail = (locationId: string) => {

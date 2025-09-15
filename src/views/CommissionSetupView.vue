@@ -150,9 +150,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { mdiCog } from '@mdi/js'
 
 // Commission settings - SquareHub and Ceylinco only
 const commissionSettings = ref({
@@ -169,39 +168,6 @@ const originalSettings = ref({ ...commissionSettings.value })
 // Computed properties for commission calculations
 const totalCommissionRate = computed(() => {
   return commissionSettings.value.SquareHubRate + commissionSettings.value.ceylincoRate
-})
-
-// Sample calculations for preview
-const sampleSquareHubCommission = computed(() => {
-  const rate = commissionSettings.value.SquareHubRate / 100
-  return (150 * rate).toFixed(2)
-})
-
-const sampleCeylincoCommission = computed(() => {
-  const rate = commissionSettings.value.ceylincoRate / 100
-  return (150 * rate).toFixed(2)
-})
-
-const sampleNetToPartner = computed(() => {
-  const SquareHubAmount = parseFloat(sampleSquareHubCommission.value)
-  const ceylincoAmount = parseFloat(sampleCeylincoCommission.value)
-  return (150 - SquareHubAmount - ceylincoAmount).toFixed(2)
-})
-
-const sampleSquareHubCommission300 = computed(() => {
-  const rate = commissionSettings.value.SquareHubRate / 100
-  return (300 * rate).toFixed(2)
-})
-
-const sampleCeylincoCommission300 = computed(() => {
-  const rate = commissionSettings.value.ceylincoRate / 100
-  return (300 * rate).toFixed(2)
-})
-
-const sampleNetToPartner300 = computed(() => {
-  const SquareHubAmount = parseFloat(sampleSquareHubCommission300.value)
-  const ceylincoAmount = parseFloat(sampleCeylincoCommission300.value)
-  return (300 - SquareHubAmount - ceylincoAmount).toFixed(2)
 })
 
 // Flag to prevent infinite watcher loops
@@ -230,20 +196,6 @@ watch(() => commissionSettings.value.ceylincoRate, (newCeylincoRate) => {
 })
 
 // Methods
-const loadCommissionSettings = () => {
-  // Load commission settings from localStorage
-  const savedSettings = localStorage.getItem('commissionSettings')
-  if (savedSettings) {
-    try {
-      const parsedSettings = JSON.parse(savedSettings)
-      commissionSettings.value = { ...commissionSettings.value, ...parsedSettings }
-      originalSettings.value = { ...commissionSettings.value }
-    } catch (error) {
-      console.error('Error loading commission settings:', error)
-    }
-  }
-}
-
 const startEditing = () => {
   originalSettings.value = { ...commissionSettings.value }
   isEditing.value = true

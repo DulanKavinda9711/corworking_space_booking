@@ -246,14 +246,14 @@
           <p class="mt-1 text-sm text-gray-500">
             {{ products.length === 0 ? 'Get started by creating a new product.' : 'Try adjusting your search or filters.' }}
           </p>
-          <div class="mt-6">
+          <!-- <div class="mt-6">
             <router-link to="/products/add" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
               Add New Product
             </router-link>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -426,7 +426,7 @@
     </div>
 
     <!-- Error Modal -->
-    <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeErrorModal">
+    <!-- <div v-if="showErrorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeErrorModal">
       <div class="bg-white rounded-lg p-6 w-full max-w-sm mx-4" @click.stop>
         <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
           <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,9 +435,9 @@
         </div>
         
         <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Error loading Products</h3>
-        <!-- <p class="text-sm text-gray-500 text-center mb-6">
+        <p class="text-sm text-gray-500 text-center mb-6">
           {{ errorMessage }}
-        </p> -->
+        </p>
         
         <div class="flex justify-center">
           <button
@@ -448,7 +448,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
   </AdminLayout>
 </template>
 
@@ -456,7 +456,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { mdiPackageVariant, mdiEye, mdiPencil, mdiDelete, mdiDeskLamp, mdiAccountGroup, mdiChairRolling, mdiBookOpen } from '@mdi/js'
+import { mdiPackageVariant, mdiDelete, mdiDeskLamp, mdiAccountGroup, mdiChairRolling, mdiBookOpen } from '@mdi/js'
 import { productApi, type Product } from '@/services/api'
 
 // Interface for API response data (before transformation)
@@ -669,12 +669,6 @@ const closeDropdown = (dropdownName: string) => {
   dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = false
 }
 
-const closeAllDropdowns = () => {
-  Object.keys(dropdownStates.value).forEach(key => {
-    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-  })
-}
-
 // Row click handler to view product details
 const viewProductDetails = (productId: string) => {
   // Navigate to product details page
@@ -737,19 +731,30 @@ const deleteProduct = async () => {
       localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts))
       
       console.log('Product deleted successfully:', response.message)
+      
+      // Close the confirmation modals immediately
+      showConfirmDelete.value = false
+      showDeleteModal.value = false
+      productToDelete.value = null
+      
+      // Show success modal
       showSuccessModalWithMessage(response.message || 'Product deleted successfully')
       
-      // Automatically close the modal after showing success message
-      setTimeout(() => {
-        closeDeleteModal()
-      }, 2000) // Close after 2 seconds to let user see the success message
     } else {
       console.error('Failed to delete product:', response.message)
+      // Close confirmation modals and show error modal
+      showConfirmDelete.value = false
+      showDeleteModal.value = false
+      productToDelete.value = null
       showErrorModalWithMessage(response.message || 'Failed to delete product')
     }
   } catch (error) {
     console.error('Error deleting product:', error)
-    showError('An error occurred while deleting the product')
+    // Close confirmation modals and show error modal
+    showConfirmDelete.value = false
+    showDeleteModal.value = false
+    productToDelete.value = null
+    showErrorModalWithMessage('An error occurred while deleting the product')
   } finally {
     isDeleting.value = false
   }
@@ -829,14 +834,6 @@ const closeErrorModal = () => {
 }
 
 // Notification helpers (keeping for backward compatibility)
-const showSuccess = (message: string) => {
-  successMessage.value = message
-  error.value = ''
-  showNotification.value = true
-  setTimeout(() => {
-    showNotification.value = false
-  }, 3000)
-}
 
 const showError = (message: string) => {
   error.value = message

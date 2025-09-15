@@ -287,27 +287,7 @@ const availablePermissions = [
 const roleId = computed(() => route.params.id as string)
 
 // Methods
-const getUserLevelClass = (userLevel?: string) => {
-  switch (userLevel) {
-    case 'super-admin':
-      return 'bg-red-100 text-red-800'
-    case 'admin':
-      return 'bg-purple-100 text-purple-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
 
-const getStatusClass = (status?: string) => {
-  switch (status) {
-    case 'active':
-      return 'bg-green-100 text-green-800'
-    case 'blocked':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
 
 const formatUserLevel = (userLevel?: string) => {
   const levelMap: Record<string, string> = {
