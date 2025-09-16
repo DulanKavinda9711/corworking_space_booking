@@ -4,14 +4,13 @@
       <!-- Page Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <router-link :to="getBackNavigationPath()" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            {{ getBackNavigationLabel() }}
           </router-link>
           <div>
-            <h1 class="text-xl font-bold text-gray-900">Edit Role</h1>
+            <h1 class="text-xl font-bold text-gray-900">Role Details</h1>
             <p class="text-sm text-gray-500" v-if="role">{{ role.name }}</p>
           </div>
         </div>
@@ -21,32 +20,21 @@
       <div class="bg-white rounded-xl shadow-card p-6 max-w-6xl mx-auto">
         <form @submit.prevent="updateRole" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 ">Role Name</label>
             <input
               v-model="formData.name"
               type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
               placeholder="Enter role name"
               required
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">User Level</label>
-            <select
-              v-model="formData.userLevel"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="super-admin">Super Admin</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 ">Status</label>
             <select
               v-model="formData.status"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
             >
               <option value="active">Active</option>
               <option value="blocked">Blocked</option>
@@ -121,7 +109,6 @@ import { mdiCheckCircle } from '@mdi/js'
 interface Role {
   id: string
   name: string
-  userLevel: 'super-admin' | 'admin'
   permissions: string[]
   createdAt: string
   updatedAt: string
@@ -138,7 +125,6 @@ const saving = ref(false)
 const showSuccess = ref(false)
 const formData = ref({
   name: '',
-  userLevel: 'admin' as 'admin' | 'super-admin',
   status: 'active' as 'active' | 'blocked'
 })
 const selectedPermissions = ref<string[]>([])
@@ -254,7 +240,6 @@ const loadRole = () => {
     {
       id: 'ROLE-001',
       name: 'Super Admin',
-      userLevel: 'super-admin',
       permissions: [
         'Dashboard Access',
         'User Management - Create',
@@ -307,7 +292,6 @@ const loadRole = () => {
     {
       id: 'ROLE-002',
       name: 'Admin',
-      userLevel: 'admin',
       permissions: [
         'Dashboard Access',
         'Bookings - View',
@@ -352,7 +336,6 @@ const loadRole = () => {
     {
       id: 'ROLE-003',
       name: 'Manager',
-      userLevel: 'admin',
       permissions: [
         'Dashboard Access',
         'Bookings - View',
@@ -382,7 +365,6 @@ const loadRole = () => {
     {
       id: 'ROLE-004',
       name: 'Operator',
-      userLevel: 'admin',
       permissions: [
         'Dashboard Access',
         'Customer Profile - View',
@@ -405,7 +387,6 @@ const loadRole = () => {
     // Populate form data
     formData.value = {
       name: role.value.name,
-      userLevel: role.value.userLevel,
       status: role.value.status
     }
     selectedPermissions.value = [...role.value.permissions]
@@ -423,7 +404,6 @@ const updateRole = async () => {
 
     // Update role data
     role.value.name = formData.value.name
-    role.value.userLevel = formData.value.userLevel
     role.value.status = formData.value.status
     role.value.permissions = [...selectedPermissions.value]
     role.value.updatedAt = new Date().toISOString()
@@ -454,3 +434,8 @@ onMounted(() => {
   loadRole()
 })
 </script>
+<style scoped>
+input[type="checkbox"] {
+  transition: all 0.2s ease;
+  accent-color: #16a34a; /* Green-600 for fill color */
+}</style>

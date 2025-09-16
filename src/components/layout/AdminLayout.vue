@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
     <aside
-      class="fixed inset-y-0 left-0 z-50 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-700 flex flex-col w-64"
+      class="fixed inset-y-0 left-0 z-40 bg-gray-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-700 flex flex-col w-64"
       :class="[
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
@@ -12,8 +12,8 @@
           <img src="/assets/logo1.png" alt="Logo" class="h-8 w-auto" />
         </router-link>
       </div>
-      <nav class="mt-8 flex-1 overflow-y-auto">
-        <div class="px-4 space-y-2">
+      <nav class="mt-5 flex-1 overflow-y-auto">
+        <div class="px-4">
           <router-link
             v-for="item in menuItems"
             :key="item.name"
@@ -149,7 +149,8 @@ import {
   mdiBookOpen,
   mdiCancel,
   mdiSeat,
-  mdiBullhorn
+  mdiBullhorn,
+  mdiCheckCircle
 } from '@mdi/js'
 
 const route = useRoute()
@@ -183,6 +184,7 @@ const menuItems = [
   { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard, color: 'text-green-600' },
   { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck, color: 'text-green-600' },
   { name: 'Customers', path: '/customers', icon: mdiAccountGroup, color: 'text-purple-600' },
+  // { name: 'Approver', path: '/approver', icon: mdiCheckCircle, color: 'text-blue-600' },
   { name: 'Facilities', path: '/facilities', icon: mdiSeat, color: 'text-orange-600' },
   { name: 'Products', path: '/products', icon: mdiBookOpen, color: 'text-indigo-600' },
   { name: 'Locations', path: '/locations', icon: mdiMapMarker, color: 'text-red-600' },

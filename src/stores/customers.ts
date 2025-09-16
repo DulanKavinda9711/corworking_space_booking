@@ -28,7 +28,41 @@ export const useCustomersStore = defineStore('customers', () => {
         const parsedCustomers = JSON.parse(savedCustomers)
         if (Array.isArray(parsedCustomers) && parsedCustomers.length > 0) {
           customers.value = parsedCustomers
+        } else {
+          // Add dummy data if no customers exist
+          customers.value = [
+            {
+              id: 'dummy-001',
+              name: 'John Doe',
+              email: 'john.doe@example.com',
+              phone: '+1-555-0123',
+              customerType: 'registered',
+              totalBookings: 5,
+              status: 'active',
+              dateJoined: '2023-09-16',
+              address: '123 Main Street',
+              city: 'New York',
+              country: 'USA'
+            }
+          ]
         }
+      } else {
+        // Add dummy data if no localStorage data exists
+        customers.value = [
+          {
+            id: 'dummy-001',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+1-555-0123',
+            customerType: 'registered',
+            totalBookings: 5,
+            status: 'active',
+            dateJoined: '2023-09-16',
+            address: '123 Main Street',
+            city: 'New York',
+            country: 'USA'
+          }
+        ]
       }
 
       const savedStatuses = localStorage.getItem('customerStatuses')
@@ -43,6 +77,22 @@ export const useCustomersStore = defineStore('customers', () => {
       }
     } catch (error) {
       console.warn('⚠️ Error initializing customers from localStorage:', error)
+      // Fallback to dummy data on error
+      customers.value = [
+        {
+          id: 'dummy-001',
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          phone: '+1-555-0123',
+          customerType: 'registered',
+          totalBookings: 5,
+          status: 'active',
+          dateJoined: '2023-09-16',
+          address: '123 Main Street',
+          city: 'New York',
+          country: 'USA'
+        }
+      ]
     }
   }
 

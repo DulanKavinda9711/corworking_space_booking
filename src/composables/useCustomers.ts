@@ -16,6 +16,7 @@ export interface Customer {
   country: string
 }
 
+
 export const useCustomers = () => {
   const customersStore = useCustomersStore()
 

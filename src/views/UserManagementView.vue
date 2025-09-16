@@ -11,7 +11,7 @@
       <div class="bg-white rounded-xl shadow-card p-6">
         <div class="flex items-center justify-between">
           <nav class="flex space-x-8">
-            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+            <button v-for="tab in tabs" :key="tab.id" @click="setActiveTab(tab.id)" :class="[
               activeTab === tab.id
                 ? 'border-green-500 text-green-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
@@ -256,11 +256,6 @@
                           :title="role.status === 'active' ? 'Make Role Inactive' : 'Make Role Active'">
                           <span>{{ role.status === 'active' ? 'Inactive' : 'Active' }}</span>
                         </button>
-                        <button @click.stop="confirmDeleteRole(role)"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
-                          title="Delete Role">
-                          <span>Delete</span>
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -457,7 +452,7 @@
                           <img class="h-10 w-10 rounded-full object-cover" :src="user.avatar" :alt="user.name">
                         </div>
                         <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
+                          <div class="text-sm font-medium text-gray-900">{{ user.name.split(' ')[0] }} {{ user.name.split(' ')[1] || '' }}</div>
                         </div>
                       </div>
                     </td>
@@ -482,11 +477,6 @@
                           class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border cursor-pointer flex items-center justify-center space-x-1"
                           :title="user.status === 'active' ? 'Make User Inactive' : 'Make User Active'">
                           <span>{{ user.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                        </button>
-                        <button @click.stop="confirmDeleteUser(user)"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
-                          title="Delete User">
-                          <span>Delete</span>
                         </button>
                       </div>
                     </td>
@@ -1250,15 +1240,6 @@ const toggleUserStatus = (user: User) => {
   showStatusToggleModal.value = true
 }
 
-const confirmDeleteUser = (user: User) => {
-  if (confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
-    const index = users.value.findIndex(u => u.id === user.id)
-    if (index !== -1) {
-      users.value.splice(index, 1)
-    }
-  }
-}
-
 // Calendar methods
 const previousMonth = () => {
   currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
@@ -1337,21 +1318,34 @@ const getTabCount = (tabId: string) => {
 // Active tab
 const activeTab = ref('role-creation')
 
+// Initialize active tab from URL query parameter
+const initializeActiveTab = () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const tabParam = urlParams.get('tab')
+  if (tabParam && (tabParam === 'role-creation' || tabParam === 'user-creation')) {
+    activeTab.value = tabParam
+  }
+}
+
+// Update URL when tab changes
+const updateTabUrl = (tabId: string) => {
+  const url = new URL(window.location.href)
+  url.searchParams.set('tab', tabId)
+  window.history.replaceState({}, '', url.toString())
+}
+
+// Set active tab and update URL
+const setActiveTab = (tabId: string) => {
+  activeTab.value = tabId
+  updateTabUrl(tabId)
+}
+
 // Additional methods for roles and users
 
 const toggleRoleStatus = (role: Role) => {
   selectedRole.value = role
   selectedUser.value = null
   showStatusToggleModal.value = true
-}
-
-const confirmDeleteRole = (role: Role) => {
-  if (confirm(`Are you sure you want to delete ${role.name}? This action cannot be undone.`)) {
-    const index = roles.value.findIndex(r => r.id === role.id)
-    if (index !== -1) {
-      roles.value.splice(index, 1)
-    }
-  }
 }
 
 // Modal handler functions
@@ -1417,6 +1411,7 @@ import { onMounted, onUnmounted } from 'vue'
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  initializeActiveTab()
 })
 
 onUnmounted(() => {

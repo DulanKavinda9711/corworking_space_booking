@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <router-link to="/user-management" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
+          <router-link to="/user-management?tab=user-creation" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>

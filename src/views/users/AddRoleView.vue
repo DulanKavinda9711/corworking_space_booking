@@ -4,7 +4,7 @@
       <!-- Page Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
-        <router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
+        <router-link :to="getBackNavigationPath()" class="p-2 items-center rounded-lg border border-gray-300 text-gray-600 hover:text-gray-900 hover:bg-gray-50">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
@@ -24,31 +24,20 @@
             <input
               v-model="newRole.name"
               type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
               placeholder="Enter role name"
               required
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">User Level</label>
-            <select
-              v-model="newRole.userLevel"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="super-admin">Super Admin</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
               v-model="newRole.status"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
             >
               <option value="active">Active</option>
-              <option value="blocked">Blocked</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
 
@@ -117,11 +106,10 @@ import { mdiCheckCircle } from '@mdi/js'
 interface Role {
   id: string
   name: string
-  userLevel: 'super-admin' | 'admin'
   permissions: string[]
   createdAt: string
   updatedAt: string
-  status: 'active' | 'blocked'
+  status: 'active' | 'inactive'
 }
 
 // All available permissions organized by category
@@ -222,9 +210,8 @@ const showSuccess = ref(false)
 // Form state
 const newRole = ref({
   name: '',
-  userLevel: 'admin' as 'super-admin' | 'admin',
   permissions: [] as string[],
-  status: 'active' as 'active' | 'blocked'
+  status: 'active' as 'active' | 'inactive'
 })
 
 // Navigation functions
@@ -233,7 +220,7 @@ const getBackNavigationPath = () => {
 }
 
 const getBackNavigationLabel = () => {
-  return
+  return ""
 }
 
 // Methods
@@ -241,7 +228,6 @@ const createRole = () => {
   const role: Role = {
     id: `ROLE-${Date.now()}`,
     name: newRole.value.name,
-    userLevel: newRole.value.userLevel,
     permissions: newRole.value.permissions,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -251,13 +237,24 @@ const createRole = () => {
   // In a real application, you would make an API call here
   console.log('Creating role:', role)
 
+  // Add the new role to the available roles list (for user creation)
+  // Note: In a real app, this would be handled by a store or API
+  if (typeof window !== 'undefined') {
+    const existingRoles = JSON.parse(localStorage.getItem('availableRoles') || '[]')
+    existingRoles.push({
+      name: role.name,
+      value: role.name.toLowerCase().replace(/\s+/g, '-'),
+      permissions: role.permissions
+    })
+    localStorage.setItem('availableRoles', JSON.stringify(existingRoles))
+  }
+
   // Show success message
   showSuccess.value = true
 
   // Reset form
   newRole.value = {
     name: '',
-    userLevel: 'admin',
     permissions: [],
     status: 'active'
   }

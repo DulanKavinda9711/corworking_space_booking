@@ -76,6 +76,22 @@
             </div>
           </div>
         </div>
+
+        <!-- <div class="bg-white rounded-xl shadow-card p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,6V8H13V6H11M11,10V18H13V10H11Z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <h3 class="text-sm font-medium text-gray-500">Total Rewards</h3>
+              <p class="text-2xl font-bold text-gray-900">LKR {{ customerRewards.toLocaleString() }}</p>
+            </div>
+          </div>
+        </div> -->
       </div>
 
       <!-- Customer Profile Card -->
@@ -148,6 +164,16 @@
               </svg>
               <span>Send Message</span>
             </button>
+
+            <!-- <button
+              @click="openAddRewardsModal"
+              class="w-full px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center"
+            >
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,6V8H13V6H11M11,10V18H13V10H11Z" />
+              </svg>
+              <span>Add Rewards</span>
+            </button> -->
           </div>
         </div>
       </div>
@@ -257,7 +283,62 @@
       </div> -->
     </div>
 
-    <!-- Send Message Modal -->
+      <!-- Reward Requests (Approved and Rejected) -->
+      <!-- <div v-if="customerRewardRequests.length > 0" class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200 mt-6">
+        <div class="bg-white shadow-card p-6 border-b">
+          <h2 class="text-lg font-semibold text-gray-900">Reward Requests</h2>
+         
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reward Value
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reason
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Processed Date
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Processed By
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="request in customerRewardRequests" :key="request.id" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">LKR {{ request.rewardValue.toLocaleString() }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 max-w-xs truncate" :title="request.reason">
+                    {{ request.reason }}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ formatDate(request.approvedDate!) }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="request.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-1 text-xs font-medium rounded-full">
+                    {{ request.status === 'approved' ? 'Approved' : 'Rejected' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">{{ request.approvedBy }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div> -->
+
+      <!-- Send Message Modal -->
     <div v-if="showSendMessageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSendMessageModal">
       <div class="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white" @click.stop>
         <div class="mt-3">
@@ -373,6 +454,97 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               <span>{{ isSendingMessage ? 'Sending...' : 'Send Message' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Rewards Modal -->
+    <div v-if="showAddRewardsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeAddRewardsModal">
+      <div class="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,6V8H13V6H11M11,10V18H13V10H11Z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Add Rewards for Customer</h3>
+          <div class="mt-2 px-4 py-3">
+            <div v-if="customer" class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div class="text-sm text-gray-900">
+                <div class="flex items-center space-x-2 mb-2">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,6V8H13V6H11M11,10V18H13V10H11Z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-medium">{{ customer.name }}</div>
+                    <div class="text-xs text-gray-500">{{ customer.email }}</div>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-600">
+                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
+                </div>
+              </div>
+            </div>
+
+            <form @submit.prevent="submitRewardRequest">
+              <div class="mb-4">
+                <label for="customerName" class="block text-sm font-medium text-gray-700 mb-2">Customer Name</label>
+                <input
+                  id="customerName"
+                  v-model="rewardsForm.customerName"
+                  type="text"
+                  readonly
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 bg-gray-50 text-gray-500"
+                />
+              </div>
+              <div class="mb-4">
+                <label for="rewardValue" class="block text-sm font-medium text-gray-700 mb-2">Reward Value (LKR)</label>
+                <input
+                  id="rewardValue"
+                  v-model.number="rewardsForm.rewardValue"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="Enter reward amount"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                <textarea
+                  id="reason"
+                  v-model="rewardsForm.reason"
+                  rows="3"
+                  placeholder="Enter reason for the reward"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-900"
+                  required
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="flex items-center justify-center pt-4 space-x-4">
+            <button
+              @click="closeAddRewardsModal"
+              type="button"
+              class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="submitRewardRequest"
+              :disabled="isSubmittingReward || !rewardsForm.rewardValue || !rewardsForm.reason.trim()"
+              class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              <svg v-if="isSubmittingReward" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isSubmittingReward ? 'Submitting...' : 'Send to Approver' }}</span>
             </button>
           </div>
         </div>
@@ -500,6 +672,7 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers } from '@/composables/useCustomers'
 import { useBookings } from '@/composables/useBookings'
+import { useRewardsStore } from '@/stores/rewards'
 import type { Booking } from '@/services/api'
 import { 
   mdiAccount, 
@@ -518,6 +691,7 @@ import {
 const route = useRoute()
 const { getCustomerById, toggleCustomerStatus: toggleStatus, loadPersistedStatuses } = useCustomers()
 const { allBookings } = useBookings()
+const rewardsStore = useRewardsStore()
 
 // Loading state
 const loading = ref(true)
@@ -540,6 +714,15 @@ const isTogglingStatus = ref(false)
 const showStatusSuccessModal = ref(false)
 const showStatusErrorModal = ref(false)
 const statusModalMessage = ref('')
+
+// Add rewards modal state
+const showAddRewardsModal = ref(false)
+const isSubmittingReward = ref(false)
+const rewardsForm = ref({
+  customerName: '',
+  rewardValue: 0,
+  reason: ''
+})
 
 // Get customer data from shared store
 const customerId = route.params.id as string
@@ -579,6 +762,26 @@ const customerStats = computed(() => {
     upcomingBookings,
     cancellations
   }
+})
+
+// Customer rewards
+const customerRewards = computed(() => {
+  if (!customer.value) return 0
+  return rewardsStore.getCustomerRewards(customer.value.id)
+})
+
+// Customer approved requests
+const customerApprovedRequests = computed(() => {
+  if (!customer.value) return []
+  return rewardsStore.getApprovedRequests().filter(request => request.customerId === customer.value!.id)
+})
+
+// Customer reward requests (both approved and rejected)
+const customerRewardRequests = computed(() => {
+  if (!customer.value) return []
+  return rewardsStore.getRequestsByCustomer(customer.value.id).filter(request => 
+    request.status === 'approved' || request.status === 'rejected'
+  )
 })
 
 // Methods
@@ -703,6 +906,59 @@ const sendMessage = async () => {
     alert('Failed to send message. Please try again.')
   } finally {
     isSendingMessage.value = false
+  }
+}
+
+// Add rewards functions
+const openAddRewardsModal = () => {
+  if (!customer.value) return
+
+  // Reset form when opening modal
+  rewardsForm.value = {
+    customerName: customer.value.name,
+    rewardValue: 0,
+    reason: ''
+  }
+  showAddRewardsModal.value = true
+}
+
+const closeAddRewardsModal = () => {
+  showAddRewardsModal.value = false
+  rewardsForm.value = {
+    customerName: '',
+    rewardValue: 0,
+    reason: ''
+  }
+}
+
+const submitRewardRequest = async () => {
+  if (!customer.value) return
+
+  isSubmittingReward.value = true
+
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Add reward request to store
+    rewardsStore.addRewardRequest({
+      customerId: customer.value.id,
+      customerName: customer.value.name,
+      customerEmail: customer.value.email,
+      rewardValue: rewardsForm.value.rewardValue,
+      reason: rewardsForm.value.reason
+    })
+
+    // Show success message
+    alert(`Reward request for ${customer.value.name} has been sent to approver successfully!`)
+
+    // Close modal
+    closeAddRewardsModal()
+  } catch (error) {
+    console.error('Error submitting reward request:', error)
+    alert('Failed to submit reward request. Please try again.')
+  } finally {
+    isSubmittingReward.value = false
   }
 }
 

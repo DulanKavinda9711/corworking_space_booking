@@ -146,8 +146,8 @@
         </div>
 
         <!-- Locations Table -->
-        <div v-else-if="!isLoading" class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div v-else-if="!isLoading" class="overflow-x-auto ">
+          <table class="min-w-full divide-y divide-gray-200 border b">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -211,11 +211,6 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       <span v-else>{{ location.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                    </button>
-                    <button @click.stop="confirmDeleteLocation(location)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
-                      title="Delete Location">
-                      <span>Delete</span>
                     </button>
                   </div>
                 </td>
@@ -363,42 +358,6 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeDeleteModal">
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
-        <div class="mt-3 text-center">
-          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-            </svg>
-          </div>
-          <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Delete Location</h3>
-          <div class="mt-2 px-7 py-3">
-            <p class="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700">
-              Are you sure you want to delete <strong>"{{ locationToDelete?.name }}"</strong>? 
-              This action cannot be undone and will remove all associated data.
-            </p>
-          </div>
-          <div class="items-center px-4 py-3 flex space-x-3">
-            <button @click="closeDeleteModal"
-              :disabled="isDeleting"
-              class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1 disabled:opacity-50">
-              Cancel
-            </button>
-            <button @click="confirmDelete"
-              :disabled="isDeleting"
-              class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 flex-1 disabled:opacity-50 flex items-center justify-center">
-              <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isDeleting ? 'Deleting...' : 'Delete' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Status Change Confirmation Modal -->
     <div v-if="showStatusConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="cancelStatusChange">
       <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4" @click.stop>
@@ -519,9 +478,9 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 // Delete modal state
-const showDeleteModal = ref(false)
-const locationToDelete = ref<any>(null)
-const isDeleting = ref(false)
+// const showDeleteModal = ref(false)
+// const locationToDelete = ref<any>(null)
+// const isDeleting = ref(false)
 
 // Status change modal state
 const showStatusConfirmModal = ref(false)
@@ -698,63 +657,64 @@ const cancelStatusChange = () => {
   locationToToggle.value = null
 }
 
-const confirmDeleteLocation = (location: any) => {
-  locationToDelete.value = location
-  showDeleteModal.value = true
-}
+// Delete functions removed
+// const confirmDeleteLocation = (location: any) => {
+//   locationToDelete.value = location
+//   showDeleteModal.value = true
+// }
 
-const closeDeleteModal = () => {
-  if (!isDeleting.value) {
-    showDeleteModal.value = false
-    locationToDelete.value = null
-  }
-}
+// const closeDeleteModal = () => {
+//   if (!isDeleting.value) {
+//     showDeleteModal.value = false
+//     locationToDelete.value = null
+//   }
+// }
 
-const confirmDelete = async () => {
-  if (!locationToDelete.value) return
+// const confirmDelete = async () => {
+//   if (!locationToDelete.value) return
 
-  isDeleting.value = true
+//   isDeleting.value = true
 
-  try {
-    const response = await locationApi.deleteLocation(locationToDelete.value.id)
+//   try {
+//     const response = await locationApi.deleteLocation(locationToDelete.value.id)
 
-    if (response.success) {
-      // Remove location from local array
-      const index = locations.value.findIndex(l => l.id === locationToDelete.value.id)
-      if (index !== -1) {
-        locations.value.splice(index, 1)
-      }
+//     if (response.success) {
+//       // Remove location from local array
+//       const index = locations.value.findIndex(l => l.id === locationToDelete.value.id)
+//       if (index !== -1) {
+//         locations.value.splice(index, 1)
+//       }
 
-      // Hide delete modal first
-      showDeleteModal.value = false
-      locationToDelete.value = null
+//       // Hide delete modal first
+//       showDeleteModal.value = false
+//       locationToDelete.value = null
 
-      // Show success popup
-      popupMessage.value = response.message || 'Location deleted successfully'
-      showSuccessPopup.value = true
-    } else {
-      // Hide delete modal first
-      showDeleteModal.value = false
-      locationToDelete.value = null
+//       // Show success popup
+//       popupMessage.value = response.message || 'Location deleted successfully'
+//       showSuccessPopup.value = true
+//     } else {
+//       // Hide delete modal first
+//       showDeleteModal.value = false
+//       locationToDelete.value = null
 
-      // Show error popup
-      popupMessage.value = response.message || 'Failed to delete location'
-      showErrorPopup.value = true
-    }
-  } catch (error) {
-    console.error('Error deleting location:', error)
+//       // Show error popup
+//       popupMessage.value = response.message || 'Failed to delete location'
+//       showErrorPopup.value = true
+//     }
+//   } catch (error) {
+//     console.error('Error deleting location:', error)
     
-    // Hide delete modal first
-    showDeleteModal.value = false
-    locationToDelete.value = null
+//     // Hide delete modal first
+//     showDeleteModal.value = false
+//     locationToDelete.value = null
 
-    // Show error popup
-    popupMessage.value = 'Network error while deleting location'
-    showErrorPopup.value = true
-  } finally {
-    isDeleting.value = false
-  }
-}
+//     // Show error popup
+//     popupMessage.value = 'Network error while deleting location'
+//     showErrorPopup.value = true
+//   } finally {
+//     isDeleting.value = false
+//   }
+// }
 
 const closeModal = () => {
   showAddModal.value = false

@@ -54,33 +54,33 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
-              <div class="relative">
-                <select 
-                  v-model="statusFilter" 
-                  @focus="toggleDropdown('status')"
-                  @blur="closeDropdown('status')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <div class="relative">
+              <select 
+                v-model="filters.status"
+                @focus="toggleDropdown('status')"
+                @blur="closeDropdown('status')"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="blocked">Inactive</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg 
+                  :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <option value="">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.status ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
+          </div>
             <div class="flex items-end justify-end">
               <button
               @click="resetFilters"
@@ -95,7 +95,7 @@
         <!-- Table View -->
         <div v-if="viewMode === 'table'">
           <!-- Table -->
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto border b">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                   <tr>
@@ -144,11 +144,6 @@
                         class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center"
                         :title="facility.status === 'active' ? 'Make Facility Inactive' : 'Activate Facility'">
                         <span>{{ facility.status === 'active' ? 'Inactive' : 'Activate' }}</span>
-                      </button>
-                      <button @click.stop="confirmDeleteFacility(facility)"
-                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 flex items-center justify-center"
-                        title="Delete Facility">
-                        <span>Delete</span>
                       </button>
                     </div>
                   </td>
@@ -206,13 +201,6 @@
                         <path :d="mdiPencil" />
                       </svg>
                     </router-link>
-                    <button @click="confirmDeleteFacility(facility)"
-                      class="group/btn flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-red-50 text-gray-600 hover:text-red-600 transition-all duration-200 hover:scale-105"
-                      title="Delete Facility">
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
-                      </svg>
-                    </button>
                   </div>
 
                   <!-- Modern indicator -->
@@ -522,6 +510,10 @@ const viewMode = ref<'tile' | 'table'>('table') // Default to table view
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   status: false
+})
+
+const filters = ref({
+  status: ''
 })
 
 // Modal state

@@ -159,7 +159,7 @@
         </div>
 
           <!-- Products Table -->
-          <table v-else class="min-w-full divide-y divide-gray-200">
+          <table v-else class="min-w-full divide-y divide-gray-200 border b">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -224,11 +224,6 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       <span v-else>{{ product.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                    </button>
-                    <button @click.stop="confirmDeleteProduct(product)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center justify-center space-x-1"
-                      title="Delete Product">
-                      <span>Delete</span>
                     </button>
                   </div>
                 </td>

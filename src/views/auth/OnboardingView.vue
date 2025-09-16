@@ -12,7 +12,7 @@
           Welcome to Your Admin Dashboard
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          {{ currentStep === 1 ? 'First, let\'s set up a secure password' : 'Now, let\'s set up your company details' }}
+          {{ currentStep === 1 ? 'First, let\'s set up a secure password' : 'Setup complete! You can now access your dashboard' }}
         </p>
       </div>
       
@@ -27,16 +27,10 @@
               :class="[currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300']">
             <span class="text-white font-medium">2</span>
           </div>
-          <div class="w-16 h-1" :class="[currentStep >= 3 ? 'bg-green-600' : 'bg-gray-300']"></div>
-          <div class="flex items-center justify-center w-10 h-10 rounded-full" 
-              :class="[currentStep >= 3 ? 'bg-green-600' : 'bg-gray-300']">
-            <span class="text-white font-medium">3</span>
-          </div>
         </div>
         <div class="flex justify-center mt-4 space-x-16 text-sm text-gray-600">
           <span :class="[currentStep >= 1 ? 'text-green-600 font-medium' : '']">Password</span>
-          <span :class="[currentStep >= 2 ? 'text-green-600 font-medium' : '']">Company Setup</span>
-          <span :class="[currentStep >= 3 ? 'text-green-600 font-medium' : '']">Complete</span>
+          <span :class="[currentStep >= 2 ? 'text-green-600 font-medium' : '']">Complete</span>
         </div>
       </div>
 
@@ -160,219 +154,14 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
-              {{ loading ? 'Updating Password...' : 'Continue to Company Setup' }}
+              {{ loading ? 'Updating Password...' : 'Complete Onboarding' }}
             </button>
           </div>
         </form>
       </div>
 
-      <!-- Step 2: Company Setup -->
-      <div v-if="currentStep === 2" class="bg-white rounded-xl shadow-lg p-8">
-        <h3 class="text-lg font-medium text-gray-900 mb-6">Company Setup</h3>
-        <form class="space-y-6" @submit.prevent="handleCompanySetup">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Company Information -->
-            <div class="md:col-span-2">
-              <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiOfficeBuilding" />
-                </svg>
-                Company Information
-              </h4>
-            </div>
-            
-            <div>
-              <label for="company-name" class="block text-sm font-medium text-gray-700">
-                Company Name *
-              </label>
-              <input
-                id="company-name"
-                name="company-name"
-                type="text"
-                required
-                v-model="companyForm.companyName"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter company name"
-              />
-            </div>
-
-            <div>
-              <label for="company-address" class="block text-sm font-medium text-gray-700">
-                Company Address *
-              </label>
-              <input
-                id="company-address"
-                name="company-address"
-                type="text"
-                required
-                v-model="companyForm.companyAddress"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter company address"
-              />
-            </div>
-
-            
-
-            <div>
-              <label for="company-email" class="block text-sm font-medium text-gray-700">
-                Company Email *
-              </label>
-              <input
-                id="company-email"
-                name="company-email"
-                type="email"
-                required
-                v-model="companyForm.companyEmail"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter company email"
-              />
-            </div>
-
-            <!-- Contact Person Information -->
-            <div class="md:col-span-2 mt-6">
-              <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiAccount" />
-                </svg>
-                Contact Person Details
-              </h4>
-            </div>
-
-            <div>
-              <label for="contact-name" class="block text-sm font-medium text-gray-700">
-                Contact Person Name *
-              </label>
-              <input
-                id="contact-name"
-                name="contact-name"
-                type="text"
-                required
-                v-model="companyForm.contactName"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter contact person name"
-              />
-            </div>
-
-            <div>
-              <label for="contact-email" class="block text-sm font-medium text-gray-700">
-                Contact Person Email *
-              </label>
-              <input
-                id="contact-email"
-                name="contact-email"
-                type="email"
-                required
-                v-model="companyForm.contactEmail"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter contact person email"
-              />
-            </div>
-
-            <div>
-              <label for="contact-mobile" class="block text-sm font-medium text-gray-700">
-                Contact Person Mobile *
-              </label>
-              <input
-                id="contact-mobile"
-                name="contact-mobile"
-                type="tel"
-                required
-                v-model="companyForm.contactMobile"
-                class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Enter contact person mobile"
-              />
-            </div>
-
-            <!-- Operating Hours -->
-            <div class="md:col-span-2 mt-6">
-              <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiClockOutline" />
-                </svg>
-                Operating Hours & Days
-              </h4>
-              
-              <!-- Days Selection -->
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Operating Days *
-                </label>
-                <div class="grid grid-cols-4 gap-3 md:grid-cols-7">
-                  <div v-for="day in daysOfWeek" :key="day" class="flex items-center">
-                    <input
-                      :id="`day-${day.toLowerCase()}`"
-                      :name="`day-${day.toLowerCase()}`"
-                      type="checkbox"
-                      :value="day"
-                      v-model="companyForm.operatingDays"
-                      class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                    <label :for="`day-${day.toLowerCase()}`" class="ml-2 text-sm text-gray-700">
-                      {{ day.slice(0, 3) }}
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hours Selection -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label for="opening-time" class="block text-sm font-medium text-gray-700">
-                    Opening Time *
-                  </label>
-                  <button
-                    type="button"
-                    @click="openTimePicker('openingTime')"
-                    class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm bg-white hover:bg-gray-50 transition-colors text-left"
-                  >
-                    {{ companyForm.openingTime }}
-                  </button>
-                </div>
-
-                <div>
-                  <label for="closing-time" class="block text-sm font-medium text-gray-700">
-                    Closing Time *
-                  </label>
-                  <button
-                    type="button"
-                    @click="openTimePicker('closingTime')"
-                    class="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm bg-white hover:bg-gray-50 transition-colors text-left"
-                  >
-                    {{ companyForm.closingTime }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-between pt-6">
-            <button
-              type="button"
-              @click="currentStep = 1"
-              class="px-6 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-            >
-              Back to Password
-            </button>
-            
-            <button
-              type="submit"
-              :disabled="loading || !isCompanyFormValid"
-              class="px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span v-if="loading" class="mr-2">
-                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </span>
-              {{ loading ? 'Setting up...' : 'Complete Setup' }}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Step 3: Success -->
-      <div v-if="currentStep === 3" class="bg-white rounded-xl shadow-lg p-8 text-center">
+      <!-- Step 2: Success -->
+      <div v-if="currentStep === 2" class="bg-white rounded-xl shadow-lg p-8 text-center">
         <div class="mx-auto h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
           <svg class="h-10 w-10 text-green-600" fill="currentColor" viewBox="0 0 24 24">
             <path :d="mdiCheckCircle" />
@@ -409,114 +198,14 @@
     </div>
   </div>
 
-  <!-- Time Picker Modal -->
-  <div v-if="showTimePicker" 
-       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 time-picker-modal"
-       @keydown="handleKeyDown">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 w-80 max-w-sm mx-4">
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">SELECT TIME</h3>
-        <div class="flex items-center justify-center space-x-3">
-          <!-- Time Display -->
-          <div class="flex items-center space-x-1 text-3xl font-light">
-            <button @click="timePickerMode = 'hour'"
-                    class="px-3 py-2 rounded-lg font-mono transition-all duration-200 hover:scale-105"
-                    :class="timePickerMode === 'hour' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-              {{ selectedHour.toString().padStart(2, '0') }}
-            </button>
-            <span class="text-gray-400 mx-2">:</span>
-            <button @click="timePickerMode = 'minute'"
-                    class="px-3 py-2 rounded-lg font-mono transition-all duration-200 hover:scale-105"
-                    :class="timePickerMode === 'minute' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-              {{ selectedMinute.toString().padStart(2, '0') }}
-            </button>
-          </div>
-          <!-- AM/PM Toggle -->
-          <div class="flex flex-col space-y-1">
-            <button @click="togglePeriod" 
-                    :class="selectedPeriod === 'AM' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600'"
-                    class="px-3 py-1 rounded text-sm font-medium transition-colors">
-              AM
-            </button>
-            <button @click="togglePeriod"
-                    :class="selectedPeriod === 'PM' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600'"
-                    class="px-3 py-1 rounded text-sm font-medium transition-colors">
-              PM
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- Clock Face -->
-      <div class="relative w-56 h-56 mx-auto mb-6">
-        <!-- Clock circle -->
-        <div class="absolute inset-0 clock-face rounded-full"></div>
-        
-        <!-- Hour mode -->
-        <div v-if="timePickerMode === 'hour'">
-          <!-- Hour numbers -->
-          <div v-for="hour in 12" :key="hour"
-               class="absolute w-8 h-8 flex items-center justify-center text-sm font-medium cursor-pointer rounded-full transition-all duration-200 clock-number"
-               :class="selectedHour === hour ? 'bg-green-500 text-white selected' : 'text-gray-700 hover:bg-green-100 hover:text-green-600'"
-               :style="`left: ${getNumberPosition(hour, 112, 12).x - 16}px; top: ${getNumberPosition(hour, 112, 12).y - 16}px`"
-               @click="selectHour(hour)">
-            {{ hour }}
-          </div>
-          
-          <!-- Clock hand for hour -->
-          <div class="absolute top-1/2 left-1/2 origin-bottom transform -translate-x-1/2 clock-hand"
-               :style="`height: 80px; margin-top: -80px; transform: translateX(-50%) rotate(${getHandAngle(selectedHour % 12, 12)}deg)`">
-            <div class="w-1 h-full bg-green-500 rounded-full shadow-lg"></div>
-            <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full"></div>
-          </div>
-        </div>
-
-        <!-- Minute mode -->
-        <div v-else>
-          <!-- Minute markers (every 5 minutes) -->
-          <div v-for="minute in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]" :key="minute"
-               class="absolute w-8 h-8 flex items-center justify-center text-sm font-medium cursor-pointer rounded-full transition-all duration-200 clock-number"
-               :class="selectedMinute === minute ? 'bg-green-500 text-white selected' : 'text-gray-700 hover:bg-green-100 hover:text-green-600'"
-               :style="`left: ${getNumberPosition(minute / 5 || 12, 112, 12).x - 16}px; top: ${getNumberPosition(minute / 5 || 12, 112, 12).y - 16}px`"
-               @click="selectMinute(minute)">
-            {{ minute.toString().padStart(2, '0') }}
-          </div>
-          
-          <!-- Clock hand for minute -->
-          <div class="absolute top-1/2 left-1/2 origin-bottom transform -translate-x-1/2 clock-hand"
-               :style="`height: 80px; margin-top: -80px; transform: translateX(-50%) rotate(${getHandAngle(selectedMinute, 60)}deg)`">
-            <div class="w-0.5 h-full bg-green-500 rounded-full shadow-lg"></div>
-            <div class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-          </div>
-        </div>
-
-        <!-- Center dot -->
-        <div class="absolute top-1/2 left-1/2 w-4 h-4 bg-green-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg border-2 border-white"></div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex justify-end">
-        <div class="flex space-x-2">
-          <button @click="closeTimePicker" 
-                  class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
-            CANCEL
-          </button>
-          <button @click="confirmTimeSelection"
-                  class="px-4 py-2 text-sm font-medium text-green-600 hover:text-green-800 transition-colors">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert, mdiOfficeBuilding, mdiAccount, mdiClockOutline } from '@mdi/js'
+import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert } from '@mdi/js'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -530,22 +219,6 @@ const passwordForm = ref({
   confirmPassword: ''
 })
 
-// Form state for company setup
-const companyForm = ref({
-  companyName: '',
-  companyAddress: '',
-  companyEmail: '',
-  contactName: '',
-  contactEmail: '',
-  contactMobile: '',
-  operatingDays: [] as string[],
-  openingTime: '09:00',
-  closingTime: '17:00'
-})
-
-// Days of the week
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
 const loading = ref(false)
 const error = ref('')
 const currentStep = ref(1)
@@ -553,14 +226,6 @@ const passwordError = ref('')
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
-
-// Time picker state
-const showTimePicker = ref(false)
-const selectedHour = ref(7)
-const selectedMinute = ref(0)
-const selectedPeriod = ref('AM')
-const timePickerMode = ref<'hour' | 'minute'>('hour')
-const currentTimeField = ref<'openingTime' | 'closingTime' | null>(null)
 
 // Password validation
 const passwordLength = computed(() => passwordForm.value.newPassword.length >= 8)
@@ -573,19 +238,6 @@ const isPasswordValid = computed(() =>
   passwordForm.value.newPassword === passwordForm.value.confirmPassword &&
   passwordForm.value.currentPassword === 'admin123'
 )
-
-// Company form validation
-const isCompanyFormValid = computed(() => {
-  return companyForm.value.companyName.trim() &&
-         companyForm.value.companyAddress.trim() &&
-         companyForm.value.companyEmail.trim() &&
-         companyForm.value.contactName.trim() &&
-         companyForm.value.contactEmail.trim() &&
-         companyForm.value.contactMobile.trim() &&
-         companyForm.value.operatingDays.length > 0 &&
-         companyForm.value.openingTime &&
-         companyForm.value.closingTime
-})
 
 // Password validation watchers
 watch(() => passwordForm.value.newPassword, () => {
@@ -622,37 +274,10 @@ const handlePasswordChange = async () => {
     // Store the new password securely (in a real app, this would be hashed and stored server-side)
     authStore.setUserPassword(passwordForm.value.newPassword)
     authStore.setPasswordReset('true')
-    
-    // Move to company setup
-    currentStep.value = 2
-  } catch {
-    error.value = 'An error occurred. Please try again.'
-  } finally {
-    loading.value = false
-  }
-}
-
-// Handle company setup (Step 2)
-const handleCompanySetup = async () => {
-  loading.value = true
-  error.value = ''
-
-  if (!isCompanyFormValid.value) {
-    error.value = 'Please fill in all required fields'
-    loading.value = false
-    return
-  }
-
-  try {
-    // Simulate API call to save company setup
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    // Store company setup data (in a real app, this would be sent to the backend)
-    authStore.setCompanySetup(JSON.stringify(companyForm.value))
     authStore.setOnboardingComplete('true')
     
     // Move to success step
-    currentStep.value = 3
+    currentStep.value = 2
   } catch {
     error.value = 'An error occurred. Please try again.'
   } finally {
@@ -664,177 +289,7 @@ const handleCompanySetup = async () => {
 const goToDashboard = () => {
   router.push('/dashboard')
 }
-
-// Time picker functions
-const convertTo12Hour = (time24: string) => {
-  const [hourStr, minuteStr] = time24.split(':')
-  let hour = parseInt(hourStr)
-  const minute = parseInt(minuteStr)
-  const period = hour >= 12 ? 'PM' : 'AM'
-  
-  if (hour === 0) {
-    hour = 12
-  } else if (hour > 12) {
-    hour -= 12
-  }
-  
-  return { hour, minute, period }
-}
-
-const convertTo24Hour = (hour: number, minute: number, period: string) => {
-  let hour24 = hour
-  if (period === 'AM' && hour === 12) {
-    hour24 = 0
-  } else if (period === 'PM' && hour !== 12) {
-    hour24 += 12
-  }
-  
-  return `${hour24.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-}
-
-const getNumberPosition = (number: number, radius: number, total: number) => {
-  // Adjust for 12 o'clock being at top (subtract 90 degrees)
-  const angle = ((number * 360) / total) - 90
-  const radian = (angle * Math.PI) / 180
-  const x = radius + radius * 0.8 * Math.cos(radian)
-  const y = radius + radius * 0.8 * Math.sin(radian)
-  return { x, y }
-}
-
-// Helper function to get exact hand angle (baseline is 12 o'clock at 0deg)
-const getHandAngle = (value: number, maxValue: number) => {
-  return (value * 360) / maxValue
-}
-
-const openTimePicker = (field: 'openingTime' | 'closingTime') => {
-  currentTimeField.value = field
-  
-  // Get current time for this field
-  const currentTime = companyForm.value[field]
-  const timeComponents = convertTo12Hour(currentTime)
-  
-  selectedHour.value = timeComponents.hour
-  selectedMinute.value = timeComponents.minute
-  selectedPeriod.value = timeComponents.period
-  timePickerMode.value = 'hour'
-  showTimePicker.value = true
-}
-
-const selectHour = (hour: number) => {
-  selectedHour.value = hour
-  // Don't automatically switch to minute mode - let user click on minute display
-}
-
-const selectMinute = (minute: number) => {
-  selectedMinute.value = minute
-  // Don't automatically confirm - let user decide when to confirm
-}
-
-const togglePeriod = () => {
-  selectedPeriod.value = selectedPeriod.value === 'AM' ? 'PM' : 'AM'
-}
-
-const confirmTimeSelection = () => {
-  if (currentTimeField.value) {
-    const time24 = convertTo24Hour(selectedHour.value, selectedMinute.value, selectedPeriod.value)
-    companyForm.value[currentTimeField.value] = time24
-  }
-  closeTimePicker()
-}
-
-const closeTimePicker = () => {
-  showTimePicker.value = false
-  currentTimeField.value = null
-  timePickerMode.value = 'hour'
-}
-
-const handleKeyDown = (event: KeyboardEvent) => {
-  if (!showTimePicker.value) return
-  
-  switch (event.key) {
-    case 'Escape':
-      closeTimePicker()
-      break
-    case 'Enter':
-      confirmTimeSelection()
-      break
-    case 'ArrowLeft':
-    case 'ArrowRight':
-      event.preventDefault()
-      togglePeriod()
-      break
-    case 'ArrowUp':
-    case 'ArrowDown':
-      event.preventDefault()
-      timePickerMode.value = timePickerMode.value === 'hour' ? 'minute' : 'hour'
-      break
-  }
-}
 </script>
 
 <style scoped>
-/* Time picker specific styles */
-.time-picker-modal {
-  backdrop-filter: blur(4px);
-}
-
-.clock-hand {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.clock-number {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-}
-
-.clock-number:hover {
-  transform: scale(1.1);
-}
-
-.clock-number.selected {
-  transform: scale(1.15);
-}
-
-/* Time picker button animations */
-.time-button {
-  position: relative;
-  overflow: hidden;
-}
-
-.time-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.time-button:hover::before {
-  left: 100%;
-}
-
-/* Modal entrance animation */
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.time-picker-modal > div {
-  animation: modalFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Clock face gradient */
-.clock-face {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
-}
 </style>

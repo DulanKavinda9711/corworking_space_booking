@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
         <div class="flex items-center">
-          <router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
+          <router-link :to="getBackNavigationPath()" class="p-2 items-center rounded-lg border border-gray-300 text-gray-600 hover:text-gray-900 hover:bg-gray-50">
             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -31,15 +31,28 @@
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
                 <input
                   type="text"
-                  v-model="newUser.name"
+                  v-model="newUser.firstName"
                   required
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Enter full name"
+                  placeholder="Enter first name"
                 />
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                <input
+                  type="text"
+                  v-model="newUser.lastName"
+                  required
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  placeholder="Enter last name"
+                />
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
                 <input
@@ -50,9 +63,6 @@
                   placeholder="Enter username"
                 />
               </div>
-            </div>
-
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                 <input
@@ -64,15 +74,17 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  v-model="newUser.phone"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                  placeholder="Enter phone number"
-                />
-              </div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <input
+                type="tel"
+                v-model="newUser.phone"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                placeholder="Enter phone number"
+              />
             </div>
+            </div>
+
+            
           </div>
 
           <!-- Role and Status -->
@@ -88,10 +100,9 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                 <select v-model="newUser.role" @change="updateUserPermissions"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
-                  <option value="super-admin">Super Admin</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="operator">Operator</option>
+                  <option v-for="role in availableRoles" :key="role.value" :value="role.value">
+                    {{ role.name }}
+                  </option>
                 </select>
               </div>
               <div>
@@ -153,11 +164,12 @@ import { mdiAccountDetails, mdiShieldCheck, mdiAccountCog } from '@mdi/js'
 // User interface
 interface User {
   id: string
-  name: string
+  firstName: string
+  lastName: string
   username: string
   email: string
   phone: string | null
-  role: 'super-admin' | 'admin' | 'manager' | 'operator'
+  role: string
   status: 'active' | 'blocked'
   lastLogin: string | null
   permissions: string[]
@@ -166,29 +178,59 @@ interface User {
   updatedAt: string
 }
 
+// Available roles with their permissions
+const availableRoles = ref([
+  {
+    name: 'Super Admin',
+    value: 'super-admin',
+    permissions: ['Dashboard Access', 'User Management', 'System Settings', 'Audit Trail', 'Reports Access']
+  },
+  {
+    name: 'Admin',
+    value: 'admin', 
+    permissions: ['Dashboard Access', 'User Management - View', 'Customer Management - View', 'Reports - View']
+  },
+  {
+    name: 'Manager',
+    value: 'manager',
+    permissions: ['Dashboard Access', 'Bookings - View', 'Customer Profile - View', 'Facilities - View']
+  },
+  {
+    name: 'Operator',
+    value: 'operator',
+    permissions: ['Bookings - View', 'Customer Profile - View']
+  }
+])
+
+// Function to add a new role (can be called when creating roles)
+const addNewRole = (roleName: string, permissions: string[]) => {
+  const roleValue = roleName.toLowerCase().replace(/\s+/g, '-')
+  availableRoles.value.push({
+    name: roleName,
+    value: roleValue,
+    permissions: permissions
+  })
+}
+
 // State
 const router = useRouter()
 const isCreating = ref(false)
 
 const newUser = ref({
-  name: '',
+  firstName: '',
+  lastName: '',
   username: '',
   email: '',
   phone: '',
-  role: 'operator' as 'super-admin' | 'admin' | 'manager' | 'operator',
+  role: 'operator' as string,
   permissions: [] as string[],
   status: 'active' as 'active' | 'blocked'
 })
 
 // Methods
-const getRolePermissions = (role: string) => {
-  const rolePermissions: Record<string, string[]> = {
-    'super-admin': ['Dashboard Access', 'User Management', 'System Settings', 'Audit Trail', 'Reports Access'],
-    'admin': ['Dashboard Access', 'Company Management', 'Booking Management', 'Reports Access'],
-    'manager': ['Dashboard Access', 'Customer Management', 'Booking Management'],
-    'operator': ['Dashboard Access', 'Customer Management']
-  }
-  return rolePermissions[role] || []
+const getRolePermissions = (roleValue: string) => {
+  const role = availableRoles.value.find(r => r.value === roleValue)
+  return role ? role.permissions : []
 }
 
 const updateUserPermissions = () => {
@@ -214,7 +256,8 @@ const createUser = async () => {
 
     const user: User = {
       id: `USR-${Date.now()}`,
-      name: newUser.value.name,
+      firstName: newUser.value.firstName,
+      lastName: newUser.value.lastName,
       username: newUser.value.username,
       email: newUser.value.email,
       phone: newUser.value.phone || null,
@@ -232,7 +275,8 @@ const createUser = async () => {
 
     // Reset form
     newUser.value = {
-      name: '',
+      firstName: '',
+      lastName: '',
       username: '',
       email: '',
       phone: '',
@@ -257,6 +301,14 @@ const createUser = async () => {
 import { onMounted } from 'vue'
 
 onMounted(() => {
+  // Load roles from localStorage
+  if (typeof window !== 'undefined') {
+    const storedRoles = localStorage.getItem('availableRoles')
+    if (storedRoles) {
+      availableRoles.value = JSON.parse(storedRoles)
+    }
+  }
+  
   updateUserPermissions()
 })
 </script>

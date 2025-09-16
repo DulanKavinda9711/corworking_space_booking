@@ -93,6 +93,9 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total Bookings
                 </th>
+                <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Rewards
+                </th> -->
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
@@ -134,6 +137,9 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ customer.totalBookings }}</div>
                 </td>
+                <!-- <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">LKR {{ getCustomerRewards(customer.id) }}</div>
+                </td> -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(customer.status)" class="px-2 py-1 text-xs font-medium rounded-full">
                     {{ customer.status === 'active' ? 'Active' : 'Inactive' }}
@@ -343,6 +349,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers, type Customer } from '@/composables/useCustomers'
+import { useRewardsStore } from '@/stores/rewards'
 import { mdiAccount, mdiAccountCheck, mdiAccountCancel } from '@mdi/js'
 
 // Use router for navigation
@@ -350,6 +357,7 @@ const router = useRouter()
 
 // Use shared customers data
 const { customers, toggleCustomerStatus: toggleStatus, loadPersistedStatuses } = useCustomers()
+const rewardsStore = useRewardsStore()
 
 // State
 const searchQuery = ref('')
@@ -445,6 +453,10 @@ const getStatusClass = (status: string) => {
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+const getCustomerRewards = (customerId: string) => {
+  return rewardsStore.getCustomerRewards(customerId)
 }
 
 // Dropdown toggle functions

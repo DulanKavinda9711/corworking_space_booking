@@ -22,6 +22,9 @@ import CancelSubscriptionView from '@/views/bookings/CancelSubscriptionView.vue'
 import CustomersView from '@/views/CustomersView.vue'
 import CustomerDetailView from '@/views/CustomerDetailView.vue'
 
+// Approver
+import ApproverView from '@/views/ApproverView.vue'
+
 // Facilities
 import FacilitiesView from '@/views/FacilitiesView.vue'
 import AddFacilityView from '@/views/facilities/AddFacilityView.vue'
@@ -136,6 +139,12 @@ const routes: RouteRecordRaw[] = [
     path: '/customers/:id',
     name: 'CustomerDetail',
     component: CustomerDetailView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/approver',
+    name: 'Approver',
+    component: ApproverView,
     meta: { requiresAuth: true }
   },
   {

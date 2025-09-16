@@ -3,16 +3,17 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-        <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
-            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiHistory" />
-            </svg>
-            <span class="text-sm font-medium text-green-700">
-              Total Activities:
-              <span class="font-bold text-green-800">{{ activities.length }}</span>
-            </span>
-          </div>
-        
+        <div
+          class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="mdiHistory" />
+          </svg>
+          <span class="text-sm font-medium text-green-700">
+            Total Activities:
+            <span class="font-bold text-green-800">{{ activities.length }}</span>
+          </span>
+        </div>
+
         <div class="flex items-center space-x-3">
           <!-- <button
             @click="exportActivityLog"
@@ -23,156 +24,135 @@
             </svg>
             <span>Export Log</span>
           </button> -->
-          <button
-            @click="refreshLog"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-          >
+          <button @click="refreshLog"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiRefresh" />
             </svg>
             <span>Refresh</span>
           </button>
-          
+
         </div>
       </div>
 
 
-      <!-- Filters -->
-            <!-- Filters -->
-      
-
       <!-- Activity Log Table -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden">
+      <div class="bg-white rounded-xl shadow-card overflow-visible">
         <!-- <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900">All Activities ({{ filteredActivities.length }})</h2>
           <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">Auto-refresh:</span>
-            <label class="flex items-center">
-              <input 
-                type="checkbox" 
-                v-model="autoRefresh"
-                @change="toggleAutoRefresh"
-                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-              />
-              <span class="ml-2 text-sm text-gray-700">On</span>
-            </label>
+        <span class="text-sm text-gray-500">Auto-refresh:</span>
+        <label class="flex items-center">
+          <input 
+            type="checkbox" 
+            v-model="autoRefresh"
+            @change="toggleAutoRefresh"
+            class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+          />
+          <span class="ml-2 text-sm text-gray-700">On</span>
+        </label>
           </div>
         </div> -->
-        <div class="overflow-x-auto">
-          <div class="bg-white border-b shadow-card p-6">
-        <div class="flex flex-col  md:flex-row md:items-end md:space-x-4 gap-4 relative">
-          <div class="relative md:w-64">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
-            <div class="relative">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search by user, action, or description..."
-                v-model="searchQuery"
-                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
-              />
-            </div>
-          </div>
-          <div class="md:w-40">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
-            <select v-model="filters.activityType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="">All Types</option>
-              <option value="user">User Action</option>
-              <option value="booking">Booking</option>
-              <option value="payment">Payment</option>
-              <option value="system">System</option>
-              <option value="security">Security</option>
-              <option value="audit">Audit</option>
-            </select>
-          </div>
-          <div class="md:w-48">
-            <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
-            <select v-model="filters.user" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-              <option value="">All Users</option>
-              <option value="john.admin">John Administrator</option>
-              <option value="sarah.manager">Sarah Manager</option>
-              <option value="mike.operator">Mike Operator</option>
-              <option value="system">System</option>
-            </select>
-          </div>
-          <div class="relative md:w-64">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <input
-              type="text"
-              v-model="dateRangeDisplay"
-              @click="showDatePicker = !showDatePicker"
-              readonly
-              class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
-              placeholder="Select Date"
-            />
-            <!-- Booking.com Style Date Range Picker -->
-            <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-              <div class="flex justify-between items-center mb-4">
-                <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        <div class="overflow-visible">
+          <div class="bg-white border-b shadow-card p-6 rounded-t-xl">
+            <div class="flex flex-col  md:flex-row md:items-end md:space-x-4 gap-4 relative">
+              <div class="relative md:w-64">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Activities</label>
+                <div class="relative">
+                  <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
+                  <input type="text" placeholder="Search by user, action, or description..." v-model="searchQuery"
+                    class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black" />
+                </div>
+              </div>
+              <div class="relative md:w-64">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <input type="text" v-model="dateRangeDisplay" @click="showDatePicker = !showDatePicker" readonly
+                  class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
+                  placeholder="Select Date" />
+                <!-- Date Range Picker -->
+                <div v-if="showDatePicker"
+                  class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
+                  <div class="flex justify-between items-center mb-4">
+                    <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                      </svg>
+                    </button>
+                    <span class="font-medium">{{ currentMonthYear }}</span>
+                    <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <!-- Calendar Grid -->
+                  <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
+                      class="text-xs font-medium text-gray-500 text-center py-2">
+                      {{ day }}
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-7 gap-1">
+                    <div v-for="date in calendarDates" :key="date.dateString" @click="selectDate(date)" :class="[
+                      'text-sm text-center py-2 cursor-pointer rounded',
+                      !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
+                      isDateSelected(date) ? 'bg-green-600 text-white' : '',
+                      isDateInRange(date) ? 'bg-green-100' : '',
+                      'hover:bg-green-50'
+                    ]">
+                      {{ date.day }}
+                    </div>
+                  </div>
+                  <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex space-x-2">
+                      <button @click="clearDateRange"
+                        class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50">
+                        Clear
+                      </button>
+                      <button @click="showDatePicker = false" :disabled="!filters.dateFrom"
+                        class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="md:w-40">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
+                <select v-model="filters.activityType"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
+                  <option value="">All Types</option>
+                  <option value="user">User Action</option>
+                  <option value="booking">Booking</option>
+                  <option value="payment">Payment</option>
+                  <option value="system">System</option>
+                  <option value="security">Security</option>
+                  <option value="audit">Audit</option>
+                </select>
+              </div>
+              <div class="md:w-48">
+                <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
+                <select v-model="filters.user"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
+                  <option value="">All Users</option>
+                  <option value="john.admin">John Administrator</option>
+                  <option value="sarah.manager">Sarah Manager</option>
+                  <option value="mike.operator">Mike Operator</option>
+                  <option value="system">System</option>
+                </select>
+              </div>
+              <div class="flex items-end md:absolute md:right-0 md:top-6">
+                <button @click="resetFilters"
+                  class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+                  Reset Filters
                 </button>
-                <span class="font-medium">{{ currentMonthYear }}</span>
-                <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                  </svg>
-                </button>
-              </div>
-              <!-- Calendar Grid -->
-              <div class="grid grid-cols-7 gap-1 mb-2">
-                <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
-                  {{ day }}
-                </div>
-              </div>
-              <div class="grid grid-cols-7 gap-1">
-                <div
-                  v-for="date in calendarDates"
-                  :key="date.dateString"
-                  @click="selectDate(date)"
-                  :class="[
-                    'text-sm text-center py-2 cursor-pointer rounded',
-                    !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                    isDateSelected(date) ? 'bg-primary-600 text-white' : '',
-                    isDateInRange(date) ? 'bg-primary-100' : '',
-                    'hover:bg-primary-50'
-                  ]"
-                >
-                  {{ date.day }}
-                </div>
-              </div>
-              <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                <div class="flex space-x-2">
-                  <button
-                    @click="clearDateRange"
-                    class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    @click="showDatePicker = false"
-                    :disabled="!filters.dateFrom"
-                    class="px-3 py-1 text-xs bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Apply
-                  </button>
-                </div>
               </div>
             </div>
           </div>
-          <div class="flex items-end md:absolute md:right-0 md:top-6">
-            <button
-              @click="resetFilters"
-              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
-            >
-              Reset Filters
-            </button>
-          </div>
-        </div>
-      </div>
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -198,8 +178,10 @@
                 <td class="px-6 py-4">
                   <div class="flex items-center space-x-3">
                     <div class="flex-shrink-0">
-                      <img v-if="activity.userAvatar" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200" :src="activity.userAvatar" :alt="activity.user">
-                      <div v-else class="h-10 w-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-200">
+                      <img v-if="activity.userAvatar" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200"
+                        :src="activity.userAvatar" :alt="activity.user">
+                      <div v-else
+                        class="h-10 w-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-2 ring-gray-200">
                         <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                           <path :d="activity.activityType === 'system' ? mdiCog : mdiAccount" />
                         </svg>
@@ -215,94 +197,96 @@
                   <div class="space-y-2">
                     <div class="text-sm text-gray-900 leading-relaxed">{{ activity.details }}</div>
                     <!-- <div v-if="activity.resourceId" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10,9 9,9 8,9"/>
-                      </svg>
-                      ID: {{ activity.resourceId }}
-                    </div> -->
+              <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+              </svg>
+              ID: {{ activity.resourceId }}
+            </div> -->
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 flex justify-between sm:hidden">
-              <button
-                @click="previousPage"
-                :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                @click="nextPage"
-                :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700">
-                  Showing {{ startItem }} to {{ endItem }} of {{ filteredActivities.length }} results
-                </p>
-              </div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    @click="previousPage"
-                    :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                  <button
-                    v-for="page in visiblePages"
-                    :key="page"
-                    @click="goToPage(page)"
-                    :class="[
-                      page === currentPage
-                        ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                      'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
-                    ]"
-                  >
-                    {{ page }}
-                  </button>
-                  <button
-                    @click="nextPage"
-                    :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </nav>
-              </div>
-            </div>
+          <!-- Empty State -->
+          <div v-if="filteredActivities.length === 0" class="text-center py-12 rounded-b-xl">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No activities found</h3>
+            <p class="mt-1 text-sm text-gray-500">No activities match the current search and filters.</p>
           </div>
         </div>
 
-        <!-- Empty State -->
-        <div v-if="filteredActivities.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No activities found</h3>
-          <p class="mt-1 text-sm text-gray-500">No activities match the current search and filters.</p>
+        <!-- Pagination -->
+        <!-- <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 rounded-b-xl">
+          <div class="flex items-center justify-between">
+        <div class="flex-1 flex justify-between sm:hidden">
+          <button
+            @click="previousPage"
+            :disabled="currentPage === 1"
+            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700">
+          Showing {{ startItem }} to {{ endItem }} of {{ filteredActivities.length }} results
+            </p>
+          </div>
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+          <button
+            @click="previousPage"
+            :disabled="currentPage === 1"
+            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            @click="goToPage(page)"
+            :class="[
+              page === currentPage
+            ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+              'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+            ]"
+          >
+            {{ page }}
+          </button>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+          >
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+            </nav>
+          </div>
+        </div>
+          </div>
+        </div> -->
+
+
       </div>
     </div>
   </AdminLayout>
@@ -546,11 +530,11 @@ const visiblePages = computed(() => {
   const pages = []
   const totalPagesCount = totalPages.value
   const current = currentPage.value
-  
+
   for (let i = Math.max(1, current - 2); i <= Math.min(totalPagesCount, current + 2); i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
@@ -617,15 +601,15 @@ const getTimeAgo = (timestamp: string) => {
   const date = new Date(timestamp)
   const now = new Date()
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-  
+
   if (diffInMinutes < 1) return 'Just now'
   if (diffInMinutes === 1) return '1 minute ago'
   if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`
-  
+
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours === 1) return '1 hour ago'
   if (diffInHours < 24) return `${diffInHours} hours ago`
-  
+
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays === 1) return '1 day ago'
   return `${diffInDays} days ago`

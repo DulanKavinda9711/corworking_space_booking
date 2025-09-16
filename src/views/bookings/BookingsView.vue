@@ -1,23 +1,18 @@
 <template>
   <AdminLayout>
     <div class="space-y-6">
-      
+
 
       <!-- Tabs -->
       <div class="bg-white rounded-xl shadow-card">
         <div class="border-b border-gray-200">
           <nav class="flex space-x-8 px-6" aria-label="Tabs">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              @click="activeTab = tab.id"
-              :class="[
-                activeTab === tab.id
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-              ]"
-            >
+            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+              activeTab === tab.id
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
+            ]">
               {{ tab.name }}
               <span :class="[
                 activeTab === tab.id ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-900',
@@ -37,67 +32,54 @@
           ]">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-              <input
-                type="text"
-                v-model="dateRangeDisplay"
-                @click="showDatePicker = !showDatePicker"
-                readonly
+              <input type="text" v-model="dateRangeDisplay" @click="showDatePicker = !showDatePicker" readonly
                 class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
-                placeholder="Select Date"
-              />
+                placeholder="Select Date" />
               <!-- Date Range Picker -->
-              <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
+              <div v-if="showDatePicker"
+                class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
                 <div class="flex justify-between items-center mb-4">
                   <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                     </svg>
                   </button>
                   <span class="font-medium">{{ currentMonthYear }}</span>
                   <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
                     </svg>
                   </button>
                 </div>
-                
+
                 <!-- Calendar Grid -->
                 <div class="grid grid-cols-7 gap-1 mb-2">
-                  <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
+                  <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
+                    class="text-xs font-medium text-gray-500 text-center py-2">
                     {{ day }}
                   </div>
                 </div>
-                
+
                 <div class="grid grid-cols-7 gap-1">
-                  <div
-                    v-for="date in calendarDates"
-                    :key="date.dateString"
-                    @click="selectDate(date)"
-                    :class="[
-                      'text-sm text-center py-2 cursor-pointer rounded',
-                      !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                      isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                      isDateInRange(date) ? 'bg-green-100' : '',
-                      'hover:bg-green-50'
-                    ]"
-                  >
+                  <div v-for="date in calendarDates" :key="date.dateString" @click="selectDate(date)" :class="[
+                    'text-sm text-center py-2 cursor-pointer rounded',
+                    !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
+                    isDateSelected(date) ? 'bg-green-600 text-white' : '',
+                    isDateInRange(date) ? 'bg-green-100' : '',
+                    'hover:bg-green-50'
+                  ]">
                     {{ date.day }}
                   </div>
                 </div>
 
                 <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
                   <div class="flex space-x-2">
-                    <button
-                      @click="clearDateRange"
-                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors"
-                    >
+                    <button @click="clearDateRange"
+                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors">
                       Clear
                     </button>
-                    <button
-                      @click="showDatePicker = false"
-                      :disabled="!filters.startDate"
-                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
+                    <button @click="showDatePicker = false" :disabled="!filters.startDate"
+                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                       Apply
                     </button>
                   </div>
@@ -107,27 +89,18 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <select 
-                  v-model="filters.location" 
-                  @focus="toggleDropdown('location')"
-                  @blur="closeDropdown('location')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
-                >
+                <select v-model="filters.location" @focus="toggleDropdown('location')" @blur="closeDropdown('location')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
                   <option value="">All Locations</option>
                   <option value="main-branch">Main Branch</option>
                   <option value="tech-hub">Tech Hub</option>
                   <option value="business-center">Business Center</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.location ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.location ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -137,27 +110,19 @@
             <div v-if="activeTab !== 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
               <div class="relative">
-                <select 
-                  v-model="filters.productType" 
-                  @focus="toggleDropdown('productType')"
+                <select v-model="filters.productType" @focus="toggleDropdown('productType')"
                   @blur="closeDropdown('productType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
-                >
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
                   <option value="">All Types</option>
                   <option value="Meeting Room">Meeting Room</option>
                   <option value="Hot Desk">Hot Desk</option>
                   <option value="Dedicated Desk">Dedicated Desk</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.productType ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.productType ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -167,26 +132,18 @@
             <div v-if="activeTab === 'subscriptions'">
               <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
               <div class="relative">
-                <select 
-                  v-model="filters.subscriptionType" 
-                  @focus="toggleDropdown('subscriptionType')"
+                <select v-model="filters.subscriptionType" @focus="toggleDropdown('subscriptionType')"
                   @blur="closeDropdown('subscriptionType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
-                >
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
                   <option value="">All Periods</option>
                   <option value="monthly">Monthly</option>
                   <option value="annually">Annually</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.subscriptionType ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.subscriptionType ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -196,26 +153,18 @@
             <div v-if="activeTab === 'subscriptions'" class="md:col-span-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <div class="relative">
-                <select 
-                  v-model="filters.subscriptionStatus" 
-                  @focus="toggleDropdown('subscriptionStatus')"
+                <select v-model="filters.subscriptionStatus" @focus="toggleDropdown('subscriptionStatus')"
                   @blur="closeDropdown('subscriptionStatus')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
-                >
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
                   <option value="">All Status</option>
                   <option value="confirmed">Active</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.subscriptionStatus ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.subscriptionStatus ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -224,40 +173,29 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
               <div class="relative">
-                <select 
-                  v-model="filters.userType" 
-                  @focus="toggleDropdown('userType')"
-                  @blur="closeDropdown('userType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer"
-                >
+                <select v-model="filters.userType" @focus="toggleDropdown('userType')" @blur="closeDropdown('userType')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
                   <option value="">All Users</option>
                   <option value="registered">Registered</option>
                   <option value="guest">Guest</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg 
-                    :class="[
-                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                      dropdownStates.userType ? 'transform rotate-180' : ''
-                    ]"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.userType ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
               </div>
             </div>
-          <div class="flex items-end justify-end">
-            <button
-              @click="resetFilters"
-              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
-            >
-              Reset Filters
-            </button>
-          </div>
-          
+            <div class="flex items-end justify-end">
+              <button @click="resetFilters"
+                class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+                Reset Filters
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -281,30 +219,34 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {{ activeTab === 'subscriptions' ? 'Subscribed Date' : 'Date & Time' }}
                 </th>
-                <th v-if="activeTab !== 'subscriptions' && activeTab !== 'history'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th v-if="activeTab !== 'subscriptions' && activeTab !== 'history'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Duration
                 </th>
-                <th v-if="activeTab !== 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th v-if="activeTab !== 'subscriptions'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total Price
                 </th>
-                <th v-if="activeTab === 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th v-if="activeTab === 'subscriptions'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Monthly Price
                 </th>
-                <th v-if="activeTab === 'subscriptions'" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th v-if="activeTab === 'subscriptions'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Next Billing
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th v-if="activeTab !== 'history'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="booking in paginatedBookings" :key="booking.id" 
-                  class="hover:bg-gray-50 cursor-pointer"
-                  @click="navigateToBookingDetails(booking)">
+              <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50 cursor-pointer"
+                @click="navigateToBookingDetails(booking)">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
@@ -322,11 +264,14 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
-                      <img class="h-10 w-10 rounded-lg object-cover" :src="booking.productImage" :alt="booking.productType">
+                      <img class="h-10 w-10 rounded-lg object-cover" :src="booking.productImage"
+                        :alt="booking.productType">
                     </div>
                     <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ booking.productName || booking.productType }}</div>
-                      <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-500">{{ booking.subscriptionType }}</div>
+                      <div class="text-sm font-medium text-gray-900">{{ booking.productName || booking.productType }}
+                      </div>
+                      <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-500">{{
+                        booking.subscriptionType }}</div>
                     </div>
                   </div>
                 </td>
@@ -337,13 +282,15 @@
                   <div class="text-sm text-gray-900">{{ booking.customerName }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-900">{{ booking.subscribedDate }}</div>
+                  <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-900">{{ booking.subscribedDate }}
+                  </div>
                   <div v-else>
                     <div class="text-sm text-gray-900">{{ booking.date }}</div>
                     <div class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                 </td>
-                <td v-if="activeTab !== 'subscriptions' && activeTab !== 'history'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td v-if="activeTab !== 'subscriptions' && activeTab !== 'history'"
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {{ booking.duration }}
                 </td>
                 <td v-if="activeTab !== 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -353,44 +300,42 @@
                   LKR {{ booking.totalPrice }}
                 </td>
                 <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}</div>
+                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
+                  </div>
                   <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">
                     <template v-if="activeTab === 'subscriptions'">
-                      {{ booking.status === 'confirmed' ? 'Active' : booking.status === 'cancelled' ? 'Cancelled' : booking.status }}
+                      {{ booking.status === 'confirmed' ? 'Active' : booking.status === 'cancelled' ? 'Cancelled' :
+                      booking.status }}
                     </template>
                     <template v-else>
                       {{ booking.status }}
                     </template>
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td v-if="activeTab !== 'history'" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <!-- Cancel subscription button for active subscriptions -->
-                    <button
-                      v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
+                    <button v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
                       @click.stop="cancelSubscription(booking)"
                       class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
                       title="Cancel Subscription">
                       <span>Cancel</span>
                     </button>
-                    
+
                     <!-- Cancel booking button for confirmed bookings -->
-                    <button
-                      v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
+                    <button v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
                       @click.stop="cancelBooking(booking)"
                       class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
                       title="Cancel Booking">
                       <span>Cancel</span>
                     </button>
-                    
+
                     <!-- Delete booking button for history bookings -->
-                    <button 
-                      v-if="activeTab === 'history'" 
-                      @click.stop="confirmDeleteBooking(booking)" 
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center space-x-1" 
+                    <button v-if="activeTab === 'history'" @click.stop="confirmDeleteBooking(booking)"
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center space-x-1"
                       title="Delete Booking">
                       <span>Delete</span>
                     </button>
@@ -455,7 +400,8 @@
         <!-- Empty State -->
         <div v-if="filteredBookings.length === 0" class="text-center py-12">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
           <p class="mt-1 text-sm text-gray-500">No bookings match the current filters.</p>
@@ -464,12 +410,15 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeDeleteModal">
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      @click="closeDeleteModal">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
         <div class="mt-3">
           <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16">
+              </path>
             </svg>
           </div>
           <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Delete Booking</h3>
@@ -487,20 +436,17 @@
             </div>
           </div>
           <div class="flex items-center justify-center pt-4 space-x-4">
-            <button
-              @click="closeDeleteModal"
-              class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors"
-            >
+            <button @click="closeDeleteModal"
+              class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
               Cancel
             </button>
-            <button
-              @click="deleteBooking"
-              :disabled="isDeleting"
-              class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center space-x-2 transition-colors"
-            >
+            <button @click="deleteBooking" :disabled="isDeleting"
+              class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center space-x-2 transition-colors">
               <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
               </svg>
               <span>{{ isDeleting ? 'Deleting...' : 'Delete' }}</span>
             </button>
@@ -508,7 +454,7 @@
         </div>
       </div>
     </div>
-    
+
   </AdminLayout>
 </template>
 
@@ -575,7 +521,7 @@ const dateRangeDisplay = computed(() => {
   } else if (filters.value.startDate) {
     const startParts = filters.value.startDate.split('-')
     const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    
+
     return `${startDate.toLocaleDateString()}`
   }
   return ''
@@ -589,21 +535,21 @@ const currentMonthYear = computed(() => {
 const calendarDates = computed(() => {
   const year = currentDate.value.getFullYear()
   const month = currentDate.value.getMonth()
-  
+
   const firstDay = new Date(year, month, 1)
   const startCalendar = new Date(firstDay)
   startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
-  
+
   const dates = []
   const current = new Date(startCalendar)
-  
+
   for (let i = 0; i < 42; i++) {
     const currentDate = new Date(current)
     const year = currentDate.getFullYear()
     const monthStr = (currentDate.getMonth() + 1).toString().padStart(2, '0')
     const day = currentDate.getDate().toString().padStart(2, '0')
     const dateString = `${year}-${monthStr}-${day}`
-    
+
     dates.push({
       day: currentDate.getDate(),
       dateString: dateString,
@@ -612,7 +558,7 @@ const calendarDates = computed(() => {
     })
     current.setDate(current.getDate() + 1)
   }
-  
+
   return dates
 })
 
@@ -922,12 +868,12 @@ const filteredBookings = computed(() => {
       if (b.status !== 'confirmed' || b.productType === 'Subscription') {
         return false
       }
-      
+
       // Only show bookings for today and future dates
       if (b.date) {
         return b.date >= todayStr
       }
-      
+
       return false
     })
   } else if (activeTab.value === 'subscriptions') {
@@ -944,17 +890,17 @@ const filteredBookings = computed(() => {
       if (b.productType === 'Subscription' && b.status === 'cancelled') {
         return true
       }
-      
+
       // Include completed or cancelled regular bookings
       if (b.productType !== 'Subscription' && (b.status === 'completed' || b.status === 'cancelled')) {
         return true
       }
-      
+
       // Include past confirmed bookings (confirmed bookings before today)
       if (b.status === 'confirmed' && b.productType !== 'Subscription' && b.date && b.date < todayStr) {
         return true
       }
-      
+
       return false
     })
   }
@@ -964,12 +910,12 @@ const filteredBookings = computed(() => {
     bookings = bookings.filter(b => {
       const bookingDate = b.date || b.subscribedDate
       if (!bookingDate) return false
-      
+
       // Ensure date comparison works correctly
       const bookingDateStr = bookingDate.toString()
       const startDateStr = filters.value.startDate.toString()
       const endDateStr = filters.value.endDate.toString()
-      
+
       return bookingDateStr >= startDateStr && bookingDateStr <= endDateStr
     })
   } else if (filters.value.startDate) {
@@ -977,10 +923,10 @@ const filteredBookings = computed(() => {
     bookings = bookings.filter(b => {
       const bookingDate = b.date || b.subscribedDate
       if (!bookingDate) return false
-      
+
       const bookingDateStr = bookingDate.toString()
       const startDateStr = filters.value.startDate.toString()
-      
+
       // For single date selection, match exactly
       return bookingDateStr === startDateStr
     })
@@ -1028,7 +974,7 @@ const visiblePages = computed(() => {
   const pages = []
   const start = Math.max(1, currentPage.value - 2)
   const end = Math.min(totalPages.value, currentPage.value + 2)
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
@@ -1039,7 +985,7 @@ const visiblePages = computed(() => {
 const viewBookingDetails = (booking: any) => {
   // This is a public function that can be called to view booking details
   console.log('Viewing booking details for:', booking.id, booking)
-  
+
   // Log the view action for analytics/audit purposes
   const viewLogs = JSON.parse(localStorage.getItem('bookingViewLogs') || '[]')
   viewLogs.push({
@@ -1054,12 +1000,12 @@ const viewBookingDetails = (booking: any) => {
     }
   })
   localStorage.setItem('bookingViewLogs', JSON.stringify(viewLogs))
-  
+
   // Navigate to the appropriate route
-  const routePath = booking.productType === 'Subscription' 
-    ? `/subscriptions/${booking.id}` 
+  const routePath = booking.productType === 'Subscription'
+    ? `/subscriptions/${booking.id}`
     : `/bookings/${booking.id}`
-  
+
   router.push(routePath)
 }
 
@@ -1070,11 +1016,11 @@ const getAllBookingDetails = () => {
   return allBookings.value.map(booking => ({
     ...booking,
     // Add computed fields for better detail view
-    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     }) : 'N/A',
     timeSlot: `${booking.startTime} - ${booking.endTime}`,
     statusColor: getStatusClass(booking.status),
@@ -1090,15 +1036,15 @@ const getBookingById = (bookingId: string) => {
     console.warn('Booking not found:', bookingId)
     return null
   }
-  
+
   // Return booking with enhanced details
   return {
     ...booking,
-    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     }) : 'N/A',
     timeSlot: `${booking.startTime} - ${booking.endTime}`,
     statusColor: getStatusClass(booking.status),
@@ -1114,7 +1060,7 @@ const addNewBooking = (newBookingData: any) => {
   // Generate new booking ID
   const maxId = Math.max(...allBookings.value.map(b => parseInt(b.id.split('-')[1])))
   const newId = `BR-${(maxId + 1).toString().padStart(4, '0')}`
-  
+
   const newBooking = {
     id: newId,
     ...newBookingData,
@@ -1122,13 +1068,13 @@ const addNewBooking = (newBookingData: any) => {
     // Ensure all required fields are present
     productImage: newBookingData.productImage || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center'
   }
-  
+
   // Add to bookings array
   allBookings.value.unshift(newBooking) // Add at beginning for recent bookings to show first
-  
+
   // Save to localStorage for persistence
   localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
-  
+
   // Log the addition
   const additionLogs = JSON.parse(localStorage.getItem('bookingAdditionLogs') || '[]')
   additionLogs.push({
@@ -1138,9 +1084,9 @@ const addNewBooking = (newBookingData: any) => {
     bookingData: newBooking
   })
   localStorage.setItem('bookingAdditionLogs', JSON.stringify(additionLogs))
-  
+
   console.log('New booking added:', newId, newBooking)
-  
+
   // Return the new booking details
   return getBookingById(newId)
 }
@@ -1149,13 +1095,13 @@ const addNewBooking = (newBookingData: any) => {
 const getTabCount = (tabId: string) => {
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
-  
+
   if (tabId === 'bookings') {
     // Count only confirmed bookings (not subscriptions) for today and future dates
-    return allBookings.value.filter(b => 
-      b.status === 'confirmed' && 
-      b.productType !== 'Subscription' && 
-      b.date && 
+    return allBookings.value.filter(b =>
+      b.status === 'confirmed' &&
+      b.productType !== 'Subscription' &&
+      b.date &&
       b.date >= todayStr
     ).length
   } else if (tabId === 'subscriptions') {
@@ -1172,17 +1118,17 @@ const getTabCount = (tabId: string) => {
       if (b.productType === 'Subscription' && b.status === 'cancelled') {
         return true
       }
-      
+
       // Include completed or cancelled regular bookings
       if (b.productType !== 'Subscription' && (b.status === 'completed' || b.status === 'cancelled')) {
         return true
       }
-      
+
       // Include past confirmed bookings (confirmed bookings before today)
       if (b.status === 'confirmed' && b.productType !== 'Subscription' && b.date && b.date < todayStr) {
         return true
       }
-      
+
       return false
     }).length
   }
@@ -1218,10 +1164,10 @@ const getStatusClass = (status: string) => {
 
 // Row click handler to view booking details
 const navigateToBookingDetails = (booking: any) => {
-  const routePath = booking.productType === 'Subscription' 
-    ? `/subscriptions/${booking.id}` 
+  const routePath = booking.productType === 'Subscription'
+    ? `/subscriptions/${booking.id}`
     : `/bookings/${booking.id}`
-  
+
   // Use router to navigate to the booking details page
   router.push(routePath)
 }
@@ -1285,10 +1231,10 @@ const nextMonth = () => {
 
 const selectDate = (date: any) => {
   if (!date.isCurrentMonth) return
-  
+
   // Use the properly formatted date string to avoid timezone issues
   const selectedDate = date.dateString
-  
+
   if (!filters.value.startDate || (filters.value.startDate && filters.value.endDate)) {
     // Start new selection
     filters.value.startDate = selectedDate
@@ -1303,7 +1249,7 @@ const selectDate = (date: any) => {
       filters.value.startDate = selectedDate
     }
   }
-  
+
   // Reset pagination when filter changes
   currentPage.value = 1
 }
@@ -1314,10 +1260,10 @@ const isDateSelected = (date: any) => {
 
 const isDateInRange = (date: any) => {
   if (!filters.value.startDate || !filters.value.endDate) return false
-  
+
   // Compare date strings directly since they're in YYYY-MM-DD format
   const dateString = date.dateString
-  
+
   return dateString > filters.value.startDate && dateString < filters.value.endDate
 }
 
@@ -1335,22 +1281,22 @@ const closeDeleteModal = () => {
 
 const deleteBooking = async () => {
   if (!bookingToDelete.value) return
-  
+
   isDeleting.value = true
-  
+
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // Remove booking from the array
     const index = allBookings.value.findIndex(b => b.id === bookingToDelete.value.id)
     if (index > -1) {
       allBookings.value.splice(index, 1)
     }
-    
+
     // Save to localStorage for persistence
-  localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
-    
+    localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+
     // Log the deletion
     const deletedBookings = JSON.parse(localStorage.getItem('deletedBookings') || '[]')
     deletedBookings.push({
@@ -1359,12 +1305,12 @@ const deleteBooking = async () => {
       deletedBy: 'Admin' // In real app, get from auth context
     })
     localStorage.setItem('deletedBookings', JSON.stringify(deletedBookings))
-    
+
     closeDeleteModal()
-    
+
     // Show success message (you could replace this with a toast notification)
     console.log('Booking deleted successfully:', bookingToDelete.value.id)
-    
+
   } catch (error) {
     console.error('Error deleting booking:', error)
     // Handle error (show toast notification, etc.)
@@ -1379,11 +1325,11 @@ const handleClickOutside = (event: MouseEvent) => {
   const datePickerContainer = target.closest('.date-picker-container')
   const dateInput = target.closest('.date-input')
   const selectElement = target.closest('select')
-  
+
   if (!datePickerContainer && !dateInput && showDatePicker.value) {
     showDatePicker.value = false
   }
-  
+
   // Close all dropdowns if clicking outside any select element
   if (!selectElement) {
     closeAllDropdowns()
@@ -1393,13 +1339,13 @@ const handleClickOutside = (event: MouseEvent) => {
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  
+
   // Check for tab query parameter and set active tab
   const tabParam = route.query.tab as string
   if (tabParam && ['bookings', 'subscriptions', 'history'].includes(tabParam)) {
     activeTab.value = tabParam
   }
-  
+
   // Load bookings from localStorage if available (for persistence across sessions)
   const savedBookings = localStorage.getItem('allBookings')
   if (savedBookings) {
@@ -1413,7 +1359,7 @@ onMounted(() => {
       console.warn('Error loading bookings from localStorage:', error)
     }
   }
-  
+
   // If there are no bookings in localStorage yet, persist the initial sample data so
   // other views (like CancelBookingView) can load the 'actual' data by ID.
   if (!savedBookings) {
@@ -1424,7 +1370,7 @@ onMounted(() => {
       console.warn('Failed to seed bookings to localStorage:', err)
     }
   }
-  
+
   // Update booking statuses from localStorage (simulate real-time updates)
   const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
   allBookings.value.forEach(booking => {
@@ -1432,7 +1378,7 @@ onMounted(() => {
       booking.status = bookingStatuses[booking.id]
     }
   })
-  
+
   console.log('BookingsView mounted with', allBookings.value.length, 'total bookings')
 })
 
@@ -1520,7 +1466,7 @@ select:focus {
   transition: all 0.2s ease-in-out;
 }
 
-select:focus + .absolute svg {
+select:focus+.absolute svg {
   color: #10b981;
 }
 

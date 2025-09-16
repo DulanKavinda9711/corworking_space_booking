@@ -4,23 +4,20 @@
       <!-- Page Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <router-link to="/payments" class="flex items-center text-gray-600 hover:text-gray-900">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Payments
+          <router-link to="/payments" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
           </router-link>
+          <div>
+        <h1 class="text-xl font-bold text-gray-900">Commission Setup</h1>
+          </div>
         </div>
-        
       </div>
 
       <!-- Commission Setup Form -->
-      <div class="bg-white rounded-xl shadow-card">
-        <div class="p-6 border-b border-gray-200">
-          <h1 class="text-2xl font-bold text-gray-900">Commission Setup</h1>
-          
-        </div>
-
+      <div class="bg-white rounded-xl shadow-card max-w-6xl mx-auto">
+        
         <form class="p-6 space-y-8">
           <!-- Commission Summary -->
           <div>
