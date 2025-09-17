@@ -18,7 +18,7 @@
             v-for="item in menuItems"
             :key="item.name"
             :to="item.path"
-            class="flex items-center py-4 px-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors w-full"
+            class="flex items-center py-5 px-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors w-full"
             :class="[
               isActive(item.path) ? 'bg-green-600 text-white border-r-2 border-green-400' : '',
             ]"
@@ -192,7 +192,7 @@ const menuItems = [
   { name: 'Promotions', path: '/promotions', icon: mdiBullhorn, color: 'text-pink-600' },
   { name: 'User Management', path: '/user-management', icon: mdiAccountSettings, color: 'text-yellow-600' },
   // { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600' },
-  { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600' }
+  // { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600' }
 ]
 
 // Notifications

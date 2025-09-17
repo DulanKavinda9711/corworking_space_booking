@@ -6,30 +6,35 @@
       <!-- Tabs -->
       <div class="bg-white rounded-xl shadow-card">
         <div class="border-b border-gray-200">
-          <nav class="flex space-x-8 px-6" aria-label="Tabs">
-            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-              activeTab === tab.id
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-            ]">
-              {{ tab.name }}
-              <span :class="[
-                activeTab === tab.id ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-900',
-                'ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium'
+          <div class="flex items-center justify-between px-6">
+            <nav class="flex space-x-8" aria-label="Tabs">
+              <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+                activeTab === tab.id
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                'whitespace-nowrap py-6 px-1 border-b-2 font-medium text-sm'
               ]">
-                {{ getTabCount(tab.id) }}
-              </span>
+                {{ tab.name }}
+                <span :class="[
+                  activeTab === tab.id ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-900',
+                  'ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium'
+                ]">
+                  {{ getTabCount(tab.id) }}
+                </span>
+              </button>
+            </nav>
+            <button @click="exportToCSV" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 ">
+              <svg class="-ml-1 mr-2 h-5 w-5 text-white-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Export CSV
             </button>
-          </nav>
+          </div>
         </div>
 
         <!-- Filters -->
         <div class="p-6 border-b border-gray-200">
-          <div :class="[
-            'grid grid-cols-1 gap-6',
-            activeTab === 'subscriptions' ? 'md:grid-cols-6' : 'md:grid-cols-5'
-          ]">
+          <div :class="activeTab === 'all' ? 'grid grid-cols-1 gap-6 md:grid-cols-7' : 'grid grid-cols-1 gap-6 md:grid-cols-5'">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
               <AdvancedDateRangePicker
@@ -41,13 +46,20 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <select v-model="filters.location" @focus="toggleDropdown('location')" @blur="closeDropdown('location')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Locations</option>
-                  <option value="main-branch">Main Branch</option>
-                  <option value="tech-hub">Tech Hub</option>
-                  <option value="business-center">Business Center</option>
-                </select>
+                <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getLocationLabel(filters.location) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.location" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in locationOptions" :key="option.value" @click="selectLocation(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
@@ -58,79 +70,23 @@
                 </div>
               </div>
             </div>
-            <!-- Show Product Type filter for bookings and history tabs -->
-            <div v-if="activeTab !== 'subscriptions'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-              <div class="relative">
-                <select v-model="filters.productType" @focus="toggleDropdown('productType')"
-                  @blur="closeDropdown('productType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Types</option>
-                  <option value="Meeting Room">Meeting Room</option>
-                  <option value="Hot Desk">Hot Desk</option>
-                  <option value="Dedicated Desk">Dedicated Desk</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.productType ? 'transform rotate-180' : ''
-                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <!-- Show Subscription Type filter for subscriptions tab -->
-            <div v-if="activeTab === 'subscriptions'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
-              <div class="relative">
-                <select v-model="filters.subscriptionType" @focus="toggleDropdown('subscriptionType')"
-                  @blur="closeDropdown('subscriptionType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Periods</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="annually">Annually</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.subscriptionType ? 'transform rotate-180' : ''
-                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <!-- Show Subscription Status filter for subscriptions tab -->
-            <div v-if="activeTab === 'subscriptions'" class="md:col-span-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <div class="relative">
-                <select v-model="filters.subscriptionStatus" @focus="toggleDropdown('subscriptionStatus')"
-                  @blur="closeDropdown('subscriptionStatus')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Status</option>
-                  <option value="confirmed">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.subscriptionStatus ? 'transform rotate-180' : ''
-                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
               <div class="relative">
-                <select v-model="filters.userType" @focus="toggleDropdown('userType')" @blur="closeDropdown('userType')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Users</option>
-                  <option value="registered">Registered</option>
-                  <option value="guest">Guest</option>
-                </select>
+                <div @click="toggleDropdown('userType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getUserTypeLabel(filters.userType) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.userType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in userTypeOptions" :key="option.value" @click="selectUserType(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
@@ -141,14 +97,130 @@
                 </div>
               </div>
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <div class="relative">
+                <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.status ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- Product Type - Only show on All tab -->
+            <div v-if="activeTab === 'all'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+              <div class="relative">
+                <!-- Custom Multi-Select Dropdown -->
+                <div @click="toggleDropdown('productType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white h-[2.5rem] flex items-center overflow-hidden">
+                  <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
+                    <span v-if="filters.productType.length === 0" class="text-gray-500">All Types</span>
+                    <span v-else v-for="type in filters.productType" :key="type"
+                          class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-100 text-green-800 flex-shrink-0">
+                      {{ type }}
+                      <button @click.stop="removeProductType(type)" class="ml-1 text-green-600 hover:text-green-800 flex-shrink-0">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.productType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <!-- Select All / Clear All -->
+                    <!-- <div class="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                      <button @click="selectAllProductTypes"
+                              class="text-xs text-green-600 hover:text-green-800 font-medium">
+                        Select All
+                      </button>
+                      <button @click="clearProductTypes"
+                              class="text-xs text-red-600 hover:text-red-800 font-medium">
+                        Clear All
+                      </button>
+                    </div> -->
+
+                    <!-- Individual Checkboxes -->
+                    <label v-for="option in productTypeOptions" :key="option.value"
+                           class="flex items-center p-2 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        :value="option.value"
+                        v-model="filters.productType"
+                        class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <span class="ml-2 text-sm text-gray-900">{{ option.label }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.productType ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div v-if="activeTab === 'all'">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
+              <div class="relative">
+                <div @click="toggleDropdown('subscriptionType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getSubscriptionTypeLabel(filters.subscriptionType) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.subscriptionType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in subscriptionTypeOptions" :key="option.value" @click="selectSubscriptionType(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
+                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                    dropdownStates.subscriptionType ? 'transform rotate-180' : ''
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
             <div class="flex items-end justify-end">
+              <!-- Reset Filters Button - Right aligned for all tabs -->
               <button @click="resetFilters"
-                class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+                class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600 whitespace-nowrap">
                 Reset Filters
               </button>
             </div>
-
           </div>
+
+
         </div>
 
         <!-- Bookings Table -->
@@ -157,7 +229,7 @@
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {{ activeTab === 'subscriptions' ? 'Subscription ID' : 'Booking ID' }}
+                  {{ activeTab === 'subscriptions' ? 'Subscription ID' : activeTab === 'all' ? 'ID' : 'Booking ID' }}
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Product
@@ -169,32 +241,31 @@
                   Customer
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {{ activeTab === 'subscriptions' ? 'Subscribed Date' : 'Date & Time' }}
+                  {{ activeTab === 'subscriptions' ? 'Subscribed Date' : activeTab === 'all' ? 'Date' : 'Date & Time' }}
                 </th>
-                <th v-if="activeTab !== 'subscriptions' && activeTab !== 'history'"
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Price
+                </th>
+                <th v-if="activeTab === 'bookings' || activeTab === 'all'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Duration
                 </th>
-                <th v-if="activeTab !== 'subscriptions'"
+                <th v-if="activeTab === 'all'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Price
+                  Subscribed Date
                 </th>
-                <th v-if="activeTab === 'subscriptions'"
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
-                </th>
-                <th v-if="activeTab === 'subscriptions'"
+                <th v-if="activeTab === 'subscriptions' || activeTab === 'all'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Next Billing
                 </th>
-                <th v-if="activeTab === 'subscriptions'"
+                <th v-if="activeTab === 'subscriptions' || activeTab === 'all'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subscription End Date
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th v-if="activeTab !== 'history'"
+                <th v-if="activeTab !== 'history' && activeTab !== 'all'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -238,21 +309,21 @@
                   <div class="text-sm text-gray-900">{{ booking.customerName }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-900">{{ booking.subscribedDate }}
+                  <div v-if="activeTab === 'subscriptions' || (activeTab === 'all' && booking.productType === 'Subscription')" class="text-sm text-gray-900">{{ booking.subscribedDate }}
+                  </div>
+                  <div v-else-if="activeTab === 'all'">
+                    <div class="text-sm text-gray-900">{{ booking.date }}</div>
+                    <div v-if="booking.productType !== 'Hot Desk'" class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                   <div v-else>
                     <div class="text-sm text-gray-900">{{ booking.date }}</div>
                     <div v-if="booking.productType !== 'Hot Desk'" class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                 </td>
-                <td v-if="activeTab !== 'subscriptions' && activeTab !== 'history'"
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ booking.duration }}
-                </td>
-                <td v-if="activeTab !== 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <template v-if="activeTab === 'history' && booking.productType === 'Subscription' && booking.productName === 'Dedicated Desk'">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <template v-if="booking.productType === 'Subscription'">
                     <template v-if="booking.subscriptionType === 'monthly'">
-                      {{ booking.totalPrice }} LKR/Monthly
+                      {{ booking.totalPrice }} LKR/Month
                     </template>
                     <template v-else-if="booking.subscriptionType === 'annually'">
                       {{ booking.totalPrice }} LKR/Annually
@@ -265,26 +336,26 @@
                     LKR {{ booking.totalPrice }}
                   </template>
                 </td>
-                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <template v-if="booking.subscriptionType === 'monthly'">
-                    {{ booking.totalPrice }} LKR/Month
-                  </template>
-                  <template v-else-if="booking.subscriptionType === 'annually'">
-                    {{ booking.totalPrice }} LKR/Annually
-                  </template>
-                  <template v-else>
-                    LKR {{ booking.totalPrice }}
-                  </template>
+                <td v-if="activeTab === 'bookings' || activeTab === 'all'"
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <template v-if="booking.productType === 'Subscription'">-</template>
+                  <template v-else>{{ booking.duration }}</template>
                 </td>
-                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
-                  </div>
-                  <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
+                <td v-if="activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="booking.productType === 'Subscription'" class="text-sm text-gray-900">{{ booking.subscribedDate }}</div>
+                  <div v-else class="text-sm text-gray-500">-</div>
                 </td>
-                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
+                <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="booking.productType === 'Subscription' && booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
                   </div>
-                  <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
+                  <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
+                  <div v-else class="text-sm text-gray-500">-</div>
+                </td>
+                <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="booking.productType === 'Subscription' && booking.status === 'confirmed'" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
+                  </div>
+                  <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
+                  <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="getStatusClass(getDynamicStatus(booking))" class="px-2 py-1 text-xs font-medium rounded-full">
@@ -299,7 +370,7 @@
                     </template>
                   </span>
                 </td>
-                <td v-if="activeTab !== 'history'" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td v-if="activeTab !== 'history' && activeTab !== 'all'" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <!-- Cancel subscription button for active subscriptions -->
                     <button v-if="activeTab === 'subscriptions' && booking.status === 'confirmed'"
@@ -309,8 +380,8 @@
                       <span>Cancel</span>
                     </button>
 
-                    <!-- Cancel booking button for confirmed bookings -->
-                    <button v-if="activeTab === 'bookings' && booking.status === 'confirmed'"
+                    <!-- Cancel booking button for ongoing bookings -->
+                    <button v-if="activeTab === 'bookings' && booking.status === 'ongoing'"
                       @click.stop="cancelBooking(booking)"
                       class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
                       title="Cancel Booking">
@@ -454,7 +525,7 @@ const route = useRoute()
 const router = useRouter()
 
 // State
-const activeTab = ref('bookings')
+const activeTab = ref('all')
 const dateRange = ref({
   startDate: '',
   endDate: ''
@@ -471,11 +542,13 @@ const dropdownStates = ref({
   productType: false,
   subscriptionType: false,
   subscriptionStatus: false,
-  userType: false
+  userType: false,
+  status: false
 })
 
 // Tabs
 const tabs = [
+  { id: 'all', name: 'All' },
   { id: 'bookings', name: 'Bookings' },
   { id: 'subscriptions', name: 'Subscriptions' },
   { id: 'history', name: 'History' }
@@ -486,10 +559,11 @@ const filters = ref({
   startDate: '',
   endDate: '',
   location: '',
-  productType: '',
+  productType: [] as string[],
   userType: '',
   subscriptionType: '',
-  subscriptionStatus: ''
+  subscriptionStatus: '',
+  status: ''
 })
 
 // Pagination
@@ -513,7 +587,7 @@ const allBookings = ref([
     endTime: '12:00 PM',
     duration: '2 hours',
     totalPrice: 100, // $50/hour * 2 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.'
@@ -531,7 +605,7 @@ const allBookings = ref([
     endTime: '5:00 PM',
     duration: '8 hours',
     totalPrice: 64, // $8/hour * 8 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'tech-hub',
     locationName: 'Tech Hub',
     companyName: 'Tech Innovations Ltd.'
@@ -549,7 +623,7 @@ const allBookings = ref([
     endTime: '4:00 PM',
     duration: '2 hours',
     totalPrice: 100, // $50/hour * 2 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.'
@@ -567,7 +641,7 @@ const allBookings = ref([
     endTime: '12:00 PM',
     duration: '4 hours',
     totalPrice: 32, // $8/hour * 4 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'tech-hub',
     locationName: 'Tech Hub',
     companyName: 'Tech Innovations Ltd.'
@@ -585,7 +659,7 @@ const allBookings = ref([
     endTime: '3:00 PM',
     duration: '2 hours',
     totalPrice: 100, // $50/hour * 2 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.'
@@ -603,7 +677,7 @@ const allBookings = ref([
     endTime: '6:00 PM',
     duration: '8 hours',
     totalPrice: 64, // $8/hour * 8 hours
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'tech-hub',
     locationName: 'Tech Hub',
     companyName: 'Tech Innovations Ltd.'
@@ -700,7 +774,7 @@ const allBookings = ref([
     endTime: '5:00 PM',
     duration: '2 hours',
     totalPrice: 100, // $50/hour * 2 hours
-    status: 'cancelled',
+    status: 'upcoming',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.'
@@ -718,7 +792,7 @@ const allBookings = ref([
     endTime: '2:00 PM',
     duration: '4 hours',
     totalPrice: 32, // $8/hour * 4 hours
-    status: 'cancelled',
+    status: 'upcoming',
     location: 'tech-hub',
     locationName: 'Tech Hub',
     companyName: 'Tech Innovations Ltd.'
@@ -740,7 +814,7 @@ const allBookings = ref([
     totalPrice: 800,
     basePrice: 750,
     additionalFacilities: 50,
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.',
@@ -761,7 +835,7 @@ const allBookings = ref([
     totalPrice: 8000,
     basePrice: 7500,
     additionalFacilities: 500,
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'business-center',
     locationName: 'Business Center',
     companyName: 'Global Solutions Inc.',
@@ -782,7 +856,7 @@ const allBookings = ref([
     totalPrice: 850,
     basePrice: 800,
     additionalFacilities: 50,
-    status: 'cancelled',
+    status: 'upcoming',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.',
@@ -800,10 +874,13 @@ const filteredBookings = computed(() => {
   const todayStr = today.toISOString().split('T')[0]
 
   // Filter by tab
-  if (activeTab.value === 'bookings') {
+  if (activeTab.value === 'all') {
+    // Show all bookings and subscriptions without tab-specific filtering
+    bookings = allBookings.value
+  } else if (activeTab.value === 'bookings') {
     bookings = bookings.filter(b => {
-      // Only show confirmed bookings that are not subscriptions
-      if (b.status !== 'confirmed' || b.productType === 'Subscription') {
+      // Only show ongoing bookings that are not subscriptions
+      if (b.status !== 'ongoing' || b.productType === 'Subscription') {
         return false
       }
 
@@ -874,8 +951,11 @@ const filteredBookings = computed(() => {
   if (filters.value.location) {
     bookings = bookings.filter(b => b.location === filters.value.location)
   }
-  if (filters.value.productType) {
-    bookings = bookings.filter(b => b.productType === filters.value.productType)
+  if (filters.value.productType && filters.value.productType.length > 0) {
+    bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
+  }
+  if (filters.value.status) {
+    bookings = bookings.filter(b => b.status === filters.value.status)
   }
   if (filters.value.subscriptionType) {
     bookings = bookings.filter(b => b.subscriptionType === filters.value.subscriptionType)
@@ -986,9 +1066,9 @@ const getBookingById = (bookingId: string) => {
     }) : 'N/A',
     timeSlot: `${booking.startTime} - ${booking.endTime}`,
     statusColor: getStatusClass(booking.status),
-    isUpcoming: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
-    isPast: booking.status === 'completed' || booking.status === 'cancelled' || (booking.date && new Date(booking.date) < new Date()),
-    canBeCancelled: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
+    isUpcoming: booking.status === 'ongoing' && booking.date && new Date(booking.date) > new Date(),
+    isPast: booking.status === 'completed' || booking.status === 'upcoming' || (booking.date && new Date(booking.date) < new Date()),
+    canBeCancelled: booking.status === 'ongoing' && booking.date && new Date(booking.date) > new Date(),
     canBeDeleted: booking.status === 'completed' || booking.status === 'cancelled'
   }
 }
@@ -1002,7 +1082,7 @@ const addNewBooking = (newBookingData: any) => {
   const newBooking = {
     id: newId,
     ...newBookingData,
-    status: 'confirmed', // New bookings are confirmed by default
+    status: 'ongoing', // New bookings are ongoing by default
     // Ensure all required fields are present
     productImage: newBookingData.productImage || 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center'
   }
@@ -1034,10 +1114,13 @@ const getTabCount = (tabId: string) => {
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
 
-  if (tabId === 'bookings') {
-    // Count only confirmed bookings (not subscriptions) for today and future dates
+  if (tabId === 'all') {
+    // Count all bookings and subscriptions
+    return allBookings.value.length
+  } else if (tabId === 'bookings') {
+    // Count only ongoing bookings (not subscriptions) for today and future dates
     return allBookings.value.filter(b =>
-      b.status === 'confirmed' &&
+      b.status === 'ongoing' &&
       b.productType !== 'Subscription' &&
       b.date &&
       b.date >= todayStr
@@ -1074,7 +1157,10 @@ const getTabCount = (tabId: string) => {
 
 // Dropdown toggle functions
 const toggleDropdown = (dropdownName: string) => {
-  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = !dropdownStates.value[dropdownName as keyof typeof dropdownStates.value]
+  // Close all dropdowns first
+  closeAllDropdowns()
+  // Then open the clicked dropdown
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = true
 }
 
 const closeDropdown = (dropdownName: string) => {
@@ -1089,6 +1175,10 @@ const closeAllDropdowns = () => {
 
 const getStatusClass = (status: string) => {
   switch (status) {
+    case 'ongoing':
+      return 'bg-green-100 text-green-800'
+    case 'upcoming':
+      return 'bg-yellow-100 text-yellow-800'
     case 'confirmed':
       return 'bg-green-100 text-green-800'
     case 'completed':
@@ -1142,7 +1232,7 @@ const getDynamicStatus = (booking: any) => {
   }
 
   // Handle regular bookings
-  if (booking.status !== 'confirmed') {
+  if (booking.status !== 'ongoing') {
     return booking.status
   }
 
@@ -1228,12 +1318,157 @@ const resetFilters = () => {
     startDate: '',
     endDate: '',
     location: '',
-    productType: '',
+    productType: [],
     userType: '',
     subscriptionType: '',
-    subscriptionStatus: ''
+    subscriptionStatus: '',
+    status: ''
   }
   currentPage.value = 1
+}
+
+// Export to CSV function
+const exportToCSV = () => {
+  const data = paginatedBookings.value
+  if (data.length === 0) {
+    alert('No data to export')
+    return
+  }
+
+  // Define CSV headers based on active tab
+  let headers = []
+  let filename = ''
+
+  switch (activeTab.value) {
+    case 'all':
+      headers = ['ID', 'Product', 'Location', 'Customer', 'Date', 'Total Price', 'Subscribed Date', 'Duration', 'Next Billing', 'Subscription End Date', 'Status']
+      filename = 'all-bookings-report.csv'
+      break
+    case 'bookings':
+      headers = ['ID', 'Product', 'Location', 'Customer', 'Date & Time', 'Duration', 'Total Price', 'Status']
+      filename = 'bookings-report.csv'
+      break
+    case 'subscriptions':
+      headers = ['Subscription ID', 'Product', 'Location', 'Customer', 'Subscribed Date', 'Total Price', 'Next Billing', 'Subscription End Date', 'Status']
+      filename = 'subscriptions-report.csv'
+      break
+    case 'history':
+      headers = ['ID', 'Product', 'Location', 'Customer', 'Date', 'Total Price', 'Status']
+      filename = 'booking-history-report.csv'
+      break
+    default:
+      headers = ['ID', 'Product', 'Location', 'Customer', 'Date', 'Total Price', 'Status']
+      filename = 'bookings-report.csv'
+  }
+
+  // Convert data to CSV format
+  const csvContent = [
+    headers.join(','),
+    ...data.map(booking => {
+      const row = []
+
+      // ID column
+      row.push(booking.id)
+
+      // Product column
+      row.push(booking.productName || booking.productType || '')
+
+      // Location column
+      row.push(booking.locationName || '')
+
+      // Customer column
+      row.push(booking.customerName || '')
+
+      // Date columns based on tab
+      if (activeTab.value === 'subscriptions') {
+        row.push(booking.subscribedDate || '')
+      } else if (activeTab.value === 'all') {
+        // For 'all' tab, show booking date
+        if (booking.productType === 'Subscription') {
+          row.push(booking.subscribedDate || '')
+        } else {
+          row.push(booking.date || '')
+        }
+      } else if (activeTab.value === 'bookings') {
+        row.push(`${booking.date || ''} ${booking.startTime || ''} - ${booking.endTime || ''}`)
+      } else {
+        row.push(booking.date || '')
+      }
+
+      // Additional columns for 'all' tab
+      if (activeTab.value === 'all') {
+        // Total Price
+        let price = ''
+        if (booking.productType === 'Subscription') {
+          if (booking.subscriptionType === 'monthly') {
+            price = `${booking.totalPrice} LKR/Month`
+          } else if (booking.subscriptionType === 'annually') {
+            price = `${booking.totalPrice} LKR/Annually`
+          } else {
+            price = `LKR ${booking.totalPrice}`
+          }
+        } else {
+          price = `LKR ${booking.totalPrice}`
+        }
+        row.push(price)
+
+        // Subscribed Date
+        row.push(booking.productType === 'Subscription' ? booking.subscribedDate || '' : '-')
+
+        // Duration
+        row.push(booking.productType === 'Subscription' ? '-' : booking.duration || '')
+      }
+
+      // Total Price for other tabs
+      if (activeTab.value !== 'all') {
+        let price = ''
+        if (booking.productType === 'Subscription') {
+          if (booking.subscriptionType === 'monthly') {
+            price = `${booking.totalPrice} LKR/Month`
+          } else if (booking.subscriptionType === 'annually') {
+            price = `${booking.totalPrice} LKR/Annually`
+          } else {
+            price = `LKR ${booking.totalPrice}`
+          }
+        } else {
+          price = `LKR ${booking.totalPrice}`
+        }
+        row.push(price)
+      }
+
+      // Next Billing and Subscription End Date for subscriptions and all tabs
+      if (activeTab.value === 'subscriptions' || activeTab.value === 'all') {
+        if (booking.productType === 'Subscription' && booking.status === 'confirmed') {
+          row.push(booking.nextBillingDate || '')
+          row.push(getSubscriptionEndDate(booking))
+        } else {
+          row.push('-')
+          row.push('-')
+        }
+      }
+
+      // Duration for bookings tab
+      if (activeTab.value === 'bookings') {
+        row.push(booking.duration || '')
+      }
+
+      // Status column
+      row.push(booking.status || '')
+
+      return row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+    })
+  ].join('\n')
+
+  // Create and download the CSV file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', filename)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 // Pagination methods
@@ -1320,10 +1555,105 @@ const deleteBooking = async () => {
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
 
-  // Close all dropdowns if clicking outside any select element
-  if (!target.closest('select')) {
+  // Close all dropdowns if clicking outside any select element or custom dropdown
+  if (!target.closest('select') && !target.closest('.relative')) {
     closeAllDropdowns()
   }
+}
+
+// Product Type Multi-Select Methods
+const productTypeOptions = [
+  { value: 'Meeting Room', label: 'Meeting Room' },
+  { value: 'Hot Desk', label: 'Hot Desk' },
+  { value: 'Dedicated Desk', label: 'Dedicated Desk' }
+]
+
+// Location Options
+const locationOptions = [
+  { value: '', label: 'All Locations' },
+  { value: 'main-branch', label: 'Main Branch' },
+  { value: 'tech-hub', label: 'Tech Hub' },
+  { value: 'business-center', label: 'Business Center' }
+]
+
+// User Type Options
+const userTypeOptions = [
+  { value: '', label: 'All Users' },
+  { value: 'registered', label: 'Registered' },
+  { value: 'guest', label: 'Guest' }
+]
+
+// Status Options
+const statusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'ongoing', label: 'Ongoing' },
+  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' }
+]
+
+// Subscription Type Options
+const subscriptionTypeOptions = [
+  { value: '', label: 'All Periods' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'annually', label: 'Annually' }
+]
+
+const removeProductType = (type: string) => {
+  const index = filters.value.productType.indexOf(type)
+  if (index > -1) {
+    filters.value.productType.splice(index, 1)
+  }
+}
+
+// const selectAllProductTypes = () => {
+//   filters.value.productType = productTypeOptions.map(option => option.value)
+// }
+
+// const clearProductTypes = () => {
+//   filters.value.productType = []
+// }
+
+// Selection methods for single-select dropdowns
+const selectLocation = (value: string) => {
+  filters.value.location = value
+  closeDropdown('location')
+}
+
+const selectUserType = (value: string) => {
+  filters.value.userType = value
+  closeDropdown('userType')
+}
+
+const selectStatus = (value: string) => {
+  filters.value.status = value
+  closeDropdown('status')
+}
+
+const selectSubscriptionType = (value: string) => {
+  filters.value.subscriptionType = value
+  closeDropdown('subscriptionType')
+}
+
+// Label getter functions
+const getLocationLabel = (value: string) => {
+  const option = locationOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Locations'
+}
+
+const getUserTypeLabel = (value: string) => {
+  const option = userTypeOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Users'
+}
+
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Status'
+}
+
+const getSubscriptionTypeLabel = (value: string) => {
+  const option = subscriptionTypeOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Periods'
 }
 
 // Lifecycle hooks
@@ -1332,7 +1662,7 @@ onMounted(() => {
 
   // Check for tab query parameter and set active tab
   const tabParam = route.query.tab as string
-  if (tabParam && ['bookings', 'subscriptions', 'history'].includes(tabParam)) {
+  if (tabParam && ['all', 'bookings', 'subscriptions', 'history'].includes(tabParam)) {
     activeTab.value = tabParam
   }
 
@@ -1375,7 +1705,7 @@ onMounted(() => {
 // Watch for filter changes to reset pagination
 // Watch for route changes to update active tab
 watch(() => route.query.tab, (newTab) => {
-  if (newTab && typeof newTab === 'string' && ['bookings', 'subscriptions', 'history'].includes(newTab)) {
+  if (newTab && typeof newTab === 'string' && ['all', 'bookings', 'subscriptions', 'history'].includes(newTab)) {
     activeTab.value = newTab
   }
 })

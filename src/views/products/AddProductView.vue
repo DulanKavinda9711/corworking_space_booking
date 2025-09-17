@@ -273,10 +273,10 @@
                           Price per Hour <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute left-1 top-1/2 transform -translate-y-1/2 text-gray-500">LKR </span>
+                            <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">LKR </span>
                           <input type="number" v-model.number="product.pricePerHour" step="0.01" min="0"
                             :class="[
-                              'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
+                              'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
                               showValidation[idx] && product.pricePerHour <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                             ]"
                             placeholder="0.00" />
@@ -288,38 +288,20 @@
                     </div>
                   </div>
 
-                  <!-- Hot Desk Pricing - Hourly and Daily -->
+                  <!-- Hot Desk Pricing - Daily only -->
                   <div v-if="product.type === 'Hot Desk'" class="space-y-4">
                     <div class="bg-green-50 rounded-lg p-4">
-                      <h3 class="text-md font-semibold text-gray-800 mb-4">Flexible Booking Options</h3>
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Price per Hour <span class="text-red-500">*</span>
-                          </label>
-                          <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                            <input type="number" v-model.number="product.pricePerHour" step="0.01" min="0"
-                              :class="[
-                                'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                                showValidation[idx] && product.pricePerHour <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                              ]"
-                              placeholder="0.00" />
-                            <div v-if="showValidation[idx] && product.pricePerHour <= 0" class="mt-1 text-sm text-red-600">
-                              Price per hour is required
-                            </div>
-                          </div>
-                        </div>
-                        
+                      <h3 class="text-md font-semibold text-gray-800 mb-4">Daily Booking</h3>
+                      <div class="grid grid-cols-1 gap-4">
                         <div>
                           <label class="block text-sm font-medium text-gray-700 mb-2">
                             Price per Day <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
                             <input type="number" v-model.number="product.pricePerDay" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
                                 showValidation[idx] && product.pricePerDay <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                               ]"
                               placeholder="0.00" />
@@ -342,10 +324,10 @@
                             Price per Month <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
                             <input type="number" v-model.number="product.pricePerMonth" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
                                 showValidation[idx] && product.pricePerMonth <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                               ]"
                               placeholder="0.00" />
@@ -360,10 +342,10 @@
                             Price per Year <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
                             <input type="number" v-model.number="product.pricePerYear" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
                                 showValidation[idx] && product.pricePerYear <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                               ]"
                               placeholder="0.00" />
@@ -772,7 +754,7 @@
                                   <input type="number"
                                          v-model.number="facility.pricePerHour"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -780,11 +762,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Day</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerDay"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -792,11 +774,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Month</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerMonth"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -804,11 +786,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Year</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerYear"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -818,19 +800,19 @@
                             <div class="mt-3 flex flex-wrap gap-1">
                               <span v-if="facility.pricePerHour > 0"
                                 class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerHour }}/hr
+                                LKR {{ facility.pricePerHour }}/hr
                               </span>
                               <span v-if="facility.pricePerDay > 0"
                                 class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerDay }}/day
+                                LKR {{ facility.pricePerDay }}/day
                               </span>
                               <span v-if="facility.pricePerMonth > 0"
                                 class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerMonth }}/mo
+                                LKR {{ facility.pricePerMonth }}/mo
                               </span>
                               <span v-if="facility.pricePerYear > 0"
                                 class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerYear }}/yr
+                                LKR {{ facility.pricePerYear }}/yr
                               </span>
                               <span v-if="!facility.pricePerHour && !facility.pricePerDay && !facility.pricePerMonth && !facility.pricePerYear"
                                 class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
@@ -867,11 +849,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Hour</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerHour"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -879,11 +861,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Day</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerDay"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -891,11 +873,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Month</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerMonth"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -903,11 +885,11 @@
                               <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Price per Year</label>
                                 <div class="relative">
-                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">LKR</span>
                                   <input type="number"
                                          v-model.number="facility.pricePerYear"
                                          step="0.01" min="0"
-                                         class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+                                         class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
                                          placeholder="0.00" />
                                 </div>
                               </div>
@@ -917,19 +899,19 @@
                             <div class="mt-3 flex flex-wrap gap-1">
                               <span v-if="facility.pricePerHour > 0"
                                 class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerHour }}/hr
+                                LKR {{ facility.pricePerHour }}/hr
                               </span>
                               <span v-if="facility.pricePerDay > 0"
                                 class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerDay }}/day
+                                LKR {{ facility.pricePerDay }}/day
                               </span>
                               <span v-if="facility.pricePerMonth > 0"
                                 class="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerMonth }}/mo
+                                LKR {{ facility.pricePerMonth }}/mo
                               </span>
                               <span v-if="facility.pricePerYear > 0"
                                 class="inline-flex items-center px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
-                                ${{ facility.pricePerYear }}/yr
+                                LKR {{ facility.pricePerYear }}/yr
                               </span>
                               <span v-if="!facility.pricePerHour && !facility.pricePerDay && !facility.pricePerMonth && !facility.pricePerYear"
                                 class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-full">
@@ -1828,7 +1810,7 @@ const validateProduct = (product: any) => {
     case 'Meeting Room':
       return product.pricePerHour > 0
     case 'Hot Desk':
-      return product.pricePerHour > 0 && product.pricePerDay > 0
+      return product.pricePerDay > 0
     case 'Dedicated Desk':
       return product.pricePerMonth > 0 && product.pricePerYear > 0
     default:
@@ -1999,7 +1981,6 @@ const createProductAPI = async (product: any) => {
   if (product.type === 'Meeting Room') {
     productData.PricePerHour = product.pricePerHour
   } else if (product.type === 'Hot Desk') {
-    productData.PricePerHour = product.pricePerHour
     productData.PricePerDay = product.pricePerDay
   } else if (product.type === 'Dedicated Desk') {
     productData.PricePerMonth = product.pricePerMonth

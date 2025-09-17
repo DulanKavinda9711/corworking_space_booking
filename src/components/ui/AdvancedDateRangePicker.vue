@@ -5,7 +5,7 @@
       :value="displayValue"
       @click="showPicker = !showPicker"
       readonly
-      class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
+      class="date-input w-full border border-gray-900 rounded-lg px-3 py-2 text-sm text-gray-900 cursor-pointer"
       :placeholder="placeholder"
     />
 
