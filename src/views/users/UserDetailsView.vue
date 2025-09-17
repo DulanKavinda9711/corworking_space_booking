@@ -28,160 +28,151 @@
         </div>
       </div>
 
-      <!-- Main User Card -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
-        <!-- Profile Header -->
-        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
-          <div class="flex items-center space-x-6">
-            <img class="h-20 w-20 rounded-full object-cover border-4 border-white shadow-lg"
-                 :src="user?.avatar"
-                 :alt="user?.name">
-            <div class="flex-1 text-white">
-              <h1 class="text-2xl font-bold">{{ user?.name }}</h1>
-              
-              <div class="flex items-center space-x-4 mt-2">
-                <span :class="getRoleClass(user?.role)" class="px-3 py-1 text-sm font-medium rounded-full">
-                  {{ formatRole(user?.role) }}
-                </span>
-                <span :class="getStatusClass(user?.status)" class="px-3 py-1 text-sm font-medium rounded-full">
-                  {{ user?.status }}
-                </span>
+      <!-- User Information & Quick Stats Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto mb-6">
+        <!-- User Information Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="px-6 py-6">
+            <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2 mb-4">
+              <svg class="w-5 h-5 text-black-600" fill="currentColor" viewBox="0 0 24 24">
+                <path :d="mdiCardAccountDetailsOutline" />
+              </svg>
+              <span>User Information</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiAccount" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Full Name</p>
+                  <p class="text-sm font-medium text-gray-900">{{ user?.name }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiAccountOutline" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Username</p>
+                  <p class="text-sm font-medium text-gray-900">{{ user?.username || 'Not set' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiEmail" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Email</p>
+                  <p class="text-sm font-medium text-gray-900">{{ user?.email }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiPhone" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Phone</p>
+                  <p class="text-sm font-medium text-gray-900">{{ user?.phone || 'Not provided' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiShieldCheck" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Role</p>
+                  <p class="text-sm font-medium text-gray-900">{{ formatRole(user?.role) }}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- User Details -->
-        <div class="px-6 py-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Contact Information -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-black-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiCardAccountDetailsOutline" />
-                </svg>
-                <span>Contact Information</span>
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiAccount" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Full Name</p>
-                    <p class="text-sm font-medium text-gray-900">{{ user?.name }}</p>
-                  </div>
+        <!-- Quick Stats Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="px-6 py-6">
+            <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2 mb-4">
+              <svg class="w-5 h-5 text-black-600" fill="currentColor" viewBox="0 0 24 24">
+                <path :d="mdiChartBar" />
+              </svg>
+              <span>Quick Stats</span>
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiShieldCheck" />
+                  </svg>
                 </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiAccountOutline" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Username</p>
-                    <p class="text-sm font-medium text-gray-900">{{ user?.username || 'Not set' }}</p>
-                  </div>
+                <div>
+                  <p class="text-sm text-gray-500">Permissions</p>
+                  <p class="text-sm font-medium text-gray-900">{{ user?.permissions?.length || 0 }} Active</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiEmail" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Email</p>
-                    <p class="text-sm font-medium text-gray-900">{{ user?.email }}</p>
-                  </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiAccountCheck" />
+                  </svg>
                 </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiPhone" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Phone</p>
-                    <p class="text-sm font-medium text-gray-900">{{ user?.phone || 'Not provided' }}</p>
-                  </div>
+                <div>
+                  <p class="text-sm text-gray-500">Status</p>
+                  <p class="text-sm font-medium text-gray-900">
+                    <span :class="user?.status === 'active' ? 'text-green-600' : 'text-red-600'">
+                      {{ user?.status === 'active' ? 'Active' : 'Blocked' }}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Quick Stats -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-black-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiChartBar" />
-                </svg>
-                <span>Quick Stats</span>
-              </h3>
-              <div class="space-y-3">
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiShieldCheck" />
+      <!-- Permissions Card -->
+      <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
+        <div class="px-6 py-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Permissions</span>
+          </h3>
+
+          <div v-if="user?.permissions?.length" class="space-y-6">
+            <div v-for="category in availablePermissions" :key="category.category">
+              <div v-if="hasPermissionsInCategory(category)" class="mb-4">
+                <h4 class="text-md font-medium text-gray-800 mb-3">{{ category.category }}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
+                  <div v-for="permission in category.permissions" :key="permission"
+                       v-show="user?.permissions?.includes(permission)"
+                       class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiCheckCircle" />
                     </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Permissions</p>
-                    <p class="text-sm font-medium text-gray-900">{{ user?.permissions?.length || 0 }} Active</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiAccountCheck" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Status</p>
-                    <p class="text-sm font-medium text-gray-900">
-                      <span :class="user?.status === 'active' ? 'text-green-600' : 'text-red-600'">
-                        {{ user?.status === 'active' ? 'Active' : 'Blocked' }}
-                      </span>
-                    </p>
+                    <span class="text-sm font-medium text-green-800">{{ permission }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Permissions Section -->
-          <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span>Permissions</span>
-            </h3>
-
-            <div v-if="user?.permissions?.length" class="space-y-6">
-              <div v-for="category in availablePermissions" :key="category.category">
-                <div v-if="hasPermissionsInCategory(category)" class="mb-4">
-                  <h4 class="text-md font-medium text-gray-800 mb-3">{{ category.category }}</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
-                    <div v-for="permission in category.permissions" :key="permission"
-                         v-show="user?.permissions?.includes(permission)"
-                         class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg border border-green-200">
-                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiCheckCircle" />
-                      </svg>
-                      <span class="text-sm font-medium text-green-800">{{ permission }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="text-center py-8">
-              <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              <p class="text-gray-500 text-sm">No permissions assigned to this user.</p>
-            </div>
+          <div v-else class="text-center py-8">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p class="text-gray-500 text-sm">No permissions assigned to this user.</p>
           </div>
         </div>
       </div>

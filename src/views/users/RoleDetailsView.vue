@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <router-link to="/user-management" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
+          <router-link to="/user-management?tab=role-creation" class="p-2 rounded-lg border border-gray-300 hover:bg-gray-50">
             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -28,135 +28,114 @@
         </div>
       </div>
 
-      <!-- Main Role Card -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
-        <!-- Role Header -->
-        <!-- <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8">
-          <div class="flex items-center space-x-6">
-            <div class="flex-shrink-0 w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      <!-- Role Information & Activity Information Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto mb-6">
+        <!-- Role Information Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="px-6 py-6">
+            <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2 mb-4">
+              <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
+                <path :d="mdiInformationOutline" />
               </svg>
-            </div>
-            <div class="flex-1 text-white">
-              <h1 class="text-2xl font-bold">{{ role?.name }}</h1>
-              <div class="flex items-center space-x-4 mt-2">
-                <span :class="getUserLevelClass(role?.userLevel)" class="px-3 py-1 text-sm font-medium rounded-full">
-                  {{ formatUserLevel(role?.userLevel) }}
-                </span>
-                <span :class="getStatusClass(role?.status)" class="px-3 py-1 text-sm font-medium rounded-full">
-                  {{ role?.status }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div> -->
-
-        <!-- Role Details -->
-        <div class="px-6 py-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Role Information -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
-                  <path :d="mdiInformationOutline" />
-                </svg>
-                <span>Role Information</span>
-              </h3>
-              <div class="space-y-3">
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiAccountGroup" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">User Level</p>
-                    <p class="text-sm font-medium text-gray-900">{{ formatUserLevel(role?.userLevel) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiShieldCheck" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Total Permissions</p>
-                    <p class="text-sm font-medium text-gray-900">{{ role?.permissions?.length || 0 }} Active</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Activity Stats -->
-            <div class="space-y-4">
-              <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2">
-                <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
-                  <path :d="mdiChartBar" />
-                </svg>
-                <span>Activity Information</span>
-              </h3>
-              <div class="space-y-3">
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiCalendar" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Created At</p>
-                    <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.createdAt) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiUpdate" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p class="text-sm text-gray-500">Last Updated</p>
-                    <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.updatedAt) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Permissions Section -->
-          <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="black" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span>Permissions</span>
+              <span>Role Information</span>
             </h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiAccountGroup" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Role Name</p>
+                  <p class="text-sm font-medium text-gray-900">{{ role?.name }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiShieldCheck" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Total Permissions</p>
+                  <p class="text-sm font-medium text-gray-900">{{ role?.permissions?.length || 0 }} Active</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <div v-if="role?.permissions?.length" class="space-y-6">
-              <div v-for="category in availablePermissions" :key="category.category">
-                <div v-if="hasPermissionsInCategory(category)" class="mb-4">
-                  <h4 class="text-md font-medium text-gray-800 mb-3">{{ category.category }}</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
-                    <div v-for="permission in category.permissions" :key="permission"
-                         v-show="role?.permissions?.includes(permission)"
-                         class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg border border-green-200">
-                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiCheckCircle" />
-                      </svg>
-                      <span class="text-sm font-medium text-green-800">{{ permission }}</span>
-                    </div>
+        <!-- Activity Information Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="px-6 py-6">
+            <h3 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex items-center space-x-2 mb-4">
+              <svg class="w-5 h-5 text-blue-600" fill="black" viewBox="0 0 24 24">
+                <path :d="mdiChartBar" />
+              </svg>
+              <span>Activity Information</span>
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiCalendar" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Created At</p>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.createdAt) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiUpdate" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Last Updated</p>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.updatedAt) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Card -->
+      <div class="bg-white rounded-xl shadow-card overflow-hidden max-w-6xl mx-auto">
+        <div class="px-6 py-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="black" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Permissions</span>
+          </h3>
+
+          <div v-if="role?.permissions?.length" class="space-y-6">
+            <div v-for="category in availablePermissions" :key="category.category">
+              <div v-if="hasPermissionsInCategory(category)" class="mb-4">
+                <h4 class="text-md font-medium text-gray-800 mb-3">{{ category.category }}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-4">
+                  <div v-for="permission in category.permissions" :key="permission"
+                       v-show="role?.permissions?.includes(permission)"
+                       class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiCheckCircle" />
+                    </svg>
+                    <span class="text-sm font-medium text-green-800">{{ permission }}</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div v-else class="text-center py-8">
-              <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              <p class="text-gray-500 text-sm">No permissions assigned to this role.</p>
-            </div>
+          <div v-else class="text-center py-8">
+            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p class="text-gray-500 text-sm">No permissions assigned to this role.</p>
           </div>
         </div>
       </div>

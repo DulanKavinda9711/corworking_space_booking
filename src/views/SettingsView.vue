@@ -19,7 +19,7 @@
               :class="[
                 'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
                 activeTab === tab.key
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-green-500 text-green-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]"
             >
@@ -35,7 +35,7 @@
 
         <div class="p-6">
           <!-- General Settings -->
-          <div v-if="activeTab === 'general'" class="space-y-6">
+          <!-- <div v-if="activeTab === 'general'" class="space-y-6">
             <div>
               <h3 class="text-lg font-semibold text-gray-900 mb-4">General Settings</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -153,7 +153,7 @@
                 
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- Booking Settings -->
           <div v-if="activeTab === 'booking'" class="space-y-6">
@@ -173,7 +173,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Reschedule Limit</label>
-                  <select v-model="settings.booking.rescheduleLimit" :disabled="!isEditMode" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
+                  <select v-model="settings.booking.rescheduleLimit" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black">
                     <option value="0">No rescheduling allowed</option>
                     <option value="1">One time only</option>
                     <option value="2">Up to 2 times</option>
@@ -215,7 +215,7 @@
         <button
           v-if="!isEditMode"
           @click="isEditMode = true"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path :d="mdiPencil" />
@@ -270,30 +270,30 @@ import {
 } from '@mdi/js'
 
 // State
-const activeTab = ref('general')
+const activeTab = ref('booking')
 const showSaveMessage = ref(false)
 const isEditMode = ref(false)
 
 // Settings tabs
 const settingsTabs = [
-  { key: 'general', label: 'General', icon: mdiCog },
+  // { key: 'general', label: 'General', icon: mdiCog },
   { key: 'booking', label: 'Booking Rules', icon: mdiCalendarClock }
 ]
 
 // Settings data
 const settings = ref({
-  general: {
-    companyName: 'CoWork Space',
-    logo: '',
-    contactInfo: {
-      phone: '+1 (555) 123-4567',
-      email: 'contact@cowork.com',
-      address: '123 Business St, City, State 12345'
-    },
-    timezone: 'UTC',
-    currency: 'USD',
-    cancellationPolicy: 'Bookings can be cancelled up to 24 hours before the scheduled time for a full refund.'
-  },
+  // general: {
+  //   companyName: 'CoWork Space',
+  //   logo: '',
+  //   contactInfo: {
+  //     phone: '+1 (555) 123-4567',
+  //     email: 'contact@cowork.com',
+  //     address: '123 Business St, City, State 12345'
+  //   },
+  //   timezone: 'UTC',
+  //   currency: 'USD',
+  //   cancellationPolicy: 'Bookings can be cancelled up to 24 hours before the scheduled time for a full refund.'
+  // },
   booking: {
     maxAdvanceBooking: 30,
     rescheduleLimit: 1,
@@ -317,36 +317,36 @@ const saveAllSettings = () => {
   }, 3000)
 }
 
-const handleLogoUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Logo file size must be less than 5MB')
-      return
-    }
+// const handleLogoUpload = (event: Event) => {
+//   const target = event.target as HTMLInputElement
+//   const file = target.files?.[0]
+//   if (file) {
+//     // Validate file size (5MB max)
+//     if (file.size > 5 * 1024 * 1024) {
+//       alert('Logo file size must be less than 5MB')
+//       return
+//     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file')
-      return
-    }
+//     // Validate file type
+//     if (!file.type.startsWith('image/')) {
+//       alert('Please select a valid image file')
+//       return
+//     }
 
-    // In a real app, this would upload to a server
-    console.log('Logo file selected:', file.name)
-    // For demo purposes, create a temporary URL
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      settings.value.general.logo = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
-  }
-}
+//     // In a real app, this would upload to a server
+//     console.log('Logo file selected:', file.name)
+//     // For demo purposes, create a temporary URL
+//     const reader = new FileReader()
+//     reader.onload = (e) => {
+//       settings.value.general.logo = e.target?.result as string
+//     }
+//     reader.readAsDataURL(file)
+//   }
+// }
 
-const removeLogo = () => {
-  settings.value.general.logo = ''
-}
+// const removeLogo = () => {
+//   settings.value.general.logo = ''
+// }
 
 const cancelEdit = () => {
   isEditMode.value = false

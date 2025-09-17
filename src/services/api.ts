@@ -176,12 +176,16 @@ export interface Payment {
   id: string
   bookingId: string
   customerName: string
-  amount: number
-  status: 'paid' | 'pending' | 'failed' | 'refunded'
-  paymentMethod: 'card' | 'bank_transfer' | 'cash' | 'digital_wallet'
-  transactionDate: string
-  description: string
-  receiptUrl?: string
+  customerEmail: string
+  productName: string
+  productType: string
+  locationName: string
+  baseAmount: number
+  additionalFacilities: { name: string; price: number }[]
+  totalAmount: number
+  status: string
+  date: string
+  time: string
 }
 
 export interface Message {
@@ -2529,28 +2533,131 @@ export const paymentApi = {
     limit?: number
     status?: string
   }): Promise<ApiResponse<Payment[]>> {
-    await delay(600)
-
-    return {
-      success: true,
-      data: [],
-      pagination: {
-        currentPage: filters?.page || 1,
-        totalPages: 0,
-        totalItems: 0,
-        itemsPerPage: filters?.limit || 10
+    // Real API call
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        return errorResponse('No authentication token found')
       }
+
+      const response = await fetch(buildApiUrl('/payment/get-payments'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        // Add body if filters are provided
+        body: filters ? JSON.stringify(filters) : undefined,
+      })
+
+      if (!response.ok) {
+        return errorResponse(`HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.status_code === 200) {
+        // Map API response to Payment interface
+        const payments: Payment[] = result.data.map((item: any) => {
+          const additionalFacilities = item.facility_list?.map((f: any) => ({
+            name: f.facility_name,
+            price: parseFloat(f.price) || 0
+          })) || []
+
+          const dateTime = item.updated_at?.split(' ') || ['', '']
+          const date = dateTime[0] || ''
+          const time = dateTime[1] || '00:00 AM'
+
+          return {
+            id: item.order_id || '',
+            bookingId: item.order_id || '',
+            customerName: '', // Not provided in API response
+            customerEmail: '', // Not provided in API response
+            productName: '', // Not provided in API response
+            productType: item.product_type || '',
+            locationName: item.location_name || '',
+            baseAmount: 0, // Not provided, calculate if needed
+            additionalFacilities,
+            totalAmount: parseFloat(item.total_price) || 0,
+            status: 'paid', // Assuming confirmed payments are paid
+            date,
+            time
+          }
+        })
+
+        return successResponse(payments, result.message)
+      } else {
+        return errorResponse(result.message || 'Failed to get payments')
+      }
+    } catch (error) {
+      console.error('Get payments error:', error)
+      return errorResponse('Network error while getting payments', [(error as Error).message])
     }
   },
 
   /**
    * Get payment by ID
    */
-  async getPaymentById(_id: string): Promise<ApiResponse<Payment>> {
-    await delay(500)
+  async getPaymentById(id: string): Promise<ApiResponse<Payment>> {
+    // Real API call
+    try {
+      const token = localStorage.getItem('authToken')
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
 
-    return errorResponse('Payment not found')
-  }
+      const response = await fetch(buildApiUrl('/payment/get-payment-detail'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ order_id: id }),
+      })
+
+      if (!response.ok) {
+        return errorResponse(`HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+
+      if (result.status_code === 200) {
+        // Map API response to Payment interface
+        const item = result.data
+        const additionalFacilities = item.facility_list?.map((f: any) => ({
+          name: f.facility_name,
+          price: parseFloat(f.price) || 0
+        })) || []
+
+        const dateTime = item.updated_at?.split('T') || ['', '']
+        const date = dateTime[0] || ''
+        const time = dateTime[1]?.split('.')[0] || '00:00:00'
+
+        const payment: Payment = {
+          id: item.order_id || '',
+          bookingId: item.order_id || '',
+          customerName: `${item.first_name || ''} ${item.last_name || ''}`.trim(),
+          customerEmail: item.email || '',
+          productName: item.product_type || '', // Using product_type as productName since product name not provided
+          productType: item.product_type || '',
+          locationName: item.location_name || '',
+          baseAmount: parseFloat(item.product_price) || 0,
+          additionalFacilities,
+          totalAmount: parseFloat(item.total_price) || 0,
+          status: item.status || 'paid',
+          date,
+          time
+        }
+
+        return successResponse(payment, result.message)
+      } else {
+        return errorResponse(result.message || 'Failed to get payment detail')
+      }
+    } catch (error) {
+      console.error('Get payment detail error:', error)
+      return errorResponse('Network error while getting payment detail', [(error as Error).message])
+    }
+  },
 }
 
 // ============================================================================
@@ -2732,8 +2839,8 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://192.168.56.1:9011',
-  API_BASE_URL: 'http://192.168.56.1:9011/api',
+  BASE_URL: 'http://192.168.179.237:9011',
+  API_BASE_URL: 'http://192.168.179.237:9011/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3
 }

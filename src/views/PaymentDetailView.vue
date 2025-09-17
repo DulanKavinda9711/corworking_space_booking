@@ -208,61 +208,87 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCommissionStore } from '@/stores/commission'
+import { paymentApi } from '@/services/api'
 import {
   mdiAccount,
   mdiMapMarker,
   mdiCurrencyUsd
 } from '@mdi/js'
 
+interface Payment {
+  id: string
+  bookingId: string
+  customerName: string
+  customerEmail: string
+  productName: string
+  productType: string
+  locationName: string
+  baseAmount: number
+  additionalFacilities: { name: string; price: number }[]
+  totalAmount: number
+  status: string
+  date: string
+  time: string
+  paymentId?: string
+  SquareHubCommission?: number
+  SquareHubRate?: number
+  ceylincoCommission?: number
+  ceylincoRate?: number
+  totalCommission?: number
+}
+
 const route = useRoute()
 const commissionStore = useCommissionStore()
 
-// Sample payment data based on payments view structure
-const payment = ref({
-  id: 'PAY-001',
-  paymentId: 'PM-2024-001',
-  bookingId: 'BR-2034',
-  customerName: 'John Doe',
-  customerEmail: 'john.doe@example.com',
-  productName: 'Executive Board Room',
-  productType: 'Meeting Room',
-  locationName: 'Main Branch - Downtown',
-  baseAmount: 120,
-  additionalFacilities: [
-    { name: 'Projector', price: 20 },
-    { name: 'Catering', price: 10 }
-  ],
-  totalAmount: 150,
-  // Updated commission structure
-  SquareHubCommission: 75.00,
-  SquareHubRate: 50.0,
-  ceylincoCommission: 75.00,
-  ceylincoRate: 50.0,
-  totalCommission: 150.00,
-  status: 'paid',
-  date: '2024-08-15',
-  time: '10:30 AM'
-})
+// Payment data from API
+const payment = ref<Payment | null>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+// Calculate commission for a given amount
+const calculateCommission = (amount: number, rate: number) => {
+  return Math.round((amount * rate / 100) * 100) / 100 // Round to 2 decimal places
+}
 
 // Computed properties
 const additionalFacilitiesTotal = computed(() => {
-  if (!payment.value.additionalFacilities || payment.value.additionalFacilities.length === 0) {
+  if (!payment.value || !payment.value.additionalFacilities || payment.value.additionalFacilities.length === 0) {
     return 0
   }
-  return payment.value.additionalFacilities.reduce((total, facility) => total + facility.price, 0)
+  return payment.value.additionalFacilities.reduce((total: number, facility: { price: number }) => total + facility.price, 0)
 })
 
-// Commission calculations - Load from commission store
-const loadCommissionSettings = () => {
-  return {
-    SquareHubRate: commissionStore.commissionSettings.SquareHubRate,
-    SquareHubFixedFee: 0.00,
-    ceylincoRate: commissionStore.commissionSettings.ceylincoRate,
-    ceylincoFixedFee: 0.00
+// Fetch payment detail from API
+const fetchPaymentDetail = async (paymentId: string) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const response = await paymentApi.getPaymentById(paymentId)
+    
+    if (response.success && response.data) {
+      // Add commission calculations
+      const commissionSettings = commissionStore.commissionSettings
+      const paymentData = {
+        ...response.data,
+        SquareHubCommission: calculateCommission(response.data.totalAmount, commissionSettings.SquareHubRate),
+        SquareHubRate: commissionSettings.SquareHubRate,
+        ceylincoCommission: calculateCommission(response.data.totalAmount, commissionSettings.ceylincoRate),
+        ceylincoRate: commissionSettings.ceylincoRate,
+        totalCommission: calculateCommission(response.data.totalAmount, commissionSettings.SquareHubRate) + calculateCommission(response.data.totalAmount, commissionSettings.ceylincoRate),
+        paymentId: `PM-${response.data.id.slice(-6)}` // Generate payment ID
+      }
+      payment.value = paymentData
+    } else {
+      error.value = response.message || 'Failed to load payment details'
+    }
+  } catch (err) {
+    error.value = 'Network error while loading payment details'
+    console.error('Error fetching payment detail:', err)
+  } finally {
+    loading.value = false
   }
 }
-
-const commissionSettings = ref(loadCommissionSettings())
 
 // Methods
 const formatDate = (dateString: string) => {
@@ -286,14 +312,16 @@ const getStatusClass = (status: string) => {
 }
 
 const downloadInvoice = () => {
-  // Fallback: open printable invoice in a new window (user can print-to-PDF)
+  if (!payment.value) return
+
   const p = payment.value
+  // Fallback: open printable invoice in a new window (user can print-to-PDF)
   const printScript = '<scr' + 'ipt>window.onload = function(){ window.print(); }</scr' + 'ipt>'
 
   const invoiceHtml = `
     <html>
       <head>
-        <title>Invoice ${p.paymentId}</title>
+        <title>Invoice ${p.paymentId || p.id}</title>
         <style>
           body { font-family: Arial, Helvetica, sans-serif; padding: 20px; color: #111827 }
           h1 { font-size: 20px }
@@ -304,7 +332,7 @@ const downloadInvoice = () => {
       <body>
         <h1>Invoice</h1>
         <div class="section">
-          <div class="row"><strong>Invoice #</strong><span>${p.paymentId}</span></div>
+          <div class="row"><strong>Invoice #</strong><span>${p.paymentId || p.id}</span></div>
           <div class="row"><strong>Date</strong><span>${p.date} ${p.time}</span></div>
           <div class="row"><strong>Customer</strong><span>${p.customerName}</span></div>
           <div class="row"><strong>Email</strong><span>${p.customerEmail}</span></div>
@@ -321,10 +349,10 @@ const downloadInvoice = () => {
         </div>
         <div class="section">
           <div class="row"><strong>Total Amount</strong><span>$${p.totalAmount}</span></div>
-          <div class="row"><strong>PayMedia Commission</strong><span>$${p.SquareHubCommission} (${p.SquareHubRate}%)</span></div>
-          <div class="row"><strong>Ceylinco Commission</strong><span>$${p.ceylincoCommission} (${p.ceylincoRate}%)</span></div>
-          <div class="row"><strong>Total Commission</strong><span>$${p.totalCommission} (${p.SquareHubRate + p.ceylincoRate}%)</span></div>
-          <div class="row"><strong>Net to Partner</strong><span>$${(p.totalAmount - p.totalCommission).toFixed(2)}</span></div>
+          ${p.SquareHubCommission ? `<div class="row"><strong>PayMedia Commission</strong><span>$${p.SquareHubCommission} (${p.SquareHubRate}%)</span></div>` : ''}
+          ${p.ceylincoCommission ? `<div class="row"><strong>Ceylinco Commission</strong><span>$${p.ceylincoCommission} (${p.ceylincoRate}%)</span></div>` : ''}
+          ${p.totalCommission ? `<div class="row"><strong>Total Commission</strong><span>$${p.totalCommission} (${(p.SquareHubRate || 0) + (p.ceylincoRate || 0)}%)</span></div>` : ''}
+          ${p.totalCommission ? `<div class="row"><strong>Net to Partner</strong><span>$${(p.totalAmount - p.totalCommission).toFixed(2)}</span></div>` : ''}
         </div>
     ` + printScript + `
       </body>
@@ -341,72 +369,25 @@ const downloadInvoice = () => {
 }
 
 onMounted(() => {
-  // In a real app, fetch payment data based on route.params.id
-  console.log('Loading payment details for ID:', route.params.id)
-  
-  // Sample data mapping based on the payments data structure
-  const samplePayments = [
-    {
-      id: 'PAY-001',
-      paymentId: 'PM-2024-001',
-      bookingId: 'BR-2034',
-      customerName: 'John Doe',
-      customerEmail: 'john.doe@example.com',
-      productName: 'Executive Board Room',
-      productType: 'Meeting Room',
-      locationName: 'Main Branch - Downtown',
-      baseAmount: 120,
-      additionalFacilities: [
-        { name: 'Projector', price: 20 },
-        { name: 'Catering', price: 10 }
-      ],
-      totalAmount: 150,
-      // Updated commission structure
-      SquareHubCommission: 75.00,
-      SquareHubRate: 50.0,
-      ceylincoCommission: 75.00,
-      ceylincoRate: 50.0,
-      totalCommission: 150.00,
-      status: 'paid',
-      date: '2024-08-15',
-      time: '10:30 AM'
-    },
-    {
-      id: 'PAY-002',
-      paymentId: 'PM-2024-002',
-      bookingId: 'BR-2033',
-      customerName: 'Jane Smith',
-      customerEmail: 'jane.smith@example.com',
-      productName: 'Hot Desk Area',
-      productType: 'Hot Desk',
-      locationName: 'Tech Hub - Silicon Valley',
-      baseAmount: 50,
-      additionalFacilities: [
-        { name: 'Monitor', price: 10 }
-      ],
-      totalAmount: 60,
-      // Updated commission structure
-      SquareHubCommission: 30.00,
-      SquareHubRate: 50.0,
-      ceylincoCommission: 30.00,
-      ceylincoRate: 50.0,
-      totalCommission: 60.00,
-      status: 'paid',
-      date: '2024-08-15',
-      time: '2:15 PM'
-    }
-  ]
-  
-  // Find payment by ID from route params
-  const foundPayment = samplePayments.find(p => p.id === route.params.id)
-  if (foundPayment) {
-    payment.value = foundPayment
+  const paymentId = route.params.id as string
+  if (paymentId) {
+    fetchPaymentDetail(paymentId)
+  } else {
+    error.value = 'Payment ID not found'
+    loading.value = false
   }
 
   // Listen for commission settings updates
   const handleCommissionSettingsUpdate = (event: CustomEvent) => {
     // Update commission settings and trigger recalculation
-    commissionSettings.value = { ...commissionSettings.value, ...event.detail }
+    if (payment.value) {
+      const commissionSettings = commissionStore.commissionSettings
+      payment.value.SquareHubCommission = calculateCommission(payment.value.totalAmount, commissionSettings.SquareHubRate)
+      payment.value.SquareHubRate = commissionSettings.SquareHubRate
+      payment.value.ceylincoCommission = calculateCommission(payment.value.totalAmount, commissionSettings.ceylincoRate)
+      payment.value.ceylincoRate = commissionSettings.ceylincoRate
+      payment.value.totalCommission = payment.value.SquareHubCommission + payment.value.ceylincoCommission
+    }
   }
   window.addEventListener('commissionSettingsUpdated', handleCommissionSettingsUpdate as EventListener)
 })

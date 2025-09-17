@@ -3,29 +3,26 @@
     <div class="space-y-6">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
-  <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
-            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiWallet" />
-            </svg>
-            <span class="text-sm font-medium text-green-700">
-              Total Payments:
-              <span class="font-bold text-green-800">{{ filteredPayments.length }}</span>
-            </span>
-          </div>
+        <div
+          class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
+          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="mdiWallet" />
+          </svg>
+          <span class="text-sm font-medium text-green-700">
+            Total Payments:
+            <span class="font-bold text-green-800">{{ filteredPayments.length }}</span>
+          </span>
+        </div>
         <div class="flex items-center space-x-3">
-          <button
-            @click="exportToCSV"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-          >
+          <button @click="exportToCSV"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
             </svg>
             <span>Export CSV</span>
           </button>
-          <button
-            @click="goToCommissionSetup"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-          >
+          <button @click="goToCommissionSetup"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiCog" />
             </svg>
@@ -34,181 +31,89 @@
         </div>
       </div>
 
-      <!-- Filters: All in one row on desktop -->
-      
 
       <!-- Payments Table -->
-       <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200 ">
-        <div class="bg-white shadow-card p-6 border-b">
-        <div class="flex flex-col md:flex-row md:items-end md:space-x-1 gap-4 relative">
-          <div class="relative md:w-48">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <input
-              type="text"
-              v-model="dateRangeDisplay"
-              @click="showDatePicker = !showDatePicker"
-              readonly
-              class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
-              placeholder="Select Date"
-            />
-            <!-- Date Range Picker -->
-            <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-              <div class="flex justify-between items-center mb-4">
-                <button @click="previousMonth" class="p-1 hover:bg-green-100 rounded">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                  </svg>
-                </button>
-                <span class="font-medium">{{ currentMonthYear }}</span>
-                <button @click="nextMonth" class="p-1 hover:bg-green-100 rounded">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                  </svg>
-                </button>
-              </div>
-              <!-- Calendar Grid -->
-              <div class="grid grid-cols-7 gap-1 mb-2">
-                <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
-                  {{ day }}
-                </div>
-              </div>
-              <div class="grid grid-cols-7 gap-1">
-                <div
-                  v-for="date in calendarDates"
-                  :key="date.dateString"
-                  @click="selectDate(date)"
-                  :class="[
-                    'text-sm text-center py-2 cursor-pointer rounded',
-                    !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                    isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                    isDateInRange(date) ? 'bg-green-100' : '',
-                    'hover:bg-green-50'
-                  ]"
-                >
-                  {{ date.day }}
-                </div>
-              </div>
-              <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                <div class="flex space-x-2">
-                  <button
-                    @click="clearDateRange"
-                    class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    @click="showDatePicker = false"
-                    :disabled="!filters.dateFrom"
-                    class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
+      <div class="bg-white rounded-xl shadow-card overflow-visible border-gray-200 ">
+        <div class="bg-white shadow-card p-6 border-b rounded-t-xl">
+          <div class="flex flex-col md:flex-row md:items-end md:space-x-1 gap-4 relative">
+            <div class="relative md:w-48">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+              <AdvancedDateRangePicker v-model="dateRange" placeholder="Select Date Range"
+                @change="handleDateRangeChange" />
             </div>
-          </div>
-          <div class="md:w-40">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
-            <div class="relative">
-              <select 
-                v-model="filters.product" 
-                @focus="toggleDropdown('product')"
-                @blur="closeDropdown('product')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
-              >
-                <option value="">All Products</option>
-                <option value="meeting-room">Meeting Room</option>
-                <option value="hot-desk">Hot Desk</option>
-                <option value="private-office">Private Office</option>
-                <option value="event-space">Event Space</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
+            <div class="md:w-40">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
+              <div class="relative">
+                <select v-model="filters.product" @focus="toggleDropdown('product')" @blur="closeDropdown('product')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
+                  <option value="">All Products</option>
+                  <option value="meeting-room">Meeting Room</option>
+                  <option value="hot-desk">Hot Desk</option>
+                  <option value="private-office">Private Office</option>
+                  <option value="event-space">Event Space</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
                     dropdownStates.product ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="md:w-48">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <div class="relative">
-              <select 
-                v-model="filters.location" 
-                @focus="toggleDropdown('location')"
-                @blur="closeDropdown('location')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
-              >
-                <option value="">All Locations</option>
-                <option value="main-branch">Main Branch - Downtown</option>
-                <option value="tech-hub">Tech Hub - Silicon Valley</option>
-                <option value="creative-quarter">Creative Quarter</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
+            <div class="md:w-48">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <div class="relative">
+                <select v-model="filters.location" @focus="toggleDropdown('location')" @blur="closeDropdown('location')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
+                  <option value="">All Locations</option>
+                  <option value="main-branch">Main Branch - Downtown</option>
+                  <option value="tech-hub">Tech Hub - Silicon Valley</option>
+                  <option value="creative-quarter">Creative Quarter</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
                     dropdownStates.location ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="md:w-40">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-            <div class="relative">
-              <select 
-                v-model="sortBy" 
-                @focus="toggleDropdown('sortBy')"
-                @blur="closeDropdown('sortBy')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
-              >
-                <option value="date">Date</option>
-                <option value="amount">Amount</option>
-                <option value="booking">Booking ID</option>
-                <option value="commission">Commission</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
+            <div class="md:w-40">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+              <div class="relative">
+                <select v-model="sortBy" @focus="toggleDropdown('sortBy')" @blur="closeDropdown('sortBy')"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
+                  <option value="date">Date</option>
+                  <option value="amount">Amount</option>
+                  <option value="booking">Booking ID</option>
+                  <option value="commission">Commission</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
                     dropdownStates.sortBy ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                  ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="flex items-end md:absolute md:right-0 md:top-6">
-            <button
-              @click="resetFilters"
-              class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
-            >
-              Reset Filters
-            </button>
+            <div class="flex items-end md:absolute md:right-0 md:top-6">
+              <button @click="resetFilters"
+                class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+                Reset Filters
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-        
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+
+        <div class="overflow-x-auto rounded-b-xl">
+          <table class="min-w-full divide-y divide-gray-200 rounded-b-xl">
+            <thead class="bg-gray-50 rounded-t-xl">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Booking ID
@@ -217,10 +122,7 @@
                   Location
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Additional Facilities
+                  Customer
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total Amount
@@ -236,24 +138,20 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr 
-                v-for="payment in sortedPayments" 
-                :key="payment.id" 
-                @click="navigateToPaymentDetail(payment.id)"
-                class="hover:bg-gray-50 cursor-pointer transition-colors"
-              >
+            <tbody class="bg-white divide-y divide-gray-200 rounded-b-xl">
+              <tr v-for="payment in sortedPayments" :key="payment.id" @click="navigateToPaymentDetail(payment.id)"
+                class="hover:bg-gray-50 cursor-pointer transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
+                  <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
                       <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiCreditCard" />
-                      </svg>
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiCreditCard" />
+                        </svg>
                       </div>
                     </div>
                     <div class="text-sm font-medium text-gray-900 ml-3">{{ payment.bookingId }}</div>
-                    </div>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -266,17 +164,19 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-              
-                  <div class="text-sm text-gray-500">{{ payment.productType }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="payment.additionalFacilities.length > 0" class="space-y-1">
-                    <div v-for="facility in payment.additionalFacilities" :key="facility.name" class="text-sm">
-                      <span class="text-gray-900">{{ facility.name }}</span>
-                    
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiAccount" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900">{{ payment.customerName }}</div>
+                      <div class="text-sm text-gray-500">{{ payment.customerEmail }}</div>
                     </div>
                   </div>
-                  <div v-else class="text-sm text-gray-500">No additional facilities</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-semibold text-gray-900">${{ payment.totalAmount }}</div>
@@ -299,9 +199,10 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="filteredPayments.length === 0" class="text-center py-12">
+        <div v-if="filteredPayments.length === 0" class="text-center py-12 rounded-b-xl">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900">No payments found</h3>
           <p class="mt-1 text-sm text-gray-500">No payments match the current filters.</p>
@@ -317,18 +218,39 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCommissionStore } from '@/stores/commission'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
+import { paymentApi } from '@/services/api'
 import {
-  mdiCog, 
+  mdiCog,
   mdiWallet,
-  mdiCreditCard
+  mdiCreditCard,
+  mdiAccount
 } from '@mdi/js'
+
+interface Payment {
+  id: string
+  bookingId: string
+  customerName: string
+  customerEmail: string
+  productName: string
+  productType: string
+  locationName: string
+  baseAmount: number
+  additionalFacilities: { name: string; price: number }[]
+  totalAmount: number
+  status: string
+  date: string
+  time: string
+}
 
 const router = useRouter()
 const commissionStore = useCommissionStore()
 
 // State
-const showDatePicker = ref(false)
-const currentDate = ref(new Date())
+const dateRange = ref({
+  startDate: '',
+  endDate: ''
+})
 
 // Filters
 const filters = ref({
@@ -338,95 +260,20 @@ const filters = ref({
   location: ''
 })
 
-// Computed property for date range display
-const dateRangeDisplay = computed(() => {
-  if (filters.value.dateFrom && filters.value.dateTo) {
-    const startParts = filters.value.dateFrom.split('-')
-    const endParts = filters.value.dateTo.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-  } else if (filters.value.dateFrom) {
-    const startParts = filters.value.dateFrom.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    return `${startDate.toLocaleDateString()}`
-  }
-  return ''
-})
-
-// Calendar computed properties
-const currentMonthYear = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-})
-
-const calendarDates = computed(() => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
-  const firstDay = new Date(year, month, 1)
-  const startCalendar = new Date(firstDay)
-  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
-  const dates = []
-  const current = new Date(startCalendar)
-  for (let i = 0; i < 42; i++) {
-    const currentDateObj = new Date(current)
-    const year = currentDateObj.getFullYear()
-    const monthStr = (currentDateObj.getMonth() + 1).toString().padStart(2, '0')
-    const day = currentDateObj.getDate().toString().padStart(2, '0')
-    const dateString = `${year}-${monthStr}-${day}`
-    dates.push({
-      day: currentDateObj.getDate(),
-      dateString: dateString,
-      isCurrentMonth: currentDateObj.getMonth() === month,
-      date: currentDateObj
-    })
-    current.setDate(current.getDate() + 1)
-  }
-  return dates
-})
-
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
-}
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
-}
-
-const selectDate = (date: any) => {
-  if (!date.isCurrentMonth) return
-  const selectedDate = date.dateString
-  if (!filters.value.dateFrom || (filters.value.dateFrom && filters.value.dateTo)) {
-    filters.value.dateFrom = selectedDate
-    filters.value.dateTo = ''
-  } else if (filters.value.dateFrom && !filters.value.dateTo) {
-    if (selectedDate >= filters.value.dateFrom) {
-      filters.value.dateTo = selectedDate
-    } else {
-      filters.value.dateTo = filters.value.dateFrom
-      filters.value.dateFrom = selectedDate
-    }
-  }
-}
-
-const isDateSelected = (date: any) => {
-  return date.dateString === filters.value.dateFrom || date.dateString === filters.value.dateTo
-}
-const isDateInRange = (date: any) => {
-  if (!filters.value.dateFrom || !filters.value.dateTo) return false
-  const dateString = date.dateString
-  return dateString > filters.value.dateFrom && dateString < filters.value.dateTo
-}
-const clearDateRange = () => {
-  filters.value.dateFrom = ''
-  filters.value.dateTo = ''
+// Handle date range change from the calendar component
+const handleDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
+  dateRange.value = newDateRange
+  filters.value.dateFrom = newDateRange.startDate
+  filters.value.dateTo = newDateRange.endDate
 }
 
 // Click outside handler for closing date picker
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  const datePickerContainer = target.closest('.date-picker-container')
-  const dateInput = target.closest('.date-input')
-  if (!datePickerContainer && !dateInput && showDatePicker.value) {
-    showDatePicker.value = false
+
+  // Close all dropdowns if clicking outside any select element
+  if (!target.closest('select')) {
+    closeAllDropdowns()
   }
 }
 // Watch for commission settings changes in localStorage
@@ -442,11 +289,26 @@ const handleCommissionSettingsUpdate = (event: CustomEvent) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   // Commission settings are handled by the store
+  fetchPayments()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+// Fetch payments data
+const fetchPayments = async () => {
+  try {
+    const response = await paymentApi.getAllPayments()
+    if (response.success && response.data) {
+      payments.value = response.data
+    } else {
+      console.error('Failed to fetch payments:', response.message)
+    }
+  } catch (error) {
+    console.error('Error fetching payments:', error)
+  }
+}
 
 // Sorting
 const sortBy = ref('date')
@@ -467,94 +329,8 @@ const calculateCommission = (amount: number, rate: number) => {
   return Math.round((amount * rate / 100) * 100) / 100 // Round to 2 decimal places
 }
 
-// Sample payments data with dynamic commission calculation
-const payments = ref([
-  {
-    id: 'PAY-001',
-    bookingId: 'BR-2034',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    productName: 'Executive Board Room',
-    productType: 'Meeting Room',
-    locationName: 'Main Branch - Downtown',
-    baseAmount: 120,
-    additionalFacilities: [
-      { name: 'Projector', price: 20 },
-      { name: 'Catering', price: 10 }
-    ],
-    totalAmount: 150,
-    status: 'paid',
-    date: '2025-08-15',
-    time: '10:30 AM'
-  },
-  {
-    id: 'PAY-002',
-    bookingId: 'BR-2033',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    productName: 'Hot Desk Area',
-    productType: 'Hot Desk',
-    locationName: 'Tech Hub - Silicon Valley',
-    baseAmount: 50,
-    additionalFacilities: [
-      { name: 'Monitor', price: 10 }
-    ],
-    totalAmount: 60,
-    status: 'paid',
-    date: '2025-08-15',
-    time: '2:15 PM'
-  },
-  {
-    id: 'PAY-003',
-    bookingId: 'BR-2032',
-    customerName: 'Mike Johnson',
-    customerEmail: 'mike.johnson@example.com',
-    productName: 'Private Office Suite',
-    productType: 'Private Office',
-    locationName: 'Main Branch - Downtown',
-    baseAmount: 350,
-    additionalFacilities: [
-      { name: 'Printer Access', price: 25 },
-      { name: 'Phone Line', price: 25 }
-    ],
-    totalAmount: 400,
-    status: 'paid',
-    date: '2025-08-14',
-    time: '9:45 AM'
-  },
-  {
-    id: 'PAY-004',
-    bookingId: 'BR-2031',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    productName: 'Meeting Room Small',
-    productType: 'Meeting Room',
-    locationName: 'Creative Quarter',
-    baseAmount: 50,
-    additionalFacilities: [],
-    totalAmount: 50,
-    status: 'paid',
-    date: '2025-08-14',
-    time: '3:20 PM'
-  },
-  {
-    id: 'PAY-005',
-    bookingId: 'BR-2030',
-    customerName: 'Robert Davis',
-    customerEmail: 'robert.davis@example.com',
-    productName: 'Conference Room',
-    productType: 'Meeting Room',
-    locationName: 'Tech Hub - Silicon Valley',
-    baseAmount: 150,
-    additionalFacilities: [
-      { name: 'Video Conference', price: 30 }
-    ],
-    totalAmount: 180,
-    status: 'paid',
-    date: '2025-08-13',
-    time: '11:00 AM'
-  }
-])
+// Payments data (to be populated from API)
+const payments = ref<Payment[]>([])
 
 // Computed payments with dynamic commission calculation
 const paymentsWithCommission = computed(() => {
@@ -588,7 +364,7 @@ const filteredPayments = computed(() => {
       'private-office': ['Private Office'],
       'event-space': ['Event Space']
     }
-    filtered = filtered.filter(payment => 
+    filtered = filtered.filter(payment =>
       productMap[filters.value.product]?.includes(payment.productType)
     )
   }
@@ -600,7 +376,7 @@ const filteredPayments = computed(() => {
       'tech-hub': 'Tech Hub - Silicon Valley',
       'creative-quarter': 'Creative Quarter'
     }
-    filtered = filtered.filter(payment => 
+    filtered = filtered.filter(payment =>
       payment.locationName === locationMap[filters.value.location]
     )
   }
@@ -610,10 +386,10 @@ const filteredPayments = computed(() => {
 
 const sortedPayments = computed(() => {
   const sorted = [...filteredPayments.value]
-  
+
   sorted.sort((a, b) => {
     let aVal, bVal
-    
+
     switch (sortBy.value) {
       case 'date':
         aVal = new Date(a.date).getTime()
@@ -635,14 +411,14 @@ const sortedPayments = computed(() => {
         aVal = a.date
         bVal = b.date
     }
-    
+
     if (sortOrder.value === 'asc') {
       return aVal > bVal ? 1 : -1
     } else {
       return aVal < bVal ? 1 : -1
     }
   })
-  
+
   return sorted
 })
 
@@ -678,19 +454,19 @@ const closeDropdown = (dropdown: string) => {
   }, 150)
 }
 
-// const closeAllDropdowns = () => {
-//   Object.keys(dropdownStates.value).forEach(key => {
-//     dropdownStates.value[key as keyof typeof dropdownStates.value] = false
-//   })
-// }
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
 
 const exportToCSV = () => {
   // Fallback CSV export (no xlsx dependency)
   const rows = filteredPayments.value.map(payment => ({
     bookingId: payment.bookingId,
     location: payment.locationName,
-    product: payment.productType,
-    additionalFacilities: payment.additionalFacilities.map((f: any) => f.name).join('; '),
+    customerName: payment.customerName,
+    customerEmail: payment.customerEmail,
     totalAmount: payment.totalAmount,
     SquareHubCommission: payment.SquareHubCommission,
     SquareHubRate: payment.SquareHubRate,

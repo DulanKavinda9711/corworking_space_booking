@@ -70,56 +70,10 @@
               </div>
               <div class="relative md:w-64">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                <input type="text" v-model="dateRangeDisplay" @click="showDatePicker = !showDatePicker" readonly
-                  class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
-                  placeholder="Select Date" />
-                <!-- Date Range Picker -->
-                <div v-if="showDatePicker"
-                  class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-                  <div class="flex justify-between items-center mb-4">
-                    <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                      </svg>
-                    </button>
-                    <span class="font-medium">{{ currentMonthYear }}</span>
-                    <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                      </svg>
-                    </button>
-                  </div>
-                  <!-- Calendar Grid -->
-                  <div class="grid grid-cols-7 gap-1 mb-2">
-                    <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
-                      class="text-xs font-medium text-gray-500 text-center py-2">
-                      {{ day }}
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-7 gap-1">
-                    <div v-for="date in calendarDates" :key="date.dateString" @click="selectDate(date)" :class="[
-                      'text-sm text-center py-2 cursor-pointer rounded',
-                      !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                      isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                      isDateInRange(date) ? 'bg-green-100' : '',
-                      'hover:bg-green-50'
-                    ]">
-                      {{ date.day }}
-                    </div>
-                  </div>
-                  <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex space-x-2">
-                      <button @click="clearDateRange"
-                        class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50">
-                        Clear
-                      </button>
-                      <button @click="showDatePicker = false" :disabled="!filters.dateFrom"
-                        class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <AdvancedDateRangePicker
+                  :dateRange="activityLogDateRange"
+                  @dateRangeChange="handleActivityLogDateRangeChange"
+                />
               </div>
               <div class="md:w-40">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
@@ -295,6 +249,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import {
   mdiDownload,
   mdiRefresh,
@@ -308,15 +263,19 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 20
 const refreshInterval = ref<ReturnType<typeof setTimeout> | null>(null)
-const showDatePicker = ref(false)
-const currentDate = ref(new Date())
+
+// Date range state
+const activityLogDateRange = ref({
+  startDate: '',
+  endDate: ''
+})
 
 // Filters
 const filters = ref({
   activityType: '',
   user: '',
-  dateFrom: '',
-  dateTo: ''
+  startDate: '',
+  endDate: ''
 })
 
 
@@ -500,11 +459,17 @@ const filteredActivities = computed(() => {
   }
 
   // Apply date filter
-  if (filters.value.dateFrom) {
-    filtered = filtered.filter(activity => activity.timestamp >= filters.value.dateFrom + 'T00:00:00Z')
+  if (filters.value.startDate) {
+    const startDateTime = filters.value.startDate + 'T00:00:00Z'
+    filtered = filtered.filter(activity => activity.timestamp >= startDateTime)
   }
-  if (filters.value.dateTo) {
-    filtered = filtered.filter(activity => activity.timestamp <= filters.value.dateTo + 'T23:59:59Z')
+  if (filters.value.endDate) {
+    const endDateTime = filters.value.endDate + 'T23:59:59Z'
+    filtered = filtered.filter(activity => activity.timestamp <= endDateTime)
+  } else if (filters.value.startDate && !filters.value.endDate) {
+    // If only start date is selected, filter for that entire day
+    const endDateTime = filters.value.startDate + 'T23:59:59Z'
+    filtered = filtered.filter(activity => activity.timestamp <= endDateTime)
   }
 
   return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -540,48 +505,18 @@ const visiblePages = computed(() => {
 
 // Computed property for date range display
 const dateRangeDisplay = computed(() => {
-  if (filters.value.dateFrom && filters.value.dateTo) {
-    const startParts = filters.value.dateFrom.split('-')
-    const endParts = filters.value.dateTo.split('-')
+  if (filters.value.startDate && filters.value.endDate) {
+    const startParts = filters.value.startDate.split('-')
+    const endParts = filters.value.endDate.split('-')
     const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
     const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
     return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-  } else if (filters.value.dateFrom) {
-    const startParts = filters.value.dateFrom.split('-')
+  } else if (filters.value.startDate) {
+    const startParts = filters.value.startDate.split('-')
     const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
     return `${startDate.toLocaleDateString()}`
   }
   return ''
-})
-
-// Calendar computed properties
-const currentMonthYear = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-})
-
-const calendarDates = computed(() => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
-  const firstDay = new Date(year, month, 1)
-  const startCalendar = new Date(firstDay)
-  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
-  const dates = []
-  const current = new Date(startCalendar)
-  for (let i = 0; i < 42; i++) {
-    const currentDateObj = new Date(current)
-    const year = currentDateObj.getFullYear()
-    const monthStr = (currentDateObj.getMonth() + 1).toString().padStart(2, '0')
-    const day = currentDateObj.getDate().toString().padStart(2, '0')
-    const dateString = `${year}-${monthStr}-${day}`
-    dates.push({
-      day: currentDateObj.getDate(),
-      dateString: dateString,
-      isCurrentMonth: currentDateObj.getMonth() === month,
-      date: currentDateObj
-    })
-    current.setDate(current.getDate() + 1)
-  }
-  return dates
 })
 
 // Methods
@@ -664,10 +599,17 @@ const resetFilters = () => {
   filters.value = {
     activityType: '',
     user: '',
-    dateFrom: '',
-    dateTo: ''
+    startDate: '',
+    endDate: ''
   }
   currentPage.value = 1
+}
+
+// Handle date range change
+const handleActivityLogDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
+  activityLogDateRange.value = newDateRange
+  filters.value.startDate = newDateRange.startDate
+  filters.value.endDate = newDateRange.endDate
 }
 
 const exportActivityLog = () => {
@@ -679,62 +621,6 @@ const refreshLog = () => {
   // In a real app, this would fetch the latest activities from the server
   console.log('Refreshing activity log...')
   alert('Activity log refreshed successfully!')
-}
-
-// Pagination methods
-const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
-
-const goToPage = (page: number) => {
-  currentPage.value = page
-}
-
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
-}
-
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
-}
-
-const selectDate = (date: any) => {
-  if (!date.isCurrentMonth) return
-  const selectedDate = date.dateString
-  if (!filters.value.dateFrom || (filters.value.dateFrom && filters.value.dateTo)) {
-    filters.value.dateFrom = selectedDate
-    filters.value.dateTo = ''
-  } else if (filters.value.dateFrom && !filters.value.dateTo) {
-    if (selectedDate >= filters.value.dateFrom) {
-      filters.value.dateTo = selectedDate
-    } else {
-      filters.value.dateTo = filters.value.dateFrom
-      filters.value.dateFrom = selectedDate
-    }
-  }
-}
-
-const isDateSelected = (date: any) => {
-  return date.dateString === filters.value.dateFrom || date.dateString === filters.value.dateTo
-}
-
-const isDateInRange = (date: any) => {
-  if (!filters.value.dateFrom || !filters.value.dateTo) return false
-  const dateString = date.dateString
-  return dateString > filters.value.dateFrom && dateString < filters.value.dateTo
-}
-
-const clearDateRange = () => {
-  filters.value.dateFrom = ''
-  filters.value.dateTo = ''
 }
 
 onMounted(() => {
@@ -753,8 +639,8 @@ const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
   const datePickerContainer = target.closest('.date-picker-container')
   const dateInput = target.closest('.date-input')
-  if (!datePickerContainer && !dateInput && showDatePicker.value) {
-    showDatePicker.value = false
+  if (!datePickerContainer && !dateInput) {
+    // No date picker to close since we're using the component now
   }
 }
 </script>

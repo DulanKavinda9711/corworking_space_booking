@@ -216,7 +216,7 @@ const newRole = ref({
 
 // Navigation functions
 const getBackNavigationPath = () => {
-  return '/user-management?tab=roles'
+  return '/user-management?tab=role-creation'
 }
 
 const getBackNavigationLabel = () => {

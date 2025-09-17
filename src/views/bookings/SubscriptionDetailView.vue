@@ -151,29 +151,40 @@
 					</svg>
 					Subscription Details
 				</h2>
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 					<div class="text-center p-4 bg-blue-50 rounded-lg">
 						<label class="text-xs font-medium text-blue-600 uppercase tracking-wider">Subscribed Date</label>
 						<p class="text-lg font-semibold text-blue-900 mt-1">{{ formatSubscriptionDate(subscription.subscribedDate || '') }}</p>
+					</div>
+					<div class="text-center p-4 bg-orange-50 rounded-lg">
+						<label class="text-xs font-medium text-orange-600 uppercase tracking-wider">Subscription End Date</label>
+						<p class="text-lg font-semibold text-orange-900 mt-1">
+							<template v-if="subscription.status === 'cancelled'">
+								{{ formatSubscriptionDate(subscription.cancelledDate || subscription.nextBillingDate || '') }}
+							</template>
+							<template v-else>
+								{{ getSubscriptionEndDate(subscription) }}
+							</template>
+						</p>
+					</div>
+					<div class="text-center p-4 bg-purple-50 rounded-lg">
+						<label class="text-xs font-medium text-purple-600 uppercase tracking-wider">
+							<template v-if="subscription.status === 'cancelled'">Cancel Booking Date</template>
+							<template v-else>Next Billing</template>
+						</label>
+						<p class="text-lg font-semibold text-purple-900 mt-1">
+							<template v-if="subscription.status === 'cancelled'">
+								{{ formatSubscriptionDate(subscription.cancelledDate || subscription.nextBillingDate || '') }}
+							</template>
+							<template v-else>
+								{{ formatSubscriptionDate(subscription.nextBillingDate || '') }}
+							</template>
+						</p>
 					</div>
 					<div class="text-center p-4 bg-green-50 rounded-lg">
 						<label class="text-xs font-medium text-green-600 uppercase tracking-wider">Subscription Type</label>
 						<p class="text-lg font-semibold text-green-900 mt-1 capitalize">{{ subscription.subscriptionType }}</p>
 					</div>
-								<div class="text-center p-4 bg-purple-50 rounded-lg">
-									<label class="text-xs font-medium text-purple-600 uppercase tracking-wider">
-										<template v-if="subscription.status === 'cancelled'">Cancel Booking Date</template>
-										<template v-else>Next Billing</template>
-									</label>
-									<p class="text-lg font-semibold text-purple-900 mt-1">
-										<template v-if="subscription.status === 'cancelled'">
-											{{ formatSubscriptionDate(subscription.cancelledDate || subscription.nextBillingDate || '') }}
-										</template>
-										<template v-else>
-											{{ formatSubscriptionDate(subscription.nextBillingDate || '') }}
-										</template>
-									</p>
-								</div>
 				</div>
 			</div>
 
@@ -483,12 +494,32 @@ const formatSubscriptionType = (type: string) => {
 }
 
 const formatSubscriptionDate = (dateString: string) => {
+	if (!dateString) return 'N/A'
+
 	const date = new Date(dateString)
-	return date.toLocaleDateString('en-US', {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
-	})
+
+	// Return in YYYY-MM-DD format
+	const year = date.getFullYear()
+	const month = String(date.getMonth() + 1).padStart(2, '0')
+	const day = String(date.getDate()).padStart(2, '0')
+
+	return `${year}-${month}-${day}`
+}
+
+const getSubscriptionEndDate = (subscription: any) => {
+	if (!subscription.nextBillingDate) return 'N/A'
+
+	const nextBillingDate = new Date(subscription.nextBillingDate)
+	// Subscription ends 1 day before next billing date
+	const endDate = new Date(nextBillingDate)
+	endDate.setDate(endDate.getDate() - 1)
+
+	// Return in YYYY-MM-DD format
+	const year = endDate.getFullYear()
+	const month = String(endDate.getMonth() + 1).padStart(2, '0')
+	const day = String(endDate.getDate()).padStart(2, '0')
+
+	return `${year}-${month}-${day}`
 }
 
 // Modal functions

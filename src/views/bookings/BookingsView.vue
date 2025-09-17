@@ -32,59 +32,11 @@
           ]">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-              <input type="text" v-model="dateRangeDisplay" @click="showDatePicker = !showDatePicker" readonly
-                class="date-input w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer"
-                placeholder="Select Date" />
-              <!-- Date Range Picker -->
-              <div v-if="showDatePicker"
-                class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-                <div class="flex justify-between items-center mb-4">
-                  <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                    </svg>
-                  </button>
-                  <span class="font-medium">{{ currentMonthYear }}</span>
-                  <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Calendar Grid -->
-                <div class="grid grid-cols-7 gap-1 mb-2">
-                  <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"
-                    class="text-xs font-medium text-gray-500 text-center py-2">
-                    {{ day }}
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-7 gap-1">
-                  <div v-for="date in calendarDates" :key="date.dateString" @click="selectDate(date)" :class="[
-                    'text-sm text-center py-2 cursor-pointer rounded',
-                    !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                    isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                    isDateInRange(date) ? 'bg-green-100' : '',
-                    'hover:bg-green-50'
-                  ]">
-                    {{ date.day }}
-                  </div>
-                </div>
-
-                <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                  <div class="flex space-x-2">
-                    <button @click="clearDateRange"
-                      class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors">
-                      Clear
-                    </button>
-                    <button @click="showDatePicker = false" :disabled="!filters.startDate"
-                      class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                      Apply
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <AdvancedDateRangePicker
+                v-model="dateRange"
+                placeholder="Select Date Range"
+                @change="handleDateRangeChange"
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
@@ -229,11 +181,15 @@
                 </th>
                 <th v-if="activeTab === 'subscriptions'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Monthly Price
+                  Price
                 </th>
                 <th v-if="activeTab === 'subscriptions'"
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Next Billing
+                </th>
+                <th v-if="activeTab === 'subscriptions'"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Subscription End Date
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -263,10 +219,10 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
+                    <!-- <div class="flex-shrink-0 h-10 w-10">
                       <img class="h-10 w-10 rounded-lg object-cover" :src="booking.productImage"
                         :alt="booking.productType">
-                    </div>
+                    </div> -->
                     <div class="ml-4">
                       <div class="text-sm font-medium text-gray-900">{{ booking.productName || booking.productType }}
                       </div>
@@ -286,7 +242,7 @@
                   </div>
                   <div v-else>
                     <div class="text-sm text-gray-900">{{ booking.date }}</div>
-                    <div class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
+                    <div v-if="booking.productType !== 'Hot Desk'" class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                 </td>
                 <td v-if="activeTab !== 'subscriptions' && activeTab !== 'history'"
@@ -294,21 +250,49 @@
                   {{ booking.duration }}
                 </td>
                 <td v-if="activeTab !== 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  LKR {{ booking.totalPrice }}
+                  <template v-if="activeTab === 'history' && booking.productType === 'Subscription' && booking.productName === 'Dedicated Desk'">
+                    <template v-if="booking.subscriptionType === 'monthly'">
+                      {{ booking.totalPrice }} LKR/Monthly
+                    </template>
+                    <template v-else-if="booking.subscriptionType === 'annually'">
+                      {{ booking.totalPrice }} LKR/Annually
+                    </template>
+                    <template v-else>
+                      LKR {{ booking.totalPrice }}
+                    </template>
+                  </template>
+                  <template v-else>
+                    LKR {{ booking.totalPrice }}
+                  </template>
                 </td>
                 <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  LKR {{ booking.totalPrice }}
+                  <template v-if="booking.subscriptionType === 'monthly'">
+                    {{ booking.totalPrice }} LKR/Month
+                  </template>
+                  <template v-else-if="booking.subscriptionType === 'annually'">
+                    {{ booking.totalPrice }} LKR/Annually
+                  </template>
+                  <template v-else>
+                    LKR {{ booking.totalPrice }}
+                  </template>
                 </td>
                 <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
                   <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
                   </div>
                   <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
                 </td>
+                <td v-if="activeTab === 'subscriptions'" class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="booking.status === 'confirmed'" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
+                  </div>
+                  <div v-else class="text-sm text-gray-500 italic">Cancelled</div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">
+                  <span :class="getStatusClass(getDynamicStatus(booking))" class="px-2 py-1 text-xs font-medium rounded-full">
                     <template v-if="activeTab === 'subscriptions'">
-                      {{ booking.status === 'confirmed' ? 'Active' : booking.status === 'cancelled' ? 'Cancelled' :
-                      booking.status }}
+                      {{ getDynamicStatus(booking) }}
+                    </template>
+                    <template v-else-if="activeTab === 'bookings'">
+                      {{ getDynamicStatus(booking) }}
                     </template>
                     <template v-else>
                       {{ booking.status }}
@@ -462,6 +446,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { mdiCalendar } from '@mdi/js'
 
 // Router
@@ -470,8 +455,10 @@ const router = useRouter()
 
 // State
 const activeTab = ref('bookings')
-const showDatePicker = ref(false)
-const currentDate = ref(new Date())
+const dateRange = ref({
+  startDate: '',
+  endDate: ''
+})
 
 // Delete modal state
 const showDeleteModal = ref(false)
@@ -508,59 +495,6 @@ const filters = ref({
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = 10
-
-// Computed property for date range display
-const dateRangeDisplay = computed(() => {
-  if (filters.value.startDate && filters.value.endDate) {
-    // Parse YYYY-MM-DD format and create dates with explicit local timezone
-    const startParts = filters.value.startDate.split('-')
-    const endParts = filters.value.endDate.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-  } else if (filters.value.startDate) {
-    const startParts = filters.value.startDate.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-
-    return `${startDate.toLocaleDateString()}`
-  }
-  return ''
-})
-
-// Calendar computed properties
-const currentMonthYear = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-})
-
-const calendarDates = computed(() => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
-
-  const firstDay = new Date(year, month, 1)
-  const startCalendar = new Date(firstDay)
-  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
-
-  const dates = []
-  const current = new Date(startCalendar)
-
-  for (let i = 0; i < 42; i++) {
-    const currentDate = new Date(current)
-    const year = currentDate.getFullYear()
-    const monthStr = (currentDate.getMonth() + 1).toString().padStart(2, '0')
-    const day = currentDate.getDate().toString().padStart(2, '0')
-    const dateString = `${year}-${monthStr}-${day}`
-
-    dates.push({
-      day: currentDate.getDate(),
-      dateString: dateString,
-      isCurrentMonth: currentDate.getMonth() === month,
-      date: currentDate
-    })
-    current.setDate(current.getDate() + 1)
-  }
-
-  return dates
-})
 
 
 // Sample bookings data - Using actual product details
@@ -675,6 +609,9 @@ const allBookings = ref([
     companyName: 'Tech Innovations Ltd.'
   },
 
+    
+
+
   // Completed Bookings (History)
   {
     id: 'BR-2020',
@@ -786,6 +723,7 @@ const allBookings = ref([
     locationName: 'Tech Hub',
     companyName: 'Tech Innovations Ltd.'
   },
+  
 
   // Subscription Data
   {
@@ -1157,9 +1095,110 @@ const getStatusClass = (status: string) => {
       return 'bg-gray-100 text-gray-800'
     case 'cancelled':
       return 'bg-red-100 text-red-800'
+    case 'on going':
+      return 'bg-blue-100 text-blue-800'
+    case 'up comming':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'complete':
+      return 'bg-gray-100 text-gray-800'
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+// Get dynamic status based on current time and booking time
+const getDynamicStatus = (booking: any) => {
+  // Handle subscriptions differently
+  if (booking.productType === 'Subscription') {
+    if (booking.status === 'cancelled') {
+      return 'complete'
+    }
+
+    const now = new Date()
+    const subscribedDate = new Date(booking.subscribedDate)
+
+    if (booking.subscriptionType === 'monthly') {
+      // For monthly subscriptions, check if current month is within subscription period
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    } else if (booking.subscriptionType === 'annually') {
+      // For annual subscriptions, check if current year is within subscription period
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    }
+    return booking.status
+  }
+
+  // Handle regular bookings
+  if (booking.status !== 'confirmed') {
+    return booking.status
+  }
+
+  const now = new Date()
+  const bookingDate = new Date(booking.date)
+
+  // Set the booking date with start and end times
+  const [startHour, startMinute] = parseTime(booking.startTime)
+  const [endHour, endMinute] = parseTime(booking.endTime)
+
+  const bookingStartTime = new Date(bookingDate)
+  bookingStartTime.setHours(startHour, startMinute, 0, 0)
+
+  const bookingEndTime = new Date(bookingDate)
+  bookingEndTime.setHours(endHour, endMinute, 0, 0)
+
+  // Compare current time with booking times
+  if (now >= bookingStartTime && now <= bookingEndTime) {
+    return 'on going'
+  } else if (now < bookingStartTime) {
+    return 'up comming'
+  } else {
+    return 'complete'
+  }
+}
+
+// Helper function to parse time strings like "10:00 AM" or "2:00 PM"
+const parseTime = (timeStr: string) => {
+  const [time, period] = timeStr.split(' ')
+  const [hours, minutes] = time.split(':').map(Number)
+
+  let hour24 = hours
+  if (period === 'PM' && hours !== 12) {
+    hour24 = hours + 12
+  } else if (period === 'AM' && hours === 12) {
+    hour24 = 0
+  }
+
+  return [hour24, minutes]
+}
+
+// Get subscription end date
+const getSubscriptionEndDate = (subscription: any) => {
+  if (!subscription.nextBillingDate) return 'N/A'
+
+  const nextBillingDate = new Date(subscription.nextBillingDate)
+  // Subscription ends 1 day before next billing date
+  const endDate = new Date(nextBillingDate)
+  endDate.setDate(endDate.getDate() - 1)
+
+  // Return in YYYY-MM-DD format
+  const year = endDate.getFullYear()
+  const month = String(endDate.getMonth() + 1).padStart(2, '0')
+  const day = String(endDate.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
 }
 
 // Row click handler to view booking details
@@ -1214,57 +1253,15 @@ const previousPage = () => {
   }
 }
 
-const clearDateRange = () => {
-  filters.value.startDate = ''
-  filters.value.endDate = ''
-  currentPage.value = 1
-}
 
-// Calendar methods
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
-}
 
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
-}
 
-const selectDate = (date: any) => {
-  if (!date.isCurrentMonth) return
-
-  // Use the properly formatted date string to avoid timezone issues
-  const selectedDate = date.dateString
-
-  if (!filters.value.startDate || (filters.value.startDate && filters.value.endDate)) {
-    // Start new selection
-    filters.value.startDate = selectedDate
-    filters.value.endDate = ''
-  } else if (filters.value.startDate && !filters.value.endDate) {
-    // Select end date - compare as strings since they're in YYYY-MM-DD format
-    if (selectedDate >= filters.value.startDate) {
-      filters.value.endDate = selectedDate
-    } else {
-      // If selected date is before start date, make it the new start date
-      filters.value.endDate = filters.value.startDate
-      filters.value.startDate = selectedDate
-    }
-  }
-
-  // Reset pagination when filter changes
-  currentPage.value = 1
-}
-
-const isDateSelected = (date: any) => {
-  return date.dateString === filters.value.startDate || date.dateString === filters.value.endDate
-}
-
-const isDateInRange = (date: any) => {
-  if (!filters.value.startDate || !filters.value.endDate) return false
-
-  // Compare date strings directly since they're in YYYY-MM-DD format
-  const dateString = date.dateString
-
-  return dateString > filters.value.startDate && dateString < filters.value.endDate
+// Handle date range change from the calendar component
+const handleDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
+  dateRange.value = newDateRange
+  filters.value.startDate = newDateRange.startDate
+  filters.value.endDate = newDateRange.endDate
+  currentPage.value = 1 // Reset pagination
 }
 
 // Delete booking functions
@@ -1322,16 +1319,9 @@ const deleteBooking = async () => {
 // Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  const datePickerContainer = target.closest('.date-picker-container')
-  const dateInput = target.closest('.date-input')
-  const selectElement = target.closest('select')
-
-  if (!datePickerContainer && !dateInput && showDatePicker.value) {
-    showDatePicker.value = false
-  }
 
   // Close all dropdowns if clicking outside any select element
-  if (!selectElement) {
+  if (!target.closest('select')) {
     closeAllDropdowns()
   }
 }

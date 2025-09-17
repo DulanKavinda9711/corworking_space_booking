@@ -110,26 +110,32 @@
               <!-- Profile Information -->
               <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-3">
-                  <div class="flex items-center text-sm text-gray-600">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center text-sm text-gray-600">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
+                      <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiEmail" />
-                    </svg>
+                      </svg>
+                    </div>
                     {{ customer.email }}
-                  </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-2">
+                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiPhone" />
-                    </svg>
+                      </svg>
+                    </div>
                     {{ customer.phone }}
-                  </div>
+                    </div>
                 </div>
                 <div class="space-y-3">
-                  <div class="flex items-center text-sm text-gray-600">
-                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiCalendarAccount" />
-                    </svg>
+                    <div class="flex items-center text-sm text-gray-600">
+                    <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-2">
+                      <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path :d="mdiCalendar" />
+                      </svg>
+                    </div>
                     Joined {{ formatDate(customer.dateJoined) }}
-                  </div>
+                    </div>
                   <div class="flex items-center">
                     <span :class="getCustomerTypeClass(customer.customerType)" class="px-2 py-1 text-xs font-medium rounded-full mr-3">
                       {{ customer.customerType }}
@@ -685,7 +691,8 @@ import {
   mdiCurrencyUsd,
   mdiCalendarClock,
   mdiCancel,
-  mdiMessage
+  mdiMessage,
+  mdiCalendar
 } from '@mdi/js'
 
 const route = useRoute()

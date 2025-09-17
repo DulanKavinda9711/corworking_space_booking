@@ -52,7 +52,7 @@
         <!-- Role Creation Tab -->
         <div v-if="activeTab === 'role-creation'" class="space-y-6">
           <!-- Roles Table -->
-          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
+          <div class="bg-white rounded-xl shadow-card overflow-visible border-gray-200">
             <div class="bg-white border b shadow-card p-6">
               <div class="flex gap-4 items-end">
                 <!-- Search Field -->
@@ -73,75 +73,10 @@
                 <!-- Date Range Picker -->
                 <div class="relative flex-no min-w-0">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <div class="relative date-input" @click="showDatePicker = !showDatePicker">
-                    <input :value="dateRangeDisplay" type="text" readonly placeholder="Select date range"
-                      class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer bg-white text-gray-900" />
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <!-- Date Picker Dropdown -->
-                  <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-                    <div class="flex justify-between items-center mb-4">
-                      <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                        </svg>
-                      </button>
-                      <span class="font-medium">{{ currentMonthYear }}</span>
-                      <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    <!-- Calendar Grid -->
-                    <div class="grid grid-cols-7 gap-1 mb-2">
-                      <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
-                        {{ day }}
-                      </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-7 gap-1">
-                      <div
-                        v-for="date in calendarDates"
-                        :key="date.dateString"
-                        @click="selectDate(date)"
-                        :class="[
-                          'text-sm text-center py-2 cursor-pointer rounded',
-                          !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                          isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                          isDateInRange(date) ? 'bg-green-100' : '',
-                          'hover:bg-green-50'
-                        ]"
-                      >
-                        {{ date.date.getDate() }}
-                      </div>
-                    </div>
-
-                    <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                      <div class="flex space-x-2">
-                        <button
-                          @click="clearDateRange"
-                          class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors"
-                        >
-                          Clear
-                        </button>
-                        <button
-                          @click="showDatePicker = false"
-                          :disabled="!filters.startDate"
-                          class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Apply
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <AdvancedDateRangePicker
+                    :dateRange="roleCreationDateRange"
+                    @dateRangeChange="handleRoleCreationDateRangeChange"
+                  />
                 </div>
 
                 <!-- Role Filter -->
@@ -299,75 +234,10 @@
                 <!-- Date Range Picker -->
                 <div class="relative flex-no min-w-0">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <div class="relative date-input" @click="showDatePicker = !showDatePicker">
-                    <input :value="dateRangeDisplay" type="text" readonly placeholder="Select date range"
-                      class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent cursor-pointer bg-white text-gray-900" />
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  <!-- Date Picker Dropdown -->
-                  <div v-if="showDatePicker" class="date-picker-container absolute z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80 text-gray-900">
-                    <div class="flex justify-between items-center mb-4">
-                      <button @click="previousMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                        </svg>
-                      </button>
-                      <span class="font-medium">{{ currentMonthYear }}</span>
-                      <button @click="nextMonth" class="p-1 hover:bg-gray-100 rounded transition-colors">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    <!-- Calendar Grid -->
-                    <div class="grid grid-cols-7 gap-1 mb-2">
-                      <div v-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day" class="text-xs font-medium text-gray-500 text-center py-2">
-                        {{ day }}
-                      </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-7 gap-1">
-                      <div
-                        v-for="date in calendarDates"
-                        :key="date.dateString"
-                        @click="selectDate(date)"
-                        :class="[
-                          'text-sm text-center py-2 cursor-pointer rounded',
-                          !date.isCurrentMonth ? 'text-gray-300' : 'text-gray-900',
-                          isDateSelected(date) ? 'bg-green-600 text-white' : '',
-                          isDateInRange(date) ? 'bg-green-100' : '',
-                          'hover:bg-green-50'
-                        ]"
-                      >
-                        {{ date.date.getDate() }}
-                      </div>
-                    </div>
-
-                    <div class="flex justify-end items-end mt-4 pt-4 border-t border-gray-200">
-                      <div class="flex space-x-2">
-                        <button
-                          @click="clearDateRange"
-                          class="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 transition-colors"
-                        >
-                          Clear
-                        </button>
-                        <button
-                          @click="showDatePicker = false"
-                          :disabled="!filters.startDate"
-                          class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          Apply
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <AdvancedDateRangePicker
+                    :dateRange="userCreationDateRange"
+                    @dateRangeChange="handleUserCreationDateRangeChange"
+                  />
                 </div>
 
                 <!-- Role Filter -->
@@ -630,6 +500,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { mdiShieldAccount } from '@mdi/js'
 
 // Role interface
@@ -823,9 +694,15 @@ const statusModalMessage = ref('')
 const selectedUser = ref<User | null>(null)
 const selectedRole = ref<Role | null>(null)
 
-// Date picker state
-const showDatePicker = ref(false)
-const currentDate = ref(new Date())
+// Date range state for both tabs
+const userCreationDateRange = ref({
+  startDate: '',
+  endDate: ''
+})
+const roleCreationDateRange = ref({
+  startDate: '',
+  endDate: ''
+})
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
@@ -1120,40 +997,6 @@ const dateRangeDisplay = computed(() => {
   return ''
 })
 
-// Calendar computed properties
-const currentMonthYear = computed(() => {
-  return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-})
-
-const calendarDates = computed(() => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
-
-  const firstDay = new Date(year, month, 1)
-  const startCalendar = new Date(firstDay)
-  startCalendar.setDate(startCalendar.getDate() - firstDay.getDay())
-
-  const dates = []
-  const current = new Date(startCalendar)
-
-  for (let i = 0; i < 42; i++) {
-    const currentDate = new Date(current)
-    const year = currentDate.getFullYear()
-    const monthStr = (currentDate.getMonth() + 1).toString().padStart(2, '0')
-    const day = currentDate.getDate().toString().padStart(2, '0')
-    const dateString = `${year}-${monthStr}-${day}`
-
-    dates.push({
-      date: currentDate,
-      dateString: dateString,
-      isCurrentMonth: currentDate.getMonth() === month
-    })
-    current.setDate(current.getDate() + 1)
-  }
-
-  return dates
-})
-
 // Methods
 const getRoleClass = (role: string) => {
   switch (role) {
@@ -1240,71 +1083,29 @@ const toggleUserStatus = (user: User) => {
   showStatusToggleModal.value = true
 }
 
-// Calendar methods
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+// Handle date range change for user creation tab
+const handleUserCreationDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
+  userCreationDateRange.value = newDateRange
+  filters.value.startDate = newDateRange.startDate
+  filters.value.endDate = newDateRange.endDate
 }
 
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
-}
-
-const selectDate = (date: any) => {
-  if (!date.isCurrentMonth) return
-
-  if (!filters.value.startDate || (filters.value.startDate && filters.value.endDate)) {
-    // Start new selection
-    filters.value.startDate = date.dateString
-    filters.value.endDate = ''
-  } else if (filters.value.startDate && !filters.value.endDate) {
-    // Select end date
-    if (date.dateString >= filters.value.startDate) {
-      filters.value.endDate = date.dateString
-    } else {
-      // If selected date is before start date, swap them
-      filters.value.endDate = filters.value.startDate
-      filters.value.startDate = date.dateString
-    }
-  }
-
-  // Keep calendar open for multiple selections
-}
-
-const isDateSelected = (date: any) => {
-  return date.dateString === filters.value.startDate || date.dateString === filters.value.endDate
-}
-
-const isDateInRange = (date: any) => {
-  if (!filters.value.startDate || !filters.value.endDate) return false
-  return date.dateString > filters.value.startDate && date.dateString < filters.value.endDate
-}
-
-const clearDateRange = () => {
-  filters.value.startDate = ''
-  filters.value.endDate = ''
-  showDatePicker.value = false
-}
-
-// Click outside handler for date picker
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  const datePickerContainer = target.closest('.date-picker-container')
-  const dateInput = target.closest('.date-input')
-
-  if (!datePickerContainer && !dateInput && showDatePicker.value) {
-    showDatePicker.value = false
-  }
+// Handle date range change for role creation tab
+const handleRoleCreationDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
+  roleCreationDateRange.value = newDateRange
+  filters.value.startDate = newDateRange.startDate
+  filters.value.endDate = newDateRange.endDate
 }
 
 // Tabs definition with counts
 const tabs = computed(() => [
   {
-    id: 'role-creation',
-    name: 'Role Creation'
-  },
-  {
     id: 'user-creation',
     name: 'User Creation'
+  },
+  {
+    id: 'role-creation',
+    name: 'Role Creation'
   }
 ])
 
@@ -1316,7 +1117,7 @@ const getTabCount = (tabId: string) => {
 }
 
 // Active tab
-const activeTab = ref('role-creation')
+const activeTab = ref('user-creation')
 
 // Initialize active tab from URL query parameter
 const initializeActiveTab = () => {
@@ -1408,6 +1209,14 @@ const confirmStatusToggle = async () => {
 
 // Lifecycle hooks
 import { onMounted, onUnmounted } from 'vue'
+
+// Handle click outside for dropdowns
+const handleClickOutside = (event: Event) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('.date-input') && !target.closest('.date-picker-container')) {
+    // No date picker to close since we're using the component now
+  }
+}
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
