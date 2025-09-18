@@ -87,17 +87,6 @@
                   <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.createdAt) }}</p>
                 </div>
               </div>
-              <div class="flex items-center space-x-3">
-                <div class="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiUpdate" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500">Last Updated</p>
-                  <p class="text-sm font-medium text-gray-900">{{ formatDate(role?.updatedAt) }}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

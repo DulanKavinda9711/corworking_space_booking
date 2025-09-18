@@ -156,8 +156,6 @@
                       Permissions</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
                       At</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated
-                      At</th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status
                     </th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
@@ -182,40 +180,54 @@
                     </td>
                     <td class="px-6 py-4">
                       <div class="flex flex-wrap gap-1">
-                        <span v-for="permission in role.permissions.slice(0, 2)" :key="permission"
+                        <span v-for="permission in role.permission_details.slice(0, 2)" :key="permission.id"
                           class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                          {{ permission }}
+                          {{ permission.code_name }}
                         </span>
-                        <span v-if="role.permissions.length > 2"
+                        <span v-if="role.permission_details.length > 2"
                           class="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
-                          +{{ role.permissions.length - 2 }} more
+                          +{{ role.permission_details.length - 2 }} more
                         </span>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.createdAt) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.updatedAt) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.created_date) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getStatusClass(role.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                        {{ role.status }}
+                      <span :class="getStatusClass(role.is_active ? 'active' : 'inactive')" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ role.is_active ? 'active' : 'inactive' }}
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
                         <button @click.stop="toggleRoleStatus(role)"
-                          :class="role.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                          :class="role.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
                           class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                          :title="role.status === 'active' ? 'Make Role Inactive' : 'Make Role Active'">
-                          <span>{{ role.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                          :title="role.is_active ? 'Make Role Inactive' : 'Make Role Active'">
+                          <span>{{ role.is_active ? 'Inactive' : 'Active' }}</span>
                         </button>
                       </div>
                     </td>
                   </tr>
                 </tbody>
 
-                <!-- Empty State Row -->
-                <tbody v-if="filteredRoles.length === 0" class="bg-white">
+                <!-- Loading State Row -->
+                <tbody v-if="isLoadingRoles" class="bg-white">
                   <tr>
-                    <td colspan="6" class="px-6 py-12 text-center">
+                    <td colspan="5" class="px-6 py-12 text-center">
+                      <div class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-gray-500">Loading roles...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+
+                <!-- Empty State Row -->
+                <tbody v-if="!isLoadingRoles && filteredRoles.length === 0" class="bg-white">
+                  <tr>
+                    <td colspan="5" class="px-6 py-12 text-center">
                       <div>
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -391,8 +403,23 @@
                   </tr>
                 </tbody>
 
+                <!-- Loading State Row -->
+                <tbody v-if="isLoadingUsers" class="bg-white">
+                  <tr>
+                    <td colspan="8" class="px-6 py-12 text-center">
+                      <div class="flex items-center justify-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-gray-500">Loading users...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+
                 <!-- Empty State Row -->
-                <tbody v-if="filteredUsers.length === 0" class="bg-white">
+                <tbody v-if="!isLoadingUsers && filteredUsers.length === 0" class="bg-white">
                   <tr>
                     <td colspan="8" class="px-6 py-12 text-center">
                       <div>
@@ -420,17 +447,17 @@
   <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
       <div class="mt-3">
-        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'bg-red-100' : 'bg-green-100'">
-          <svg class="w-6 h-6" :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'text-red-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' : 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'"/>
+        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'bg-red-100' : 'bg-green-100'">
+          <svg class="w-6 h-6" :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'text-red-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' : 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'"/>
           </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
-          {{ (selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'Make Inactive' : 'Make Active' }} {{ selectedUser ? 'User' : 'Role' }}
+          {{ (selectedUser?.status === 'active' || selectedRole?.is_active) ? 'Make Inactive' : 'Make Active' }} {{ selectedUser ? 'User' : 'Role' }}
         </h3>
         <div class="mt-2 px-7 py-3">
           <p class="text-sm text-gray-500 text-center">
-            Are you sure you want to {{ (selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'make inactive' : 'make active' }} {{ selectedUser ? selectedUser.name : selectedRole?.name }}?
+            Are you sure you want to {{ (selectedUser?.status === 'active' || selectedRole?.is_active) ? 'make inactive' : 'make active' }} {{ selectedUser ? selectedUser.name : selectedRole?.name }}?
           </p>
           <div v-if="selectedUser" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div class="text-sm space-y-1">
@@ -458,7 +485,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="font-medium text-gray-900">{{ selectedRole.name }}</div>
-                  <div class="text-gray-500">{{ selectedRole.permissions.length }} permissions</div>
+                  <div class="text-gray-500">{{ (selectedRole.permissions?.length || selectedRole.permission_details.length) }} permissions</div>
                 </div>
               </div>
             </div>
@@ -475,13 +502,13 @@
             @click="confirmStatusToggle"
             :disabled="isTogglingStatus"
             class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            :class="(selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'"
+            :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'"
           >
             <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>{{ isTogglingStatus ? 'Processing...' : ((selectedUser?.status === 'active' || selectedRole?.status === 'active') ? 'Make Inactive' : 'Make Active') }}</span>
+            <span>{{ isTogglingStatus ? 'Processing...' : ((selectedUser?.status === 'active' || selectedRole?.is_active) ? 'Make Inactive' : 'Make Active') }}</span>
           </button>
         </div>
       </div>
@@ -546,16 +573,24 @@ import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { mdiShieldAccount } from '@mdi/js'
+import { permissionApi } from '@/services/api'
 
 // Role interface
 interface Role {
-  id: string
+  id: number
   name: string
-  userLevel: 'super-admin' | 'admin'
-  permissions: string[]
-  createdAt: string
-  updatedAt: string
-  status: 'active' | 'inactive'
+  is_active: boolean
+  created_date: string
+  permission_details: Array<{
+    id: number
+    code_name: string
+    description: string
+  }>
+  // Computed properties for compatibility
+  status?: 'active' | 'inactive'
+  permissions?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 // User interface
@@ -576,158 +611,16 @@ interface User {
 }
 
 // Sample roles data
-const roles = ref<Role[]>([
-  {
-    id: 'ROLE-001',
-    name: 'Super Admin',
-    userLevel: 'super-admin',
-    permissions: [
-      'Dashboard Access',
-      'User Management - Create',
-      'User Management - Edit',
-      'User Management - Update',
-      'User Management - Delete',
-      'User Management - Block/Unblock',
-      'System Settings',
-      'Audit Trail',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Booking History - Delete',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    status: 'active'
-  },
-  {
-    id: 'ROLE-002',
-    name: 'Admin',
-    userLevel: 'admin',
-    permissions: [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    status: 'active'
-  },
-  {
-    id: 'ROLE-003',
-    name: 'Manager',
-    userLevel: 'admin',
-    permissions: [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - View',
-      'Products - View',
-      'Products - Update',
-      'Locations - View',
-      'Locations - Update',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Activity Logs'
-    ],
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    status: 'active'
-  },
-  {
-    id: 'ROLE-004',
-    name: 'Operator',
-    userLevel: 'admin',
-    permissions: [
-      'Dashboard Access',
-      'Customer Profile - View',
-      'Customer Management - View',
-      'Facilities - View',
-      'Products - View',
-      'Locations - View',
-      'Payments - View',
-      'Activity Logs'
-    ],
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    status: 'inactive'
-  }
-])
+const roles = ref<Role[]>([])
 
 // State
 const router = useRouter()
 const searchQuery = ref('')
+
+// Loading states
+const isLoadingRoles = ref(false)
+const isLoadingUsers = ref(false)
+const loadingError = ref<string | null>(null)
 
 // Modal state
 const showStatusToggleModal = ref(false)
@@ -778,198 +671,7 @@ const filters = ref({
 })
 
 // Sample users data
-const users = ref<User[]>([
-  {
-    id: 'USR-001',
-    name: 'John Administrator',
-    username: 'johnadmin',
-    email: 'john.admin@cowork.com',
-    phone: '+1 (555) 123-4567',
-    department: 'IT',
-    role: 'super-admin',
-    status: 'active',
-    lastLogin: '2024-08-15T10:30:00Z',
-    permissions: [
-      'Dashboard Access',
-      'User Management - Create',
-      'User Management - Edit',
-      'User Management - Update',
-      'User Management - Delete',
-      'User Management - Block/Unblock',
-      'System Settings',
-      'Audit Trail',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Booking History - Delete',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-08-15T10:30:00Z'
-  },
-  {
-    id: 'USR-002',
-    name: 'Sarah Manager',
-    username: 'sarahmanager',
-    email: 'sarah.manager@cowork.com',
-    phone: '+1 (555) 987-6543',
-    department: 'Operations',
-    role: 'admin',
-    status: 'active',
-    lastLogin: '2024-08-15T08:45:00Z',
-    permissions: [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Bookings - Export',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View',
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate',
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Company Management',
-      'Activity Logs',
-      'Bulk Operations',
-      'Export Data'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1c2?w=100&h=100&fit=crop&crop=faces',
-    createdAt: '2024-02-10T08:45:00Z',
-    updatedAt: '2024-08-15T08:45:00Z'
-  },
-  {
-    id: 'USR-003',
-    name: 'Mike Operator',
-    username: 'mikeoperator',
-    email: 'mike.operator@cowork.com',
-    phone: '+1 (555) 456-7890',
-    department: 'Customer Service',
-    role: 'manager',
-    status: 'active',
-    lastLogin: '2024-08-14T16:20:00Z',
-    permissions: [
-      'Dashboard Access',
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock',
-      'Facilities - View',
-      'Products - View',
-      'Products - Update',
-      'Locations - View',
-      'Locations - Update',
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Activity Logs'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
-    createdAt: '2024-03-05T16:20:00Z',
-    updatedAt: '2024-08-14T16:20:00Z'
-  },
-  {
-    id: 'USR-004',
-    name: 'Emma Support',
-    username: 'emmasupport',
-    email: 'emma.support@cowork.com',
-    phone: '+1 (555) 234-5678',
-    department: 'Support',
-    role: 'operator',
-    status: 'active',
-    lastLogin: null,
-    permissions: [
-      'Dashboard Access',
-      'Customer Profile - View',
-      'Customer Management - View',
-      'Facilities - View',
-      'Products - View',
-      'Locations - View',
-      'Payments - View',
-      'Activity Logs'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=faces',
-    createdAt: '2024-04-20T12:00:00Z',
-    updatedAt: '2024-08-01T12:00:00Z'
-  },
-  {
-    id: 'USR-005',
-    name: 'David Analyst',
-    username: 'davidanalyst',
-    email: 'david.analyst@cowork.com',
-    phone: '+1 (555) 345-6789',
-    department: 'Analytics',
-    role: 'operator',
-    status: 'inactive',
-    lastLogin: '2024-08-10T12:15:00Z',
-    permissions: [
-      'Dashboard Access',
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download',
-      'Activity Logs'
-    ],
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces',
-    createdAt: '2024-05-15T12:15:00Z',
-    updatedAt: '2024-08-10T12:15:00Z'
-  }
-])
+const users = ref<User[]>([])
 
 // Computed properties
 const filteredUsers = computed(() => {
@@ -1020,19 +722,20 @@ const filteredRoles = computed(() => {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(role =>
       role.name.toLowerCase().includes(query) ||
-      role.permissions.some(permission => permission.toLowerCase().includes(query))
+      (role.permissions && role.permissions.some((permission: string) => permission.toLowerCase().includes(query))) ||
+      role.permission_details.some(permission => permission.code_name.toLowerCase().includes(query))
     )
   }
 
   // Apply date range filter
   if (filters.value.startDate && filters.value.endDate) {
     filtered = filtered.filter(role => {
-      const roleDate = new Date(role.createdAt).toISOString().split('T')[0]
+      const roleDate = new Date(role.createdAt || role.created_date).toISOString().split('T')[0]
       return roleDate >= filters.value.startDate && roleDate <= filters.value.endDate
     })
   } else if (filters.value.startDate) {
     filtered = filtered.filter(role => {
-      const roleDate = new Date(role.createdAt).toISOString().split('T')[0]
+      const roleDate = new Date(role.createdAt || role.created_date).toISOString().split('T')[0]
       return roleDate === filters.value.startDate
     })
   }
@@ -1069,6 +772,50 @@ const getRoleClass = (role: string) => {
       return 'bg-green-100 text-green-800'
     default:
       return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// Data fetching functions
+const fetchRoles = async () => {
+  try {
+    isLoadingRoles.value = true
+    loadingError.value = null
+
+    const response = await permissionApi.getAllRoles()
+    
+    if (response.success && response.data) {
+      roles.value = response.data
+    } else {
+      console.error('Failed to fetch roles:', response.message)
+      loadingError.value = response.message || 'Failed to load roles'
+      roles.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching roles:', error)
+    loadingError.value = 'Failed to load roles'
+    roles.value = []
+  } finally {
+    isLoadingRoles.value = false
+  }
+}
+
+const fetchUsers = async () => {
+  try {
+    isLoadingUsers.value = true
+    loadingError.value = null
+
+    // TODO: Replace with actual API call
+    // const response = await fetch('/api/users')
+    // const data = await response.json()
+    // users.value = data
+
+    // For now, keep empty array
+    users.value = []
+  } catch (error) {
+    console.error('Error fetching users:', error)
+    loadingError.value = 'Failed to load users'
+  } finally {
+    isLoadingUsers.value = false
   }
 }
 
@@ -1277,8 +1024,8 @@ const confirmStatusToggle = async () => {
     } else if (selectedRole.value) {
       const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
       if (index !== -1) {
-        const newStatus = roles.value[index].status === 'inactive' ? 'active' : 'inactive'
-        roles.value[index].status = newStatus
+        const newStatus = roles.value[index].is_active ? 'inactive' : 'active'
+        roles.value[index].is_active = newStatus === 'active'
         roles.value[index].updatedAt = new Date().toISOString()
         const action = newStatus === 'active' ? 'made active' : 'made inactive'
         statusModalMessage.value = `Role ${selectedRole.value.name} has been successfully ${action}.`
@@ -1311,6 +1058,10 @@ const handleClickOutside = (event: Event) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   initializeActiveTab()
+
+  // Fetch data from APIs
+  fetchRoles()
+  fetchUsers()
 })
 
 onUnmounted(() => {

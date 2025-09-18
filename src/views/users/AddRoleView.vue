@@ -27,6 +27,7 @@
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
               placeholder="Enter role name"
               required
+              :disabled="isSubmitting"
             />
           </div>
 
@@ -35,6 +36,7 @@
             <select
               v-model="newRole.status"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+              :disabled="isSubmitting"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -44,21 +46,25 @@
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-4">Permissions</label>
             <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4">
-              <div class="space-y-6">
-                <div v-for="category in permissionCategories" :key="category.category">
-                  <h4 class="text-md font-medium text-gray-900 mb-3">{{ category.category }}</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label v-for="permission in category.permissions" :key="permission" class="flex items-center">
-                      <input
-                        type="checkbox"
-                        :value="permission"
-                        v-model="newRole.permissions"
-                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span class="ml-2 text-sm text-gray-700">{{ permission }}</span>
-                    </label>
+              <div v-if="permissionsStore.loading" class="text-center py-4">
+                <div class="text-gray-500">Loading permissions...</div>
+              </div>
+              <div v-else-if="permissionsStore.error" class="text-center py-4">
+                <div class="text-red-500">{{ permissionsStore.error }}</div>
+              </div>
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label v-for="permission in permissionsStore.permissions" :key="permission.id" class="flex items-center">
+                  <input
+                    type="checkbox"
+                    :value="permission.id"
+                    v-model="selectedPermissionIds"
+                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <div class="ml-2">
+                    <div class="text-sm text-gray-700 font-medium">{{ permission.code_name }}</div>
+                    <div class="text-xs text-gray-500">{{ permission.description }}</div>
                   </div>
-                </div>
+                </label>
               </div>
             </div>
           </div>
@@ -70,26 +76,68 @@
               type="button"
               @click="router.back()"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              :disabled="isSubmitting"
             >
               Cancel
             </button>
             <button
               type="submit"
-              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="isSubmitting"
             >
-              Create Role
+              {{ isSubmitting ? 'Creating Role...' : 'Create Role' }}
             </button>
           </div>
         </form>
       </div>
 
-      <!-- Success Message -->
-      <div v-if="showSuccess" class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div class="flex items-center">
-          <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiCheckCircle" />
-          </svg>
-          <span class="text-green-800">Role created successfully!</span>
+      <!-- Success Modal -->
+      <div v-if="showSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSuccessModal">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+          <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Success!</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">Role created successfully</p>
+            </div>
+            <div class="items-center px-4 py-3">
+              <button @click="closeSuccessModal"
+                class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Modal -->
+      <div v-if="showErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeErrorModal">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+          <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Error</h3>
+            <div class="mt-2 px-7 py-3">
+              <p class="text-sm text-gray-500">{{ errorMessage }}</p>
+            </div>
+            <div class="items-center px-4 py-3 flex space-x-3">
+              <button @click="closeErrorModal"
+                class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1">
+                Close
+              </button>
+              <button @click="retryCreateRole"
+                class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 flex-1">
+                Retry
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -97,10 +145,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { mdiCheckCircle } from '@mdi/js'
+import { usePermissionsStore } from '@/stores/permissions'
+import { permissionApi } from '@/services/api'
 
 // Role interface
 interface Role {
@@ -112,106 +161,29 @@ interface Role {
   status: 'active' | 'inactive'
 }
 
-// All available permissions organized by category
-const permissionCategories = [
-  {
-    category: 'Bookings',
-    permissions: [
-      'Bookings - View',
-      'Bookings - Cancel',
-      'Subscriptions - View',
-      'Subscriptions - Cancel',
-      'Booking History - View',
-      'Booking History - Delete'
-    ]
-  },
-  {
-    category: 'Customer Information',
-    permissions: [
-      'Customer Profile - View',
-      'Customer Profile - Send Message',
-      'Customer Management - View',
-      'Customer Management - Block/Unblock'
-    ]
-  },
-  {
-    category: 'Facilities',
-    permissions: [
-      'Facilities - Create',
-      'Facilities - Update',
-      'Facilities - Delete',
-      'Facilities - View'
-    ]
-  },
-  {
-    category: 'Products',
-    permissions: [
-      'Products - Create',
-      'Products - Update',
-      'Products - Edit',
-      'Products - Delete',
-      'Products - Activate/Deactivate'
-    ]
-  },
-  {
-    category: 'Locations',
-    permissions: [
-      'Locations - Create',
-      'Locations - Update',
-      'Locations - Edit',
-      'Locations - Activate/Deactivate',
-      'Locations - Delete'
-    ]
-  },
-  {
-    category: 'Payments',
-    permissions: [
-      'Payments - View',
-      'Payments - Download Invoice',
-      'Payments - Export CSV',
-      'Payments - Commission Setup'
-    ]
-  },
-  {
-    category: 'User Management',
-    permissions: [
-      'User Management - Create',
-      'User Management - Edit',
-      'User Management - Update',
-      'User Management - Delete',
-      'User Management - Block/Unblock'
-    ]
-  },
-  {
-    category: 'Reports',
-    permissions: [
-      'Reports - Booking Report Download',
-      'Reports - Payment Report Download'
-    ]
-  },
-  {
-    category: 'General',
-    permissions: [
-      'Dashboard Access',
-      'Company Management',
-      'Activity Logs',
-      'System Settings',
-      'Bulk Operations',
-      'Export Data',
-      'Audit Trail'
-    ]
-  }
-]
+// Store
+const permissionsStore = usePermissionsStore()
 
 // State
 const router = useRouter()
-const showSuccess = ref(false)
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const isSubmitting = ref(false)
+const errorMessage = ref<string>('')
 
 // Form state
 const newRole = ref({
   name: '',
   permissions: [] as string[],
   status: 'active' as 'active' | 'inactive'
+})
+
+// Selected permission IDs
+const selectedPermissionIds = ref<number[]>([])
+
+// Fetch permissions on component mount
+onMounted(async () => {
+  await permissionsStore.fetchPermissions()
 })
 
 // Navigation functions
@@ -224,44 +196,65 @@ const getBackNavigationLabel = () => {
 }
 
 // Methods
-const createRole = () => {
-  const role: Role = {
-    id: `ROLE-${Date.now()}`,
-    name: newRole.value.name,
-    permissions: newRole.value.permissions,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: newRole.value.status
+const createRole = async () => {
+  if (selectedPermissionIds.value.length === 0) {
+    errorMessage.value = 'Please select at least one permission'
+    showErrorModal.value = true
+    return
   }
 
-  // In a real application, you would make an API call here
-  console.log('Creating role:', role)
+  isSubmitting.value = true
 
-  // Add the new role to the available roles list (for user creation)
-  // Note: In a real app, this would be handled by a store or API
-  if (typeof window !== 'undefined') {
-    const existingRoles = JSON.parse(localStorage.getItem('availableRoles') || '[]')
-    existingRoles.push({
-      name: role.name,
-      value: role.name.toLowerCase().replace(/\s+/g, '-'),
-      permissions: role.permissions
-    })
-    localStorage.setItem('availableRoles', JSON.stringify(existingRoles))
+  try {
+    // Prepare data for API call
+    const roleData = {
+      name: newRole.value.name,
+      is_active: newRole.value.status === 'active',
+      permission_ids: selectedPermissionIds.value
+    }
+
+    // Call the API
+    const response = await permissionApi.createRole(roleData)
+
+    if (response.success) {
+      // Show success modal
+      showSuccessModal.value = true
+
+      // Reset form
+      newRole.value = {
+        name: '',
+        permissions: [],
+        status: 'active'
+      }
+      selectedPermissionIds.value = []
+
+      // Don't auto-redirect, let user click OK
+    } else {
+      errorMessage.value = response.message || 'Failed to create role'
+      showErrorModal.value = true
+    }
+  } catch (error: any) {
+    console.error('Error creating role:', error)
+    errorMessage.value = error.message || 'An error occurred while creating the role'
+    showErrorModal.value = true
+  } finally {
+    isSubmitting.value = false
   }
+}
 
-  // Show success message
-  showSuccess.value = true
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  router.push('/user-management?tab=role-creation')
+}
 
-  // Reset form
-  newRole.value = {
-    name: '',
-    permissions: [],
-    status: 'active'
-  }
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
+}
 
-  // Redirect back after a short delay
-  setTimeout(() => {
-    router.push('/user-management')
-  }, 2000)
+const retryCreateRole = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
+  createRole()
 }
 </script>

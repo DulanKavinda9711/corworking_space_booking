@@ -1,3 +1,5 @@
+import { useAuthStore } from '@/stores/auth'
+
 /**
  * Centralized API Service
  * 
@@ -42,6 +44,26 @@ export interface User {
   status: 'active' | 'inactive' | 'blocked'
   lastLogin?: string
   permissions: string[]
+}
+
+export interface Permission {
+  id: number
+  code_name: string
+  description: string
+}
+
+export interface PermissionDetail {
+  id: number
+  code_name: string
+  description: string
+}
+
+export interface Role {
+  id: number
+  name: string
+  is_active: boolean
+  created_date: string
+  permission_details: PermissionDetail[]
 }
 
 export interface Booking {
@@ -2846,6 +2868,220 @@ export const buildBaseUrl = (path: string): string => {
 }
 
 // ============================================================================
+// PERMISSIONS API
+// ============================================================================
+
+export const permissionApi = {
+  /**
+   * Get all permission categories and permissions
+   */
+  async getAllPermissions(): Promise<ApiResponse<Permission[]>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('permissions/get-all-permissions'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Permissions fetched successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to fetch permissions')
+      }
+    } catch (error: any) {
+      console.error('Get permissions error:', error)
+      return errorResponse('Network error while fetching permissions', [error.message])
+    }
+  },
+
+  /**
+   * Create a new permission
+   */
+  async createPermission(permission: { name: string; category: string; description?: string }): Promise<ApiResponse<{ id: string }>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('permissions'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(permission)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success && data.permission) {
+        return successResponse({ id: data.permission.id }, data.message || 'Permission created successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create permission')
+      }
+    } catch (error: any) {
+      console.error('Create permission error:', error)
+      return errorResponse('Network error while creating permission', [error.message])
+    }
+  },
+
+  /**
+   * Update an existing permission
+   */
+  async updatePermission(id: string, updates: Partial<{ name: string; category: string; description?: string }>): Promise<ApiResponse> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl(`permissions/${id}`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(updates)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        return successResponse(null, data.message || 'Permission updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update permission')
+      }
+    } catch (error: any) {
+      console.error('Update permission error:', error)
+      return errorResponse('Network error while updating permission', [error.message])
+    }
+  },
+
+  /**
+   * Delete a permission
+   */
+  async deletePermission(id: string): Promise<ApiResponse> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl(`permissions/${id}`), {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        return successResponse(null, data.message || 'Permission deleted successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to delete permission')
+      }
+    } catch (error: any) {
+      console.error('Delete permission error:', error)
+      return errorResponse('Network error while deleting permission', [error.message])
+    }
+  },
+
+  /**
+   * Create a new role with permissions
+   */
+  async createRole(roleData: { name: string; is_active: boolean; permission_ids: number[] }): Promise<ApiResponse<string>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('roles/create-role'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(roleData)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data || 'Role created successfully', data.message || 'Request processed successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create role')
+      }
+    } catch (error: any) {
+      console.error('Create role error:', error)
+      return errorResponse('Network error while creating role', [error.message])
+    }
+  },
+
+  /**
+   * Get all roles with their permission details
+   */
+  async getAllRoles(): Promise<ApiResponse<Role[]>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('roles/get-all'), {
+        method: 'POST', // Changed from GET to POST
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({}) // Empty body for POST request
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Roles fetched successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to fetch roles')
+      }
+    } catch (error: any) {
+      console.error('Get roles error:', error)
+      return errorResponse('Network error while fetching roles', [error.message])
+    }
+  }
+}
+
+// ============================================================================
 // DEFAULT EXPORT
 // ============================================================================
 
@@ -2862,5 +3098,6 @@ export default {
   product: productApi,
   payment: paymentApi,
   message: messageApi,
-  dashboard: dashboardApi
+  dashboard: dashboardApi,
+  permission: permissionApi
 }
