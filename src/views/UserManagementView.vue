@@ -83,18 +83,25 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                   <div class="relative">
-                    <select v-model="filters.role" @focus="toggleDropdown('role')" @blur="closeDropdown('role')"
-                      class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900">
-                      <option value="">All Roles</option>
-                      <option value="super-admin">Super Admin</option>
-                      <option value="admin">Admin</option>
-                      <option value="manager">Manager</option>
-                      <option value="operator">Operator</option>
-                    </select>
+                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                      <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ option.label }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg class="h-4 w-4 text-gray-400 transform transition-transform"
-                        :class="{ 'rotate-180': dropdownStates.role }" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.role ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -244,18 +251,25 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                   <div class="relative">
-                    <select v-model="filters.role" @focus="toggleDropdown('role')" @blur="closeDropdown('role')"
-                      class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-                      <option value="">All Roles</option>
-                      <option value="super-admin">Super Admin</option>
-                      <option value="admin">Admin</option>
-                      <option value="manager">Manager</option>
-                      <option value="operator">Operator</option>
-                    </select>
+                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                      <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ option.label }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg class="h-4 w-4 text-gray-400 transform transition-transform"
-                        :class="{ 'rotate-180': dropdownStates.role }" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.role ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -266,16 +280,25 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <div class="relative">
-                    <select v-model="filters.status" @focus="toggleDropdown('status')" @blur="closeDropdown('status')"
-                      class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-                      <option value="">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                    <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                      <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ option.label }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg class="h-4 w-4 text-gray-400 transform transition-transform"
-                        :class="{ 'rotate-180': dropdownStates.status }" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.status ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -710,6 +733,21 @@ const dropdownStates = ref({
   status: false
 })
 
+// Dropdown options
+const roleOptions = [
+  { value: '', label: 'All Roles' },
+  { value: 'super-admin', label: 'Super Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'operator', label: 'Operator' }
+]
+
+const statusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+]
+
 // Filters
 const filters = ref({
   startDate: '',
@@ -1059,14 +1097,45 @@ const resetFilters = () => {
 }
 
 // Dropdown control functions
-const toggleDropdown = (dropdown: string) => {
-  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+const toggleDropdown = (dropdownName: string) => {
+  // Close all dropdowns first
+  closeAllDropdowns()
+  // Then open the clicked dropdown
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = true
 }
 
 const closeDropdown = (dropdown: string) => {
   setTimeout(() => {
     dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
   }, 150)
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
+
+// Dropdown label functions
+const getRoleLabel = (value: string) => {
+  const option = roleOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Roles'
+}
+
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Status'
+}
+
+// Dropdown select functions
+const selectRole = (value: string) => {
+  filters.value.role = value
+  closeAllDropdowns()
+}
+
+const selectStatus = (value: string) => {
+  filters.value.status = value
+  closeAllDropdowns()
 }
 
 const viewUser = (user: User) => {
@@ -1213,8 +1282,8 @@ import { onMounted, onUnmounted } from 'vue'
 // Handle click outside for dropdowns
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
-  if (!target.closest('.date-input') && !target.closest('.date-picker-container')) {
-    // No date picker to close since we're using the component now
+  if (!target.closest('.relative')) {
+    closeAllDropdowns()
   }
 }
 

@@ -56,32 +56,31 @@
             <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div class="relative">
-              <select 
-                v-model="filters.status"
-                @focus="toggleDropdown('status')"
-                @blur="closeDropdown('status')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer"
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="blocked">Inactive</option>
-              </select>
+              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+              </div>
+
+              <!-- Dropdown Options -->
+              <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div class="p-2">
+                  <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                    {{ option.label }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dropdown Arrow -->
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.status ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <svg :class="[
+                  'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                  dropdownStates.status ? 'transform rotate-180' : ''
+                ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
           </div>
-            <div class="flex items-end justify-end">
+            <div class="flex items-end justify-end md:col-start-4">
               <button
               @click="resetFilters"
               class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600"
@@ -488,7 +487,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { facilityApi } from '@/services/api'
 import {
@@ -501,7 +500,6 @@ import {
 
 // State
 const searchQuery = ref('')
-const statusFilter = ref('') // Default to show all facilities
 const facilities = ref<any[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
@@ -515,6 +513,12 @@ const dropdownStates = ref({
 const filters = ref({
   status: ''
 })
+
+const statusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'blocked', label: 'Inactive' }
+]
 
 // Modal state
 const showDeleteModal = ref(false)
@@ -550,8 +554,8 @@ const filteredFacilities = computed(() => {
   }
 
   // Apply status filter
-  if (statusFilter.value) {
-    filtered = filtered.filter(facility => facility.status === statusFilter.value)
+  if (filters.value.status) {
+    filtered = filtered.filter(facility => facility.status === filters.value.status)
   }
 
   return filtered
@@ -766,19 +770,47 @@ const confirmStatusToggle = async () => {
 
 const resetFilters = () => {
   searchQuery.value = ''
-  statusFilter.value = '' // Clear status filter to show all facilities
+  filters.value.status = '' // Clear status filter to show all facilities
   currentPage.value = 1
 }
 
 // Dropdown control functions
 const toggleDropdown = (dropdown: string) => {
+  // Close all dropdowns first
+  closeAllDropdowns()
+  // Then open the clicked dropdown
   dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
 }
 
 const closeDropdown = (dropdown: string) => {
-  setTimeout(() => {
-    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
-  }, 150)
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
+}
+
+const closeAllDropdowns = () => {
+  Object.keys(dropdownStates.value).forEach(key => {
+    dropdownStates.value[key as keyof typeof dropdownStates.value] = false
+  })
+}
+
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Status'
+}
+
+const selectStatus = (value: string) => {
+  filters.value.status = value
+  closeDropdown('status')
+}
+
+// Click outside handler
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const dropdownContainer = target.closest('.relative')
+  
+  // Close all dropdowns if clicking outside any dropdown container
+  if (!dropdownContainer) {
+    closeAllDropdowns()
+  }
 }
 
 // Pagination methods
@@ -927,6 +959,12 @@ watch(viewMode, () => {
 // Load facilities on component mount
 onMounted(() => {
   loadFacilities()
+  document.addEventListener('click', handleClickOutside)
+})
+
+// Cleanup event listener
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 <style scope>

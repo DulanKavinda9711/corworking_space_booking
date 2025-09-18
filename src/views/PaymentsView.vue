@@ -44,14 +44,20 @@
             <div class="md:w-40">
               <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
               <div class="relative">
-                <select v-model="filters.product" @focus="toggleDropdown('product')" @blur="closeDropdown('product')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Products</option>
-                  <option value="meeting-room">Meeting Room</option>
-                  <option value="hot-desk">Hot Desk</option>
-                  <option value="private-office">Private Office</option>
-                  <option value="event-space">Event Space</option>
-                </select>
+                <div @click="toggleDropdown('product')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getProductLabel(filters.product) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.product" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in productOptions" :key="option.value" @click="selectProduct(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
@@ -65,13 +71,20 @@
             <div class="md:w-48">
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <select v-model="filters.location" @focus="toggleDropdown('location')" @blur="closeDropdown('location')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
-                  <option value="">All Locations</option>
-                  <option value="main-branch">Main Branch - Downtown</option>
-                  <option value="tech-hub">Tech Hub - Silicon Valley</option>
-                  <option value="creative-quarter">Creative Quarter</option>
-                </select>
+                <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getLocationLabel(filters.location) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.location" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in locationOptions" :key="option.value" @click="selectLocation(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
@@ -85,13 +98,20 @@
             <div class="md:w-40">
               <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
               <div class="relative">
-                <select v-model="sortBy" @focus="toggleDropdown('sortBy')" @blur="closeDropdown('sortBy')"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 appearance-none cursor-pointer">
-                  <option value="date">Date</option>
-                  <option value="amount">Amount</option>
-                  <option value="booking">Booking ID</option>
-                  <option value="commission">Commission</option>
-                </select>
+                <div @click="toggleDropdown('sortBy')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900">{{ getSortByLabel(sortBy) }}</span>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="dropdownStates.sortBy" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <div class="p-2">
+                    <div v-for="option in sortByOptions" :key="option.value" @click="selectSortBy(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                      {{ option.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dropdown Arrow -->
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <svg :class="[
                     'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
@@ -219,7 +239,7 @@ import { useRouter } from 'vue-router'
 import { useCommissionStore } from '@/stores/commission'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
-import { paymentApi } from '@/services/api'
+import { paymentApi, locationApi } from '@/services/api'
 import {
   mdiCog,
   mdiWallet,
@@ -271,8 +291,8 @@ const handleDateRangeChange = (newDateRange: { startDate: string; endDate: strin
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
 
-  // Close all dropdowns if clicking outside any select element
-  if (!target.closest('select')) {
+  // Close all dropdowns if clicking outside any dropdown container
+  if (!target.closest('.relative')) {
     closeAllDropdowns()
   }
 }
@@ -290,6 +310,7 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   // Commission settings are handled by the store
   fetchPayments()
+  fetchLocations()
 })
 
 onUnmounted(() => {
@@ -310,6 +331,20 @@ const fetchPayments = async () => {
   }
 }
 
+// Fetch locations data
+const fetchLocations = async () => {
+  try {
+    const response = await locationApi.getAllLocations()
+    if (response.success && response.data) {
+      locations.value = response.data
+    } else {
+      console.error('Failed to fetch locations:', response.message)
+    }
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+  }
+}
+
 // Sorting
 const sortBy = ref('date')
 const sortOrder = ref('desc')
@@ -321,6 +356,32 @@ const dropdownStates = ref({
   sortBy: false
 })
 
+// Dropdown options
+const productOptions = [
+  { value: '', label: 'All Products' },
+  { value: 'meeting-room', label: 'Meeting Room' },
+  { value: 'hot-desk', label: 'Hot Desk' },
+  { value: 'dedicated-desk', label: 'Dedicated Desk' }
+]
+
+const locationOptions = computed(() => {
+  const options = [{ value: '', label: 'All Locations' }]
+  locations.value.forEach(location => {
+    options.push({
+      value: location.id,
+      label: location.name
+    })
+  })
+  return options
+})
+
+const sortByOptions = [
+  { value: 'date', label: 'Date' },
+  { value: 'amount', label: 'Amount' },
+  { value: 'booking', label: 'Booking ID' },
+  { value: 'commission', label: 'Commission' }
+]
+
 // Commission settings from store
 const commissionSettings = computed(() => commissionStore.commissionSettings)
 
@@ -331,6 +392,9 @@ const calculateCommission = (amount: number, rate: number) => {
 
 // Payments data (to be populated from API)
 const payments = ref<Payment[]>([])
+
+// Locations data (to be populated from API)
+const locations = ref<any[]>([])
 
 // Computed payments with dynamic commission calculation
 const paymentsWithCommission = computed(() => {
@@ -361,8 +425,7 @@ const filteredPayments = computed(() => {
     const productMap: Record<string, string[]> = {
       'meeting-room': ['Meeting Room'],
       'hot-desk': ['Hot Desk'],
-      'private-office': ['Private Office'],
-      'event-space': ['Event Space']
+      'dedicated-desk': ['Dedicated Desk']
     }
     filtered = filtered.filter(payment =>
       productMap[filters.value.product]?.includes(payment.productType)
@@ -371,14 +434,12 @@ const filteredPayments = computed(() => {
 
   // Apply location filter
   if (filters.value.location) {
-    const locationMap: Record<string, string> = {
-      'main-branch': 'Main Branch - Downtown',
-      'tech-hub': 'Tech Hub - Silicon Valley',
-      'creative-quarter': 'Creative Quarter'
+    const selectedLocation = locations.value.find(location => location.id === filters.value.location)
+    if (selectedLocation) {
+      filtered = filtered.filter(payment =>
+        payment.locationName === selectedLocation.name
+      )
     }
-    filtered = filtered.filter(payment =>
-      payment.locationName === locationMap[filters.value.location]
-    )
   }
 
   return filtered
@@ -444,8 +505,11 @@ const resetFilters = () => {
 }
 
 // Dropdown control functions
-const toggleDropdown = (dropdown: string) => {
-  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+const toggleDropdown = (dropdownName: string) => {
+  // Close all dropdowns first
+  closeAllDropdowns()
+  // Then open the clicked dropdown
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = true
 }
 
 const closeDropdown = (dropdown: string) => {
@@ -458,6 +522,38 @@ const closeAllDropdowns = () => {
   Object.keys(dropdownStates.value).forEach(key => {
     dropdownStates.value[key as keyof typeof dropdownStates.value] = false
   })
+}
+
+// Dropdown label functions
+const getProductLabel = (value: string) => {
+  const option = productOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Products'
+}
+
+const getLocationLabel = (value: string) => {
+  const option = locationOptions.value.find((opt: { value: string; label: string }) => opt.value === value)
+  return option ? option.label : 'All Locations'
+}
+
+const getSortByLabel = (value: string) => {
+  const option = sortByOptions.find(opt => opt.value === value)
+  return option ? option.label : 'Date'
+}
+
+// Dropdown select functions
+const selectProduct = (value: string) => {
+  filters.value.product = value
+  closeAllDropdowns()
+}
+
+const selectLocation = (value: string) => {
+  filters.value.location = value
+  closeAllDropdowns()
+}
+
+const selectSortBy = (value: string) => {
+  sortBy.value = value
+  closeAllDropdowns()
 }
 
 const exportToCSV = () => {

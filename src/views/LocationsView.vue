@@ -1,6 +1,6 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6">
+    <div class="space-y-6" @click="closeAllDropdowns">
       <!-- Page Header -->
       <div class="flex items-center justify-between">
         <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
@@ -37,7 +37,7 @@
       
 
       <!-- Locations Table -->
-      <div class="bg-white rounded-xl shadow-card overflow-hidden">
+      <div class="bg-white rounded-xl shadow-card overflow-visible">
         <div class="bg-white  shadow-card p-6 border-b">
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div class="md:col-span-2">
@@ -56,27 +56,26 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <div class="relative">
-              <select 
-                v-model="filters.status" 
-                @focus="toggleDropdown('status')"
-                @blur="closeDropdown('status')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+            <div class="relative" @click.stop>
+              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+              </div>
+
+              <!-- Dropdown Options -->
+              <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div class="p-2">
+                  <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                    {{ option.label }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dropdown Arrow -->
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.status ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <svg :class="[
+                  'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                  dropdownStates.status ? 'transform rotate-180' : ''
+                ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -84,28 +83,26 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <div class="relative">
-              <select 
-                v-model="filters.location" 
-                @focus="toggleDropdown('location')"
-                @blur="closeDropdown('location')"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black appearance-none cursor-pointer"
-              >
-                <option value="">All Locations</option>
-                <option v-for="location in locations" :key="location.id" :value="location.id">
-                  {{ location.name }}
-                </option>
-              </select>
+            <div class="relative" @click.stop>
+              <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                <span class="text-gray-900 truncate">{{ getLocationLabel(filters.location) }}</span>
+              </div>
+
+              <!-- Dropdown Options -->
+              <div v-if="dropdownStates.location" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div class="p-2">
+                  <div v-for="option in locationOptions" :key="option.value" @click="selectLocation(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                    {{ option.label }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dropdown Arrow -->
               <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg 
-                  :class="[
-                    'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                    dropdownStates.location ? 'transform rotate-180' : ''
-                  ]"
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <svg :class="[
+                  'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                  dropdownStates.location ? 'transform rotate-180' : ''
+                ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -504,6 +501,24 @@ const dropdownStates = ref({
   location: false
 })
 
+// Dropdown options
+const statusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+]
+
+const locationOptions = computed(() => {
+  const options = [{ value: '', label: 'All Locations' }]
+  locations.value.forEach(location => {
+    options.push({
+      value: location.id,
+      label: location.name
+    })
+  })
+  return options
+})
+
 // Form data
 const form = ref({
   id: null as string | null,
@@ -584,14 +599,42 @@ const resetFilters = () => {
 }
 
 // Dropdown control functions
-const toggleDropdown = (dropdown: string) => {
-  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+const toggleDropdown = (dropdownName: string) => {
+  // Close all dropdowns first
+  closeAllDropdowns()
+  // Then open the clicked dropdown
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = true
 }
 
-const closeDropdown = (dropdown: string) => {
-  setTimeout(() => {
-    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
-  }, 150)
+const closeDropdown = (dropdownName: string) => {
+  dropdownStates.value[dropdownName as keyof typeof dropdownStates.value] = false
+}
+
+const closeAllDropdowns = () => {
+  dropdownStates.value.status = false
+  dropdownStates.value.location = false
+}
+
+// Dropdown label functions
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'All Status'
+}
+
+const getLocationLabel = (value: string) => {
+  const option = locationOptions.value.find(opt => opt.value === value)
+  return option ? option.label : 'All Locations'
+}
+
+// Dropdown select functions
+const selectStatus = (value: string) => {
+  filters.value.status = value
+  closeAllDropdowns()
+}
+
+const selectLocation = (value: string) => {
+  filters.value.location = value
+  closeAllDropdowns()
 }
 
 const navigateToLocationDetail = (locationId: string) => {

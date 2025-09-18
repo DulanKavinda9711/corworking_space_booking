@@ -2839,8 +2839,8 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://192.168.179.237:9011',
-  API_BASE_URL: 'http://192.168.179.237:9011/api',
+  BASE_URL: 'http://192.168.56.1:9011',
+  API_BASE_URL: 'http://192.168.56.1:9011/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3
 }

@@ -46,8 +46,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getLocationLabel(filters.location) }}</span>
+                <div @click="toggleDropdown('location')" class="w-[150px] border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900 truncate">{{ getLocationLabel(filters.location) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -519,6 +519,8 @@ import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { mdiCalendar } from '@mdi/js'
+import { locationApi } from '@/services/api'
+import type { Location } from '@/services/api'
 
 // Router
 const route = useRoute()
@@ -565,6 +567,10 @@ const filters = ref({
   subscriptionStatus: '',
   status: ''
 })
+
+// Locations data
+const locations = ref<Location[]>([])
+const isLoadingLocations = ref(false)
 
 // Pagination
 const currentPage = ref(1)
@@ -952,7 +958,10 @@ const filteredBookings = computed(() => {
     bookings = bookings.filter(b => b.location === filters.value.location)
   }
   if (filters.value.productType && filters.value.productType.length > 0) {
-    bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
+    bookings = bookings.filter(b => {
+      const displayType = b.productType === 'Subscription' ? 'Dedicated Desk' : b.productType
+      return filters.value.productType.includes(displayType)
+    })
   }
   if (filters.value.status) {
     bookings = bookings.filter(b => b.status === filters.value.status)
@@ -1568,13 +1577,17 @@ const productTypeOptions = [
   { value: 'Dedicated Desk', label: 'Dedicated Desk' }
 ]
 
-// Location Options
-const locationOptions = [
-  { value: '', label: 'All Locations' },
-  { value: 'main-branch', label: 'Main Branch' },
-  { value: 'tech-hub', label: 'Tech Hub' },
-  { value: 'business-center', label: 'Business Center' }
-]
+// Location Options - computed from fetched locations
+const locationOptions = computed(() => {
+  const options = [{ value: '', label: 'All Locations' }]
+  locations.value.forEach(location => {
+    options.push({
+      value: location.id,
+      label: location.name
+    })
+  })
+  return options
+})
 
 // User Type Options
 const userTypeOptions = [
@@ -1637,7 +1650,7 @@ const selectSubscriptionType = (value: string) => {
 
 // Label getter functions
 const getLocationLabel = (value: string) => {
-  const option = locationOptions.find(opt => opt.value === value)
+  const option = locationOptions.value.find(opt => opt.value === value)
   return option ? option.label : 'All Locations'
 }
 
@@ -1656,9 +1669,27 @@ const getSubscriptionTypeLabel = (value: string) => {
   return option ? option.label : 'All Periods'
 }
 
+// Fetch locations from API
+const fetchLocations = async () => {
+  isLoadingLocations.value = true
+  try {
+    const response = await locationApi.getAllLocations()
+    if (response.success && response.data) {
+      locations.value = response.data
+    } else {
+      console.error('Failed to load locations:', response.message)
+    }
+  } catch (error) {
+    console.error('Error fetching locations:', error)
+  } finally {
+    isLoadingLocations.value = false
+  }
+}
+
 // Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  fetchLocations()
 
   // Check for tab query parameter and set active tab
   const tabParam = route.query.tab as string
