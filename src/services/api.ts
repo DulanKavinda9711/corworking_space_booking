@@ -298,8 +298,8 @@ export const authApi = {
       const data = await response.json()
 
       if (data.status_code === 200 && data.data) {
-        // Store token in localStorage
-        localStorage.setItem('authToken', data.data.token)
+        // Token will be stored in Pinia store instead of localStorage
+        // localStorage.setItem('authToken', data.data.token)
 
         return successResponse(data.data, data.message || 'Login successful')
       } else {
@@ -337,8 +337,8 @@ export const authApi = {
     // }
 
     // Mock logout - remove when real API is implemented
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
+    // localStorage.removeItem('authToken')
+    // localStorage.removeItem('user')
 
     return successResponse(null, 'Logged out successfully')
   },
@@ -383,11 +383,11 @@ export const authApi = {
     // }
 
     // Mock implementation - remove when real API is implemented
-    const userJson = localStorage.getItem('user')
-    if (userJson) {
-      const user = JSON.parse(userJson)
-      return successResponse(user)
-    }
+    // const userJson = localStorage.getItem('user')
+    // if (userJson) {
+    //   const user = JSON.parse(userJson)
+    //   return successResponse(user)
+    // }
 
     return errorResponse('User not authenticated')
   },
@@ -432,7 +432,7 @@ export const authApi = {
 
     // Mock implementation - remove when real API is implemented
     const token = 'mock-refreshed-token-' + Date.now()
-    localStorage.setItem('authToken', token)
+    // localStorage.setItem('authToken', token)
 
     return successResponse({ token }, 'Token refreshed')
   }

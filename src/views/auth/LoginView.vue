@@ -308,6 +308,7 @@ import { useRouter } from 'vue-router'
 import { mdiAccount, mdiEye, mdiEyeOff, mdiAlert, mdiCheckCircle } from '@mdi/js'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/services/api'
+import { jwtDecode } from 'jwt-decode'
 
 const logo = '/assets/logo.png'
 
@@ -355,12 +356,18 @@ const handleLogin = async () => {
       })
 
       if (response.success && response.data) {
-        let { token, admin_id, username, role } = response.data
+        const { token } = response.data
+
+        // Decode JWT token to get user information
+        const decodedToken: any = jwtDecode(token)
+        
+        // Extract user info from token claims
+        const admin_id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '1'
+        const username = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || form.value.username
+        const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Admin'
 
         // Ensure superadmin role is correctly set
-        if (form.value.username === 'superadmin') {
-          role = 'SuperAdmin'
-        }
+        const finalRole = form.value.username === 'superadmin' ? 'SuperAdmin' : role
 
         // Store token and user data using auth store
         authStore.setAuthToken(token)
@@ -368,12 +375,12 @@ const handleLogin = async () => {
           id: admin_id.toString(),
           username: username,
           email: `${username}@coworkingspace.com`,
-          name: role === 'SuperAdmin' ? 'Super Administrator' : 'Administrator',
-          role: role === 'SuperAdmin' ? 'super-admin' : 'admin'
+          name: finalRole === 'SuperAdmin' ? 'Super Administrator' : 'Administrator',
+          role: finalRole === 'SuperAdmin' ? 'super-admin' : 'admin'
         })
 
         // For SuperAdmin, ensure onboarding flags are set to bypass checks
-        if (role === 'SuperAdmin') {
+        if (finalRole === 'SuperAdmin') {
           authStore.setOnboardingComplete('true')
           authStore.setPasswordReset('true')
           authStore.setDemoPasswordDisabled('true')

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useThemeStore = defineStore('theme', () => {
-  // State - Pinia persistence will handle localStorage automatically
+  // State - Pinia persistence will handle sessionStorage automatically
   const theme = ref<string>('light')
 
   // Actions
@@ -31,8 +31,5 @@ export const useThemeStore = defineStore('theme', () => {
     toggleTheme
   }
 }, {
-  persist: {
-    key: 'theme',
-    storage: localStorage
-  }
+  persist: true
 })

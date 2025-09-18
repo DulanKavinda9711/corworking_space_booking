@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  // State - Pinia persistence will handle localStorage automatically
+  // State - Pinia persistence will handle sessionStorage automatically
   const authToken = ref<string | null>(null)
   const user = ref<any>(null)
   const userPassword = ref<string | null>(null)
@@ -83,8 +83,5 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth
   }
 }, {
-  persist: {
-    key: 'auth',
-    storage: localStorage
-  }
+  persist: true
 })

@@ -97,9 +97,4 @@ export const useRewardsStore = defineStore('rewards', () => {
     getRejectedRequests,
     getRequestsByCustomer
   }
-}, {
-  persist: {
-    key: 'rewards',
-    storage: localStorage
-  }
 })

@@ -39,9 +39,4 @@ export const useProductsStore = defineStore('products', () => {
     // Actions
     addDeletedProduct
   }
-}, {
-  persist: {
-    key: 'products',
-    storage: localStorage
-  }
 })

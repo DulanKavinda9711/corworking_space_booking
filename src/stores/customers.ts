@@ -89,9 +89,4 @@ export const useCustomersStore = defineStore('customers', () => {
     activeCustomers,
     blockedCustomers
   }
-}, {
-  persist: {
-    key: 'customers',
-    storage: localStorage
-  }
 })

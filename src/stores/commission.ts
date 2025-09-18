@@ -37,9 +37,4 @@ export const useCommissionStore = defineStore('commission', () => {
     setSquareHubRate,
     setCeylincoRate
   }
-}, {
-  persist: {
-    key: 'commission',
-    storage: localStorage
-  }
 })
