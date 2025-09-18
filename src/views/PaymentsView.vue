@@ -131,9 +131,9 @@
           </div>
         </div>
 
-        <div class="overflow-x-auto rounded-b-xl">
-          <table class="min-w-full divide-y divide-gray-200 rounded-b-xl">
-            <thead class="bg-gray-50 rounded-t-xl">
+        <div class="overflow-x-auto h-[410px]">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Booking ID
@@ -158,7 +158,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200 rounded-b-xl">
+            <tbody v-if="filteredPayments.length > 0" class="bg-white divide-y divide-gray-200">
               <tr v-for="payment in sortedPayments" :key="payment.id" @click="navigateToPaymentDetail(payment.id)"
                 class="hover:bg-gray-50 cursor-pointer transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -215,17 +215,23 @@
                 </td>
               </tr>
             </tbody>
-          </table>
-        </div>
 
-        <!-- Empty State -->
-        <div v-if="filteredPayments.length === 0" class="text-center py-12 rounded-b-xl">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No payments found</h3>
-          <p class="mt-1 text-sm text-gray-500">No payments match the current filters.</p>
+            <!-- Empty State Row -->
+            <tbody v-if="filteredPayments.length === 0" class="bg-white">
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center">
+                  <div>
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No payments found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No payments match the current filters.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

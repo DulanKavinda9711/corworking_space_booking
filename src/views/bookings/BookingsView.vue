@@ -4,7 +4,7 @@
 
 
       <!-- Tabs -->
-      <div class="bg-white rounded-xl shadow-card">
+      <div class="bg-white rounded-2xl shadow-card overflow-hidden">
         <div class="border-b border-gray-200">
           <div class="flex items-center justify-between px-6">
             <nav class="flex space-x-8" aria-label="Tabs">
@@ -100,16 +100,37 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <div class="relative">
-                <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(filters.status) }}</span>
+                <!-- Custom Multi-Select Dropdown -->
+                <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center overflow-hidden">
+                  <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
+                    <span v-if="filters.status.length === 0" class="text-gray-500">All Status</span>
+                    <span v-else-if="filters.status.length === 1" class="text-gray-900 truncate">
+                      {{ getStatusDisplayLabel(filters.status[0]) }}
+                    </span>
+                    <span v-else class="text-gray-900 truncate">
+                      {{ filters.status.length }} selected
+                    </span>
+                  </div>
                 </div>
 
                 <!-- Dropdown Options -->
                 <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   <div class="p-2">
-                    <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
-                      {{ option.label }}
-                    </div>
+                    <!-- Individual Checkboxes -->
+                    <label v-for="option in statusOptions.filter(opt => opt.value !== '' && (
+                      (activeTab === 'bookings' || activeTab === 'subscriptions') ? (opt.value === 'ongoing' || opt.value === 'upcoming') :
+                      activeTab === 'history' ? (opt.value === 'completed' || opt.value === 'cancelled') :
+                      true
+                    ))" :key="option.value"
+                           class="flex items-center p-2 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        :value="option.value"
+                        v-model="filters.status"
+                        class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <span class="ml-2 text-sm text-gray-900">{{ option.label }}</span>
+                    </label>
                   </div>
                 </div>
 
@@ -129,17 +150,14 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
               <div class="relative">
                 <!-- Custom Multi-Select Dropdown -->
-                <div @click="toggleDropdown('productType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white h-[2.5rem] flex items-center overflow-hidden">
+                <div @click="toggleDropdown('productType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center overflow-hidden">
                   <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
                     <span v-if="filters.productType.length === 0" class="text-gray-500">All Types</span>
-                    <span v-else v-for="type in filters.productType" :key="type"
-                          class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-100 text-green-800 flex-shrink-0">
-                      {{ type }}
-                      <button @click.stop="removeProductType(type)" class="ml-1 text-green-600 hover:text-green-800 flex-shrink-0">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                    <span v-else-if="filters.productType.length === 1" class="text-gray-900 truncate">
+                      {{ filters.productType[0] }}
+                    </span>
+                    <span v-else class="text-gray-900 truncate">
+                      {{ filters.productType.length }} selected
                     </span>
                   </div>
                 </div>
@@ -224,7 +242,7 @@
         </div>
 
         <!-- Bookings Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto h-[410px]">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -271,7 +289,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody v-if="filteredBookings.length > 0" class="bg-white divide-y divide-gray-200">
               <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50 cursor-pointer"
                 @click="navigateToBookingDetails(booking)">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -398,68 +416,23 @@
                 </td>
               </tr>
             </tbody>
+
+            <!-- Empty State Row -->
+            <tbody v-if="filteredBookings.length === 0" class="bg-white">
+              <tr>
+                <td :colspan="getTableColspan" class="px-6 py-12 text-center">
+                  <div>
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No bookings match the current filters.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 flex justify-between sm:hidden">
-              <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                Previous
-              </button>
-              <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                Next
-              </button>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700">
-                  Showing {{ startItem }} to {{ endItem }} of {{ filteredBookings.length }} results
-                </p>
-              </div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                  <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
-                    page === currentPage
-                      ? 'z-10 bg-green-50 border-green-500 text-green-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors'
-                  ]">
-                    {{ page }}
-                  </button>
-                  <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredBookings.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
-          <p class="mt-1 text-sm text-gray-500">No bookings match the current filters.</p>
         </div>
       </div>
     </div>
@@ -569,7 +542,7 @@ const filters = ref({
   userType: '',
   subscriptionType: '',
   subscriptionStatus: '',
-  status: ''
+  status: [] as string[]
 })
 
 // Pagination
@@ -960,8 +933,8 @@ const filteredBookings = computed(() => {
   if (filters.value.productType && filters.value.productType.length > 0) {
     bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
   }
-  if (filters.value.status) {
-    bookings = bookings.filter(b => b.status === filters.value.status)
+  if (filters.value.status && filters.value.status.length > 0) {
+    bookings = bookings.filter(b => filters.value.status.includes(b.status))
   }
   if (filters.value.subscriptionType) {
     bookings = bookings.filter(b => b.subscriptionType === filters.value.subscriptionType)
@@ -1003,6 +976,14 @@ const visiblePages = computed(() => {
     pages.push(i)
   }
   return pages
+})
+
+const getTableColspan = computed(() => {
+  if (activeTab.value === 'all') return 11
+  if (activeTab.value === 'subscriptions') return 9
+  if (activeTab.value === 'bookings') return 9
+  if (activeTab.value === 'history') return 8
+  return 11 // fallback
 })
 
 // Public function to view booking details
@@ -1328,7 +1309,7 @@ const resetFilters = () => {
     userType: '',
     subscriptionType: '',
     subscriptionStatus: '',
-    status: ''
+    status: []
   }
   currentPage.value = 1
 }
@@ -1478,21 +1459,21 @@ const exportToCSV = () => {
 }
 
 // Pagination methods
-const goToPage = (page: number) => {
-  currentPage.value = page
-}
+// const goToPage = (page: number) => {
+//   currentPage.value = page
+// }
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
+// const nextPage = () => {
+//   if (currentPage.value < totalPages.value) {
+//     currentPage.value++
+//   }
+// }
 
-const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
+// const previousPage = () => {
+//   if (currentPage.value > 1) {
+//     currentPage.value--
+//   }
+// }
 
 
 
@@ -1616,6 +1597,13 @@ const removeProductType = (type: string) => {
   }
 }
 
+const removeStatus = (status: string) => {
+  const index = filters.value.status.indexOf(status)
+  if (index > -1) {
+    filters.value.status.splice(index, 1)
+  }
+}
+
 // const selectAllProductTypes = () => {
 //   filters.value.productType = productTypeOptions.map(option => option.value)
 // }
@@ -1633,11 +1621,6 @@ const selectLocation = (value: string) => {
 const selectUserType = (value: string) => {
   filters.value.userType = value
   closeDropdown('userType')
-}
-
-const selectStatus = (value: string) => {
-  filters.value.status = value
-  closeDropdown('status')
 }
 
 const selectSubscriptionType = (value: string) => {
@@ -1659,6 +1642,11 @@ const getUserTypeLabel = (value: string) => {
 const getStatusLabel = (value: string) => {
   const option = statusOptions.find(opt => opt.value === value)
   return option ? option.label : 'All Status'
+}
+
+const getStatusDisplayLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : value
 }
 
 const getSubscriptionTypeLabel = (value: string) => {

@@ -69,7 +69,7 @@
 
         </div>
       </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto h-[410px]">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -99,7 +99,7 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody v-if="filteredCustomers.length > 0" class="bg-white divide-y divide-gray-200">
               <tr v-for="customer in paginatedCustomers" :key="customer.id" 
                   class="hover:bg-gray-50 cursor-pointer"
                   @click="viewCustomerDetails(customer.id)">
@@ -157,68 +157,23 @@
                 </td>
               </tr>
             </tbody>
+
+            <!-- Empty State Row -->
+            <tbody v-if="filteredCustomers.length === 0" class="bg-white">
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center">
+                  <div>
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No customers found</h3>
+                    <p class="mt-1 text-sm text-gray-500">No customers match the current filters.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 flex justify-between sm:hidden">
-              <button @click="previousPage" :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                Previous
-              </button>
-              <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                Next
-              </button>
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700">
-                  Showing {{ startItem }} to {{ endItem }} of {{ filteredCustomers.length }} results
-                </p>
-              </div>
-              <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button @click="previousPage" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                  <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="[
-                    page === currentPage
-                      ? 'z-10 bg-green-50 border-green-500 text-green-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 transition-colors',
-                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
-                  ]">
-                    {{ page }}
-                  </button>
-                  <button @click="nextPage" :disabled="currentPage === totalPages"
-                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="filteredCustomers.length === 0" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No customers found</h3>
-          <p class="mt-1 text-sm text-gray-500">No customers match the current filters.</p>
         </div>
       </div>
     </div>
@@ -562,21 +517,21 @@ const confirmToggleCustomerStatus = async () => {
 }
 
 // Pagination methods
-const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
+// const previousPage = () => {
+//   if (currentPage.value > 1) {
+//     currentPage.value--
+//   }
+// }
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
+// const nextPage = () => {
+//   if (currentPage.value < totalPages.value) {
+//     currentPage.value++
+//   }
+// }
 
-const goToPage = (page: number) => {
-  currentPage.value = page
-}
+// const goToPage = (page: number) => {
+//   currentPage.value = page
+// }
 
 // Click outside handler
 const handleClickOutside = (event: MouseEvent) => {

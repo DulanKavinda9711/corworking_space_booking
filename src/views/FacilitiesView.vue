@@ -93,23 +93,22 @@
 
         <!-- Table View -->
         <div v-if="viewMode === 'table'">
-          <!-- Table -->
-          <div class="overflow-x-auto border b">
+          <div class="overflow-x-auto h-[410px]">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Facility Name
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                      Actions
-                    </th>
-                  </tr>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Facility Name
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    Actions
+                  </th>
+                </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody v-if="filteredFacilities.length > 0" class="bg-white divide-y divide-gray-200">
                 <tr v-for="facility in paginatedFacilities" :key="facility.id" class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
@@ -144,6 +143,23 @@
                         :title="facility.status === 'active' ? 'Make Facility Inactive' : 'Activate Facility'">
                         <span>{{ facility.status === 'active' ? 'Inactive' : 'Activate' }}</span>
                       </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+
+              <!-- Empty State Row -->
+              <tbody v-if="filteredFacilities.length === 0 && !isLoading" class="bg-white">
+                <tr>
+                  <td colspan="3" class="px-6 py-12 text-center">
+                    <div>
+                      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      <h3 class="mt-2 text-sm font-medium text-gray-900">No facilities found</h3>
+                      <p class="mt-1 text-sm text-gray-500">
+                        {{ facilities.length === 0 ? 'No facilities have been created yet.' : 'No facilities match the current search and filters.' }}
+                      </p>
                     </div>
                   </td>
                 </tr>
@@ -225,7 +241,7 @@
         </div>
 
         <!-- Pagination (only show if there are facilities) -->
-        <div v-if="filteredFacilities.length > 0 && !isLoading" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+        <!-- <div v-if="filteredFacilities.length > 0 && !isLoading" class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
           <div class="flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="previousPage" :disabled="currentPage === 1"
@@ -273,7 +289,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
         
         <div class="overflow-x-auto"></div>
 
@@ -300,22 +316,6 @@
           </button>
         </div>
 
-        <!-- Empty State -->
-        <div v-else-if="filteredFacilities.length === 0 && !isLoading" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No facilities found</h3>
-          <p class="mt-1 text-sm text-gray-500">
-            {{ facilities.length === 0 ? 'No facilities have been created yet.' : 'No facilities match the current search and filters.' }}
-          </p>
-          <!-- <router-link v-if="facilities.length === 0" to="/facilities/add" class="mt-4 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Create First Facility
-          </router-link> -->
-        </div>
       </div>
     </div>
 
@@ -814,21 +814,21 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 // Pagination methods
-const goToPage = (page: number) => {
-  currentPage.value = page
-}
+// const goToPage = (page: number) => {
+//   currentPage.value = page
+// }
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
-}
+// const nextPage = () => {
+//   if (currentPage.value < totalPages.value) {
+//     currentPage.value++
+//   }
+// }
 
-const previousPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
+// const previousPage = () => {
+//   if (currentPage.value > 1) {
+//     currentPage.value--
+//   }
+// }
 
 // API methods
 const loadFacilities = async () => {

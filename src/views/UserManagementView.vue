@@ -52,7 +52,7 @@
         <!-- Role Creation Tab -->
         <div v-if="activeTab === 'role-creation'" class="space-y-6">
           <!-- Roles Table -->
-          <div class="bg-white rounded-xl shadow-card overflow-visible border-gray-200">
+          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
             <div class="bg-white border b shadow-card p-6">
               <div class="flex gap-4 items-end">
                 <!-- Search Field -->
@@ -76,174 +76,6 @@
                   <AdvancedDateRangePicker
                     :dateRange="roleCreationDateRange"
                     @dateRangeChange="handleRoleCreationDateRangeChange"
-                  />
-                </div>
-
-                <!-- Role Filter -->
-                <div class="relative flex-none w-40">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                  <div class="relative">
-                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                      <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
-                    </div>
-
-                    <!-- Dropdown Options -->
-                    <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      <div class="p-2">
-                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
-                          {{ option.label }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Dropdown Arrow -->
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg :class="[
-                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                        dropdownStates.role ? 'transform rotate-180' : ''
-                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Status Filter -->
-                <div class="relative flex-none w-40">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <div class="relative">
-                    <select v-model="filters.status" @focus="toggleDropdown('status')" @blur="closeDropdown('status')"
-                      class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-                      <option value="">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg class="h-4 w-4 text-gray-400 transform transition-transform"
-                        :class="{ 'rotate-180': dropdownStates.status }" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Reset Button -->
-                <div class="flex items-end ml-auto">
-                  <button @click="resetFilters"
-                    class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
-                    Reset Filters
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role Name
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Permissions</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
-                      At</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated
-                      At</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status
-                    </th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-gray-50 cursor-pointer" @click="viewRole(role)">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                          <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                              <path :d="mdiShieldAccount" />
-                            </svg>
-                          </div>
-                        </div>
-                        <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900">{{ role.name }}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="flex flex-wrap gap-1">
-                        <span v-for="permission in role.permissions.slice(0, 2)" :key="permission"
-                          class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                          {{ permission }}
-                        </span>
-                        <span v-if="role.permissions.length > 2"
-                          class="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
-                          +{{ role.permissions.length - 2 }} more
-                        </span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.createdAt) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.updatedAt) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getStatusClass(role.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                        {{ role.status }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
-                      <div class="flex items-center justify-end space-x-2">
-                        <button @click.stop="toggleRoleStatus(role)"
-                          :class="role.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                          :title="role.status === 'active' ? 'Make Role Inactive' : 'Make Role Active'">
-                          <span>{{ role.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Empty State for Roles -->
-            <div v-if="filteredRoles.length === 0" class="text-center py-12">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No roles found</h3>
-              <p class="mt-1 text-sm text-gray-500">No roles match the current search criteria.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- User Creation Tab -->
-        <div v-if="activeTab === 'user-creation'" class="space-y-6">
-          <!-- Filters Section -->
-          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
-            <div class="bg-white border b shadow-card p-6 overflow-visible">
-              <div class="flex gap-4 items-end">
-                <!-- Search Field -->
-                <div class="relative flex-no min-w-0">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
-                  <div class="relative">
-                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, username..."
-                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900" />
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Date Range Picker -->
-                <div class="relative flex-no min-w-0">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <AdvancedDateRangePicker
-                    :dateRange="userCreationDateRange"
-                    @dateRangeChange="handleUserCreationDateRangeChange"
                   />
                 </div>
 
@@ -314,9 +146,192 @@
                 </div>
               </div>
             </div>
+            <div class="overflow-x-auto h-[410px]">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role Name
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Permissions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
+                      At</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated
+                      At</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status
+                    </th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody v-if="filteredRoles.length > 0" class="bg-white divide-y divide-gray-200">
+                  <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-gray-50 cursor-pointer" @click="viewRole(role)">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                          <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path :d="mdiShieldAccount" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">{{ role.name }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex flex-wrap gap-1">
+                        <span v-for="permission in role.permissions.slice(0, 2)" :key="permission"
+                          class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                          {{ permission }}
+                        </span>
+                        <span v-if="role.permissions.length > 2"
+                          class="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                          +{{ role.permissions.length - 2 }} more
+                        </span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.createdAt) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.updatedAt) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :class="getStatusClass(role.status)" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ role.status }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
+                      <div class="flex items-center justify-end space-x-2">
+                        <button @click.stop="toggleRoleStatus(role)"
+                          :class="role.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                          :title="role.status === 'active' ? 'Make Role Inactive' : 'Make Role Active'">
+                          <span>{{ role.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+
+                <!-- Empty State Row -->
+                <tbody v-if="filteredRoles.length === 0" class="bg-white">
+                  <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                      <div>
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No roles found</h3>
+                        <p class="mt-1 text-sm text-gray-500">No roles match the current search criteria.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Creation Tab -->
+        <div v-if="activeTab === 'user-creation'" class="space-y-6">
+          <!-- Filters Section -->
+          <div class="bg-white rounded-xl shadow-card overflow-hidden border-gray-200">
+            <div class="bg-white border b shadow-card p-6 overflow-visible">
+              <div class="flex gap-4 items-end">
+                <!-- Search Field -->
+                <div class="relative flex-no min-w-0">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
+                  <div class="relative">
+                    <input v-model="searchQuery" type="text" placeholder="Search by name, email, username..."
+                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900" />
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Date Range Picker -->
+                <div class="relative flex-no min-w-0">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                  <AdvancedDateRangePicker
+                    :dateRange="userCreationDateRange"
+                    @dateRangeChange="handleUserCreationDateRangeChange"
+                  />
+                </div>
+
+                <!-- Role Filter -->
+                <div class="relative flex-none w-40 overflow-visible">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                  <div class="relative">
+                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                      <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ option.label }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.role ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="relative flex-none w-40">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <div class="relative">
+                    <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                      <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ option.label }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.status ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reset Button -->
+                <div class="flex items-end ml-auto">
+                  <button @click="resetFilters"
+                    class="px-6 py-2 border border-gray-300 text-gray-100 rounded-lg hover:bg-green-700 transition-colors bg-green-600">
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <!-- Users Table -->
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto h-[410px]">
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
@@ -336,7 +351,7 @@
                     </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody v-if="filteredUsers.length > 0" class="bg-white divide-y divide-gray-200">
                   <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 cursor-pointer"
                     @click="viewUser(user)">
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -375,17 +390,23 @@
                     </td>
                   </tr>
                 </tbody>
-              </table>
-            </div>
 
-            <!-- Empty State -->
-            <div v-if="filteredUsers.length === 0" class="text-center py-12">
-              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-              <p class="mt-1 text-sm text-gray-500">No users match the current search and filters.</p>
+                <!-- Empty State Row -->
+                <tbody v-if="filteredUsers.length === 0" class="bg-white">
+                  <tr>
+                    <td colspan="8" class="px-6 py-12 text-center">
+                      <div>
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+                        <p class="mt-1 text-sm text-gray-500">No users match the current search and filters.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
