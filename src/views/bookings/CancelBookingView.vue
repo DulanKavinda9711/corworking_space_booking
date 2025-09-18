@@ -409,7 +409,7 @@ const route = useRoute()
 const router = useRouter()
 
 // Bookings composable (single source of truth)
-const { getBookingById, updateBookingStatus, initializeBookings } = useBookings()
+const { getBookingById, updateBookingStatus } = useBookings()
 
 // State
 const loading = ref(true)
@@ -469,9 +469,6 @@ const loadBookingDetails = async () => {
   try {
     loading.value = true
     error.value = ''
-
-    // Ensure composable has initialized data
-    initializeBookings()
 
     const bookingId = route.params.id as string
 

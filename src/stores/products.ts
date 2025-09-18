@@ -18,23 +18,8 @@ interface DeletedProduct {
 }
 
 export const useProductsStore = defineStore('products', () => {
-  // State
+  // State - Pinia persistence will handle localStorage automatically
   const deletedProducts = ref<DeletedProduct[]>([])
-
-  // Initialize from localStorage
-  const initializeDeletedProducts = () => {
-    try {
-      const savedDeletedProducts = localStorage.getItem('deletedProducts')
-      if (savedDeletedProducts) {
-        const parsedProducts = JSON.parse(savedDeletedProducts)
-        if (Array.isArray(parsedProducts)) {
-          deletedProducts.value = parsedProducts
-        }
-      }
-    } catch (error) {
-      console.warn('⚠️ Error initializing deleted products from localStorage:', error)
-    }
-  }
 
   // Actions
   const addDeletedProduct = (product: any) => {
@@ -45,18 +30,18 @@ export const useProductsStore = defineStore('products', () => {
     }
 
     deletedProducts.value.push(deletedProduct)
-    localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts.value))
   }
-
-  // Initialize on store creation
-  initializeDeletedProducts()
 
   return {
     // State
     deletedProducts,
 
     // Actions
-    initializeDeletedProducts,
     addDeletedProduct
+  }
+}, {
+  persist: {
+    key: 'products',
+    storage: localStorage
   }
 })

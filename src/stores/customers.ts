@@ -20,64 +20,9 @@ export const useCustomersStore = defineStore('customers', () => {
   const customers = ref<Customer[]>([])
   const customerStatuses = ref<Record<string, Customer['status']>>({})
 
-  // Initialize from localStorage
+  // Initialize with dummy data if no customers exist
   const initializeCustomers = () => {
-    try {
-      const savedCustomers = localStorage.getItem('customers')
-      if (savedCustomers) {
-        const parsedCustomers = JSON.parse(savedCustomers)
-        if (Array.isArray(parsedCustomers) && parsedCustomers.length > 0) {
-          customers.value = parsedCustomers
-        } else {
-          // Add dummy data if no customers exist
-          customers.value = [
-            {
-              id: 'dummy-001',
-              name: 'John Doe',
-              email: 'john.doe@example.com',
-              phone: '+1-555-0123',
-              customerType: 'registered',
-              totalBookings: 5,
-              status: 'active',
-              dateJoined: '2023-09-16',
-              address: '123 Main Street',
-              city: 'New York',
-              country: 'USA'
-            }
-          ]
-        }
-      } else {
-        // Add dummy data if no localStorage data exists
-        customers.value = [
-          {
-            id: 'dummy-001',
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '+1-555-0123',
-            customerType: 'registered',
-            totalBookings: 5,
-            status: 'active',
-            dateJoined: '2023-09-16',
-            address: '123 Main Street',
-            city: 'New York',
-            country: 'USA'
-          }
-        ]
-      }
-
-      const savedStatuses = localStorage.getItem('customerStatuses')
-      if (savedStatuses) {
-        customerStatuses.value = JSON.parse(savedStatuses)
-        // Apply statuses to customers
-        customers.value.forEach(customer => {
-          if (customerStatuses.value[customer.id]) {
-            customer.status = customerStatuses.value[customer.id]
-          }
-        })
-      }
-    } catch (error) {
-      console.warn('⚠️ Error initializing customers from localStorage:', error)
-      // Fallback to dummy data on error
+    if (customers.value.length === 0) {
       customers.value = [
         {
           id: 'dummy-001',
@@ -94,18 +39,12 @@ export const useCustomersStore = defineStore('customers', () => {
         }
       ]
     }
-  }
-
-  // Actions
+  }  // Actions
   const updateCustomerStatus = (customerId: string, newStatus: Customer['status']) => {
     const index = customers.value.findIndex(c => c.id === customerId)
     if (index !== -1) {
       customers.value[index].status = newStatus
       customerStatuses.value[customerId] = newStatus
-
-      // Save to localStorage
-      localStorage.setItem('customers', JSON.stringify(customers.value))
-      localStorage.setItem('customerStatuses', JSON.stringify(customerStatuses.value))
     }
   }
 
@@ -149,5 +88,10 @@ export const useCustomersStore = defineStore('customers', () => {
     // Getters
     activeCustomers,
     blockedCustomers
+  }
+}, {
+  persist: {
+    key: 'customers',
+    storage: localStorage
   }
 })

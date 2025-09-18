@@ -2,13 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useThemeStore = defineStore('theme', () => {
-  // State
-  const theme = ref<string>(localStorage.getItem('theme') || 'light')
+  // State - Pinia persistence will handle localStorage automatically
+  const theme = ref<string>('light')
 
   // Actions
   const setTheme = (newTheme: string) => {
     theme.value = newTheme
-    localStorage.setItem('theme', newTheme)
 
     // Apply theme to document
     if (newTheme === 'dark') {
@@ -30,5 +29,10 @@ export const useThemeStore = defineStore('theme', () => {
     theme,
     setTheme,
     toggleTheme
+  }
+}, {
+  persist: {
+    key: 'theme',
+    storage: localStorage
   }
 })

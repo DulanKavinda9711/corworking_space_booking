@@ -20,7 +20,7 @@
         <div v-for="(product, idx) in products" :key="idx" class="mb-8">
           <form @submit.prevent="saveProduct(idx)" class="space-y-6">
             <!-- Single Card with All Sections -->
-            <div class="bg-white rounded-xl shadow-card overflow-hidden relative">
+            <div class="bg-white rounded-xl shadow-card overflow-visible relative">
               <!-- Product Number Header -->
               <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4">
                 <h3 class="text-lg font-semibold">Product {{ idx + 1 }}</h3>
@@ -70,32 +70,29 @@
                     </div>
                     
                     <!-- Location dropdown -->
-                    <div v-else class="relative">
-                      <select 
-                        v-model="product.locationId"
-                        @change="syncLocationToAllProducts"
-                        @focus="toggleDropdown('location')"
-                        @blur="closeDropdown('location')"
-                        :class="[
-                          'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors appearance-none cursor-pointer',
-                          showValidation[idx] && !product.locationId ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                        ]"
-                      >
-                        <option value="">Choose a location</option>
-                        <option v-for="location in locations" :key="location.id" :value="location.id">
-                          {{ location.name }}
-                        </option>
-                      </select>
+                    <div v-else class="relative dropdown-container">
+                      <div @click="toggleDropdown('location')" :class="[
+                        'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center',
+                        showValidation[idx] && !product.locationId ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                      ]">
+                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(product.locationId) }}</span>
+                      </div>
+
+                      <!-- Dropdown Options -->
+                      <div v-if="dropdownStates.location" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div class="p-2">
+                          <div v-for="location in locations" :key="location.id" @click="selectLocation(location.id, idx)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            {{ location.name }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Dropdown Arrow -->
                       <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg 
-                          :class="[
-                            'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                            dropdownStates.location ? 'transform rotate-180' : ''
-                          ]"
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
+                        <svg :class="[
+                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                          dropdownStates.location ? 'transform rotate-180' : ''
+                        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
@@ -121,32 +118,29 @@
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         Product Type <span class="text-red-500">*</span>
                       </label>
-                      <div class="relative">
-                        <select 
-                          v-model="product.type"
-                          @change="onProductTypeChange(idx)"
-                          @focus="toggleDropdown('productType')"
-                          @blur="closeDropdown('productType')"
-                          :class="[
-                            'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors appearance-none cursor-pointer',
-                            showValidation[idx] && !product.type ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                          ]"
-                        >
-                          <option value="">Select product type</option>
-                          <option value="Meeting Room">Meeting Room</option>
-                          <option value="Hot Desk">Hot Desk</option>
-                          <option value="Dedicated Desk">Dedicated Desk</option>
-                        </select>
+                      <div class="relative dropdown-container">
+                        <div @click="toggleDropdown('productType')" :class="[
+                          'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center',
+                          showValidation[idx] && !product.type ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                        ]">
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getProductTypeLabel(product.type) }}</span>
+                        </div>
+
+                        <!-- Dropdown Options -->
+                        <div v-if="dropdownStates.productType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div class="p-2">
+                            <div v-for="option in productTypeOptions" :key="option.value" @click="selectProductType(option.value, idx)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                              {{ option.label }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Dropdown Arrow -->
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <svg 
-                            :class="[
-                              'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                              dropdownStates.productType ? 'transform rotate-180' : ''
-                            ]"
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
+                          <svg :class="[
+                            'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                            dropdownStates.productType ? 'transform rotate-180' : ''
+                          ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
@@ -290,7 +284,7 @@
 
                   <!-- Hot Desk Pricing - Daily only -->
                   <div v-if="product.type === 'Hot Desk'" class="space-y-4">
-                    <div class="bg-green-50 rounded-lg p-4">
+                    <div class="rounded-lg p-4">
                       <h3 class="text-md font-semibold text-gray-800 mb-4">Daily Booking</h3>
                       <div class="grid grid-cols-1 gap-4">
                         <div>
@@ -316,7 +310,7 @@
 
                   <!-- Dedicated Desk Pricing - Monthly and Yearly -->
                   <div v-if="product.type === 'Dedicated Desk'" class="space-y-4">
-                    <div class="bg-purple-50 rounded-lg p-4">
+                    <div class=" rounded-lg p-4">
                       <h3 class="text-md font-semibold text-gray-800 mb-4">Long-term Commitment</h3>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -950,15 +944,26 @@
                         Status <span class="text-red-500">*</span>
                       </label>
                       
-                      <div class="relative">
-                        <select 
-                          v-model="product.status"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900 bg-white appearance-none">
-                          <option value="active">Active</option>
-                          <option value="inactive">Inactive</option>
-                        </select>
+                      <div class="relative dropdown-container">
+                        <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center">
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(product.status) }}</span>
+                        </div>
+
+                        <!-- Dropdown Options -->
+                        <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div class="p-2">
+                            <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value, idx)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                              {{ option.label }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Dropdown Arrow -->
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg :class="[
+                            'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                            dropdownStates.status ? 'transform rotate-180' : ''
+                          ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
@@ -1242,7 +1247,8 @@ const showAdditionalDropdown = ref<boolean[]>([])
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   location: false,
-  productType: false
+  productType: false,
+  status: false
 })
 
 // Time picker state
@@ -1570,6 +1576,55 @@ const closeDropdown = (dropdown: string) => {
   setTimeout(() => {
     dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
   }, 150)
+}
+
+// Status Options
+const statusOptions = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+]
+
+// Product Type Options
+const productTypeOptions = [
+  { value: 'Meeting Room', label: 'Meeting Room' },
+  { value: 'Hot Desk', label: 'Hot Desk' },
+  { value: 'Dedicated Desk', label: 'Dedicated Desk' }
+]
+
+// Dropdown label functions
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'Active'
+}
+
+const getLocationLabel = (value: string) => {
+  if (!value) return 'Choose a location'
+  const location = locations.value.find(loc => loc.id === value)
+  return location ? location.name : 'Choose a location'
+}
+
+const getProductTypeLabel = (value: string) => {
+  if (!value) return 'Select product type'
+  const option = productTypeOptions.find(opt => opt.value === value)
+  return option ? option.label : 'Select product type'
+}
+
+// Dropdown select functions
+const selectStatus = (value: string, productIndex: number) => {
+  products.value[productIndex].status = value
+  closeDropdown('status')
+}
+
+const selectLocation = (value: string, productIndex: number) => {
+  products.value[productIndex].locationId = value
+  syncLocationToAllProducts()
+  closeDropdown('location')
+}
+
+const selectProductType = (value: string, productIndex: number) => {
+  products.value[productIndex].type = value
+  onProductTypeChange(productIndex)
+  closeDropdown('productType')
 }
 
 // Fetch locations from API
@@ -2013,6 +2068,13 @@ onMounted(() => {
     if (!target.closest('.facility-dropdown') && !target.closest('.facility-dropdown-trigger')) {
       showDefaultDropdown.value.fill(false)
       showAdditionalDropdown.value.fill(false)
+    }
+    
+    // Close regular dropdowns when clicking outside
+    if (!target.closest('.dropdown-container')) {
+      dropdownStates.value.location = false
+      dropdownStates.value.productType = false
+      dropdownStates.value.status = false
     }
   })
 })

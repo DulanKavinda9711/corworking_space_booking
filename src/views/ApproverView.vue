@@ -633,9 +633,6 @@ const closeErrorModal = () => {
 }
 
 onMounted(() => {
-  // Initialize rewards store
-  rewardsStore.initializeRewards()
-
   // Add click outside listener for date picker
   document.addEventListener('click', handleClickOutside)
 })

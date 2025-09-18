@@ -51,7 +51,7 @@
                   type="text"
                   placeholder="Search promotions by name or description..."
                   v-model="searchQuery"
-                  class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                  class="pl-10 pr-4 py-2 w-150px border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500  text-gray-900"
                 />
               </div>
             </div>

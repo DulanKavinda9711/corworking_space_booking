@@ -15,29 +15,9 @@ interface RewardRequest {
 }
 
 export const useRewardsStore = defineStore('rewards', () => {
-  // State
+  // State - Pinia persistence will handle localStorage automatically
   const rewardRequests = ref<RewardRequest[]>([])
   const customersRewards = ref<Record<string, number>>({})
-
-  // Initialize from localStorage
-  const initializeRewards = () => {
-    try {
-      const savedRequests = localStorage.getItem('rewardRequests')
-      if (savedRequests) {
-        const parsedRequests = JSON.parse(savedRequests)
-        if (Array.isArray(parsedRequests)) {
-          rewardRequests.value = parsedRequests
-        }
-      }
-
-      const savedCustomerRewards = localStorage.getItem('customersRewards')
-      if (savedCustomerRewards) {
-        customersRewards.value = JSON.parse(savedCustomerRewards)
-      }
-    } catch (error) {
-      console.warn('⚠️ Error initializing rewards from localStorage:', error)
-    }
-  }
 
   // Actions
   const addRewardRequest = (request: Omit<RewardRequest, 'id' | 'requestedDate' | 'status'>) => {
@@ -49,7 +29,6 @@ export const useRewardsStore = defineStore('rewards', () => {
     }
 
     rewardRequests.value.push(newRequest)
-    saveToLocalStorage()
     return newRequest
   }
 
@@ -66,7 +45,6 @@ export const useRewardsStore = defineStore('rewards', () => {
       }
       customersRewards.value[request.customerId] += request.rewardValue
 
-      saveToLocalStorage()
       return true
     }
     return false
@@ -79,7 +57,6 @@ export const useRewardsStore = defineStore('rewards', () => {
       request.approvedDate = new Date().toISOString()
       request.approvedBy = approvedBy
 
-      saveToLocalStorage()
       return true
     }
     return false
@@ -105,25 +82,12 @@ export const useRewardsStore = defineStore('rewards', () => {
     return rewardRequests.value.filter(request => request.customerId === customerId)
   }
 
-  const saveToLocalStorage = () => {
-    try {
-      localStorage.setItem('rewardRequests', JSON.stringify(rewardRequests.value))
-      localStorage.setItem('customersRewards', JSON.stringify(customersRewards.value))
-    } catch (error) {
-      console.warn('⚠️ Error saving rewards to localStorage:', error)
-    }
-  }
-
-  // Initialize on store creation
-  initializeRewards()
-
   return {
     // State
     rewardRequests,
     customersRewards,
 
     // Actions
-    initializeRewards,
     addRewardRequest,
     approveRewardRequest,
     rejectRewardRequest,
@@ -131,7 +95,11 @@ export const useRewardsStore = defineStore('rewards', () => {
     getPendingRequests,
     getApprovedRequests,
     getRejectedRequests,
-    getRequestsByCustomer,
-    saveToLocalStorage
+    getRequestsByCustomer
+  }
+}, {
+  persist: {
+    key: 'rewards',
+    storage: localStorage
   }
 })

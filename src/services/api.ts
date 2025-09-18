@@ -279,63 +279,36 @@ const errorResponse = (message: string, errors?: string[]): ApiResponse => {
 
 export const authApi = {
   /**
-   * Login user with email and password
+   * Admin login with username and password
    */
-  async login(credentials: LoginCredentials): Promise<ApiResponse<{ user: User; token: string }>> {
-    await delay(1000)
+  async adminLogin(credentials: { username: string; password: string }): Promise<ApiResponse<{ token: string; admin_id: number; username: string; role: string }>> {
+    try {
+      const response = await fetch(buildApiUrl('auth/login'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(credentials)
+      })
 
-    // Real API call - uncomment when backend is ready
-    // try {
-    //   const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify(credentials)
-    //   })
-    //   
-    //   if (!response.ok) {
-    //     throw new Error(`HTTP error! status: ${response.status}`)
-    //   }
-    //   
-    //   const data = await response.json()
-    //   
-    //   if (data.success && data.token && data.user) {
-    //     // Store token and user info
-    //     localStorage.setItem('authToken', data.token)
-    //     localStorage.setItem('user', JSON.stringify(data.user))
-    //     
-    //     return successResponse({ user: data.user, token: data.token }, 'Login successful')
-    //   } else {
-    //     return errorResponse(data.message || 'Login failed', data.errors)
-    //   }
-    // } catch (error) {
-    //   console.error('Login error:', error)
-    //   return errorResponse('Network error during login', [error.message])
-    // }
-    
-    // Mock authentication - remove when real API is implemented
-    if (credentials.email === 'admin@example.com' && credentials.password === 'admin123') {
-      const user: User = {
-        id: 'USR-001',
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'admin',
-        status: 'active',
-        lastLogin: new Date().toISOString(),
-        permissions: ['read', 'write', 'delete', 'manage_users'],
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces'
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      const token = 'mock-jwt-token-' + Date.now()
-      
-      // Store token in localStorage
-      localStorage.setItem('authToken', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      
-      return successResponse({ user, token }, 'Login successful')
-    }
 
-    return errorResponse('Invalid credentials', ['Email or password is incorrect'])
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        // Store token in localStorage
+        localStorage.setItem('authToken', data.data.token)
+
+        return successResponse(data.data, data.message || 'Login successful')
+      } else {
+        return errorResponse(data.message || 'Login failed')
+      }
+    } catch (error: any) {
+      console.error('Admin login error:', error)
+      return errorResponse('Network error during login', [error.message])
+    }
   },
 
   /**

@@ -163,8 +163,8 @@
                   type="email"
                   required
                   v-model="forgotPasswordForm.email"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                  placeholder="admin@coworkingspace.com"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-gray-50 focus:bg-white text-gray-900"
+                  placeholder="Enter your email address"
                 />
               </div>
 
@@ -183,7 +183,7 @@
                 <button
                   type="submit"
                   :disabled="forgotPasswordLoading"
-                  class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   {{ forgotPasswordLoading ? 'Sending...' : 'Send Reset Instructions' }}
                 </button>
@@ -202,12 +202,9 @@
             <p class="text-sm text-gray-600 mb-4 leading-relaxed">
               We've sent password reset instructions to {{ forgotPasswordForm.email }}
             </p>
-            <p class="text-xs text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg">
-              For demo purposes, you can now reset your password using the temporary code: <strong class="text-blue-600">RESET123</strong>
-            </p>
             <button
               @click="showPasswordReset"
-              class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+              class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Enter Reset Code
             </button>
@@ -310,6 +307,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiEye, mdiEyeOff, mdiAlert, mdiCheckCircle } from '@mdi/js'
 import { useAuthStore } from '@/stores/auth'
+import { authApi } from '@/services/api'
 
 const logo = '/assets/logo.png'
 
@@ -348,29 +346,51 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Check if this is admin or superadmin login
+    if (form.value.username === 'admin' || form.value.username === 'superadmin') {
+      // Call the real admin API
+      const response = await authApi.adminLogin({
+        username: form.value.username,
+        password: form.value.password
+      })
 
-    // Special case for Super Admin - direct dashboard access
-    if (form.value.username === 'Superadmin' && form.value.password === '123456') {
-      // Store token and user data in localStorage
-      const token = 'super-admin-token-123'
-      const user = {
-        id: 'super-admin',
-        username: 'Superadmin',
-        email: 'superadmin@coworkingspace.com',
-        name: 'Super Administrator',
-        role: 'super-admin'
+      if (response.success && response.data) {
+        let { token, admin_id, username, role } = response.data
+
+        // Ensure superadmin role is correctly set
+        if (form.value.username === 'superadmin') {
+          role = 'SuperAdmin'
+        }
+
+        // Store token and user data using auth store
+        authStore.setAuthToken(token)
+        authStore.setUser({
+          id: admin_id.toString(),
+          username: username,
+          email: `${username}@coworkingspace.com`,
+          name: role === 'SuperAdmin' ? 'Super Administrator' : 'Administrator',
+          role: role === 'SuperAdmin' ? 'super-admin' : 'admin'
+        })
+
+        // For SuperAdmin, ensure onboarding flags are set to bypass checks
+        if (role === 'SuperAdmin') {
+          authStore.setOnboardingComplete('true')
+          authStore.setPasswordReset('true')
+          authStore.setDemoPasswordDisabled('true')
+        }
+
+        // Force a small delay to ensure persistence is complete before routing
+        await new Promise(resolve => setTimeout(resolve, 10))
+
+        // Route based on role
+        router.push('/dashboard')
+        return
+      } else {
+        throw new Error(response.message || 'Login failed')
       }
-
-      authStore.setAuthToken(token)
-      authStore.setUser(user)
-      
-      // Direct access to dashboard for super admin
-      router.push('/dashboard')
-      return
     }
 
+    // Regular demo login logic for other users
     // Check if onboarding is complete and password has been changed
     const onboardingComplete = authStore.onboardingComplete
     const passwordReset = authStore.passwordReset
@@ -440,11 +460,6 @@ const handleForgotPassword = async () => {
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Validate admin email
-    if (forgotPasswordForm.value.email !== 'admin@coworkingspace.com') {
-      throw new Error('Invalid admin email address')
-    }
 
     // Success - show instructions sent
     forgotPasswordSuccess.value = true

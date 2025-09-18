@@ -53,11 +53,6 @@ export const useBookings = () => {
     bookingsStore.updateBookingStatus(id, status)
   }
 
-  // Initialize bookings
-  const initializeBookings = () => {
-    bookingsStore.initializeBookings()
-  }
-
   // Get confirmed bookings
   const getConfirmedBookings = () => {
     return bookingsStore.confirmedBookings
@@ -104,7 +99,6 @@ export const useBookings = () => {
     getBookings,
     getBookingById,
     updateBookingStatus,
-    initializeBookings,
     getConfirmedBookings,
     getCompletedBookings,
     getCancelledBookings,

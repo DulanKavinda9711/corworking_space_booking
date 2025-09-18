@@ -2,14 +2,14 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  // State with localStorage persistence
-  const authToken = ref<string | null>(localStorage.getItem('authToken'))
-  const user = ref<any>(JSON.parse(localStorage.getItem('user') || 'null'))
-  const userPassword = ref<string | null>(localStorage.getItem('userPassword'))
-  const passwordReset = ref<string | null>(localStorage.getItem('passwordReset'))
-  const onboardingComplete = ref<string | null>(localStorage.getItem('onboardingComplete'))
-  const demoPasswordDisabled = ref<string | null>(localStorage.getItem('demoPasswordDisabled'))
-  const companySetup = ref<string | null>(localStorage.getItem('companySetup'))
+  // State - Pinia persistence will handle localStorage automatically
+  const authToken = ref<string | null>(null)
+  const user = ref<any>(null)
+  const userPassword = ref<string | null>(null)
+  const passwordReset = ref<string | null>(null)
+  const onboardingComplete = ref<string | null>(null)
+  const demoPasswordDisabled = ref<string | null>(null)
+  const companySetup = ref<string | null>(null)
 
   // Getters
   const isAuthenticated = computed(() => !!authToken.value)
@@ -20,65 +20,30 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   const setAuthToken = (token: string | null) => {
     authToken.value = token
-    if (token) {
-      localStorage.setItem('authToken', token)
-    } else {
-      localStorage.removeItem('authToken')
-    }
   }
 
   const setUser = (userData: any) => {
     user.value = userData
-    if (userData) {
-      localStorage.setItem('user', JSON.stringify(userData))
-    } else {
-      localStorage.removeItem('user')
-    }
   }
 
   const setUserPassword = (password: string | null) => {
     userPassword.value = password
-    if (password) {
-      localStorage.setItem('userPassword', password)
-    } else {
-      localStorage.removeItem('userPassword')
-    }
   }
 
   const setPasswordReset = (reset: string | null) => {
     passwordReset.value = reset
-    if (reset) {
-      localStorage.setItem('passwordReset', reset)
-    } else {
-      localStorage.removeItem('passwordReset')
-    }
   }
 
   const setOnboardingComplete = (complete: string | null) => {
     onboardingComplete.value = complete
-    if (complete) {
-      localStorage.setItem('onboardingComplete', complete)
-    } else {
-      localStorage.removeItem('onboardingComplete')
-    }
   }
 
   const setDemoPasswordDisabled = (disabled: string | null) => {
     demoPasswordDisabled.value = disabled
-    if (disabled) {
-      localStorage.setItem('demoPasswordDisabled', disabled)
-    } else {
-      localStorage.removeItem('demoPasswordDisabled')
-    }
   }
 
   const setCompanySetup = (setup: string | null) => {
     companySetup.value = setup
-    if (setup) {
-      localStorage.setItem('companySetup', setup)
-    } else {
-      localStorage.removeItem('companySetup')
-    }
   }
 
   const clearAuth = () => {
@@ -116,5 +81,10 @@ export const useAuthStore = defineStore('auth', () => {
     setDemoPasswordDisabled,
     setCompanySetup,
     clearAuth
+  }
+}, {
+  persist: {
+    key: 'auth',
+    storage: localStorage
   }
 })

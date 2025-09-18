@@ -46,8 +46,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <div @click="toggleDropdown('location')" class="w-[150px] border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900 truncate">{{ getLocationLabel(filters.location) }}</span>
+                <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(filters.location) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -74,7 +74,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">User Type</label>
               <div class="relative">
                 <div @click="toggleDropdown('userType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getUserTypeLabel(filters.userType) }}</span>
+                  <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getUserTypeLabel(filters.userType) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -101,7 +101,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <div class="relative">
                 <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+                  <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(filters.status) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -188,7 +188,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
               <div class="relative">
                 <div @click="toggleDropdown('subscriptionType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getSubscriptionTypeLabel(filters.subscriptionType) }}</span>
+                  <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getSubscriptionTypeLabel(filters.subscriptionType) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -518,9 +518,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
-import { mdiCalendar } from '@mdi/js'
 import { locationApi } from '@/services/api'
-import type { Location } from '@/services/api'
+import { mdiCalendar } from '@mdi/js'
 
 // Router
 const route = useRoute()
@@ -548,6 +547,11 @@ const dropdownStates = ref({
   status: false
 })
 
+// Locations state
+const locations = ref<any[]>([])
+const locationsLoading = ref(false)
+const locationsError = ref('')
+
 // Tabs
 const tabs = [
   { id: 'all', name: 'All' },
@@ -567,10 +571,6 @@ const filters = ref({
   subscriptionStatus: '',
   status: ''
 })
-
-// Locations data
-const locations = ref<Location[]>([])
-const isLoadingLocations = ref(false)
 
 // Pagination
 const currentPage = ref(1)
@@ -958,10 +958,7 @@ const filteredBookings = computed(() => {
     bookings = bookings.filter(b => b.location === filters.value.location)
   }
   if (filters.value.productType && filters.value.productType.length > 0) {
-    bookings = bookings.filter(b => {
-      const displayType = b.productType === 'Subscription' ? 'Dedicated Desk' : b.productType
-      return filters.value.productType.includes(displayType)
-    })
+    bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
   }
   if (filters.value.status) {
     bookings = bookings.filter(b => b.status === filters.value.status)
@@ -1577,7 +1574,7 @@ const productTypeOptions = [
   { value: 'Dedicated Desk', label: 'Dedicated Desk' }
 ]
 
-// Location Options - computed from fetched locations
+// Location Options
 const locationOptions = computed(() => {
   const options = [{ value: '', label: 'All Locations' }]
   locations.value.forEach(location => {
@@ -1650,7 +1647,7 @@ const selectSubscriptionType = (value: string) => {
 
 // Label getter functions
 const getLocationLabel = (value: string) => {
-  const option = locationOptions.value.find(opt => opt.value === value)
+  const option = locationOptions.value.find((opt: any) => opt.value === value)
   return option ? option.label : 'All Locations'
 }
 
@@ -1671,25 +1668,32 @@ const getSubscriptionTypeLabel = (value: string) => {
 
 // Fetch locations from API
 const fetchLocations = async () => {
-  isLoadingLocations.value = true
+  locationsLoading.value = true
+  locationsError.value = ''
+
   try {
     const response = await locationApi.getAllLocations()
+
     if (response.success && response.data) {
       locations.value = response.data
     } else {
+      locationsError.value = response.message || 'Failed to load locations'
       console.error('Failed to load locations:', response.message)
     }
   } catch (error) {
     console.error('Error fetching locations:', error)
+    locationsError.value = 'An unexpected error occurred while loading locations'
   } finally {
-    isLoadingLocations.value = false
+    locationsLoading.value = false
   }
 }
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
+  // Fetch locations first
+  await fetchLocations()
+
   document.addEventListener('click', handleClickOutside)
-  fetchLocations()
 
   // Check for tab query parameter and set active tab
   const tabParam = route.query.tab as string

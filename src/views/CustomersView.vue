@@ -38,12 +38,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div class="relative">
-              <div @click="toggleDropdown('status')" class="w-[150px] border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+              <div @click="toggleDropdown('status')" class="w-[150px] border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center justify-between">
                 <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
-              </div>
-
-              <!-- Dropdown Arrow -->
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg :class="[
                   'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
                   dropdownStates.status ? 'transform rotate-180' : ''
