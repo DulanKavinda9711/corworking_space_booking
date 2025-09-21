@@ -22,6 +22,7 @@ export interface ApiResponse<T = any> {
   data?: T
   message?: string
   errors?: string[]
+  status_code?: number
   pagination?: {
     currentPage: number
     totalPages: number
@@ -29,6 +30,14 @@ export interface ApiResponse<T = any> {
     itemsPerPage: number
   }
 }
+
+export interface LoginApiResponse<T = any> {
+  data?: T
+  message?: string
+  status_code?: number
+}
+
+
 
 export interface LoginCredentials {
   email: string
@@ -287,11 +296,12 @@ const successResponse = <T>(data: T, message?: string): ApiResponse<T> => {
 /**
  * Create error API response
  */
-const errorResponse = (message: string, errors?: string[]): ApiResponse => {
+const errorResponse = (message: string, errors?: string[], statusCode?: number): ApiResponse => {
   return {
     success: false,
     message,
-    errors
+    errors,
+    status_code: statusCode
   }
 }
 
@@ -303,33 +313,95 @@ export const authApi = {
   /**
    * Admin login with username and password
    */
-  async adminLogin(credentials: { username: string; password: string }): Promise<ApiResponse<{ token: string; admin_id: number; username: string; role: string }>> {
+  async adminLogin(credentials: { username: string; password: string }): Promise<LoginApiResponse<{ token: string }>> {
     try {
-      const response = await fetch(buildApiUrl('auth/login'), {
+      console.log('API - Attempting admin login for:', credentials.username)
+
+      // Build the request URL and options
+      const url = buildApiUrl('auth/login')
+      console.log('API - Login URL:', url)
+
+      const requestOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(credentials)
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json()
+      console.log('API - Making fetch request...')
+      let response: Response
+      try {
+        response = await fetch(url, requestOptions)
+        console.log('API - Fetch completed, response status:', response.status)
+      } catch (fetchError) {
+        console.error('API - Network error during fetch:', fetchError)
+        // Return a structured error response for network failures
+        return {
+          status_code: 0, // 0 indicates network error
+          message: `Network error: ${fetchError instanceof Error ? fetchError.message : 'Unknown network error'}`,
+          data: undefined
+        } as LoginApiResponse
+      }
 
-      if (data.status_code === 200 && data.data) {
-        // Token will be stored in Pinia store instead of localStorage
-        // localStorage.setItem('authToken', data.data.token)
+      // Try to parse JSON response, but handle cases where it's not valid JSON
+      let data: any = {}
+      try {
+        const responseText = await response.text()
+        console.log('API - Raw response text:', responseText)
 
-        return successResponse(data.data, data.message || 'Login successful')
-      } else {
-        return errorResponse(data.message || 'Login failed')
+        if (responseText.trim() === '') {
+          // Empty response body
+          data = {
+            status_code: response.status,
+            message: `Empty response from server`,
+            data: undefined
+          }
+        } else {
+          data = JSON.parse(responseText)
+        }
+        console.log('API - Response parsed successfully:', response.status)
+      } catch (jsonError) {
+        console.warn('API - Failed to parse JSON response:', jsonError)
+        // If JSON parsing fails, create a basic response object
+        data = {
+          status_code: response.status,
+          message: `Response received with status ${response.status}`,
+          data: undefined
+        }
+      }
+
+      console.log('API - Response data:', data)
+
+      // Handle different status codes from the API response
+      if (data.status_code === 403) {
+        console.log('API - Password change required (403), treating as success');
+        // Password change required - return as success with status code
+        return {
+          message: data.message || 'Password change required',
+          status_code: 403,
+          data: undefined
+        }
+      }
+
+      // Handle ALL other status codes as success (any response from server is considered successful)
+      console.log(`API - Login successful with status ${data.status_code || response.status}`);
+      console.log('API - Token received:', data.data?.token ? 'YES' : 'NO')
+
+      // Return the response in the expected format for any status code
+      return {
+        data: data.data,
+        message: data.message || 'Login successful',
+        status_code: data.status_code || response.status
       }
     } catch (error: any) {
-      console.error('Admin login error:', error)
-      return errorResponse('Network error during login', [error.message])
+      console.error('API - Admin login network error:', error)
+      // Return error in LoginApiResponse format for network errors only
+      return {
+        message: 'Network error during login',
+        status_code: 500,
+        data: undefined
+      }
     }
   },
 
@@ -457,6 +529,87 @@ export const authApi = {
     // localStorage.setItem('authToken', token)
 
     return successResponse({ token }, 'Token refreshed')
+  },
+
+  /**
+   * Change user password (for onboarding/first login)
+   */
+  async changePassword(passwordData: {
+    username: string
+    old_password: string
+    new_password: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Get auth token from Pinia store
+      const response = await fetch(buildApiUrl('auth/change-onetime-password'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(passwordData)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Password changed successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to change password')
+      }
+    } catch (error: any) {
+      console.error('Change password error:', error)
+      return errorResponse('Network error while changing password', [error.message])
+    }
+  },
+
+  /**
+   * Create new admin user
+   */
+  async createNewAdmin(adminData: {
+    first_name: string
+    last_name: string
+    user_name: string
+    role_id: number
+    email: string
+    phone: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('admins/create-new-admin'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(adminData)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Admin created successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create admin')
+      }
+    } catch (error: any) {
+      console.error('Create admin error:', error)
+      return errorResponse('Network error while creating admin', [error.message])
+    }
   }
 }
 
@@ -3055,12 +3208,11 @@ export const permissionApi = {
       const token = authStore.authToken
 
       const response = await fetch(buildApiUrl('roles/get-all'), {
-        method: 'POST', // Changed from GET to POST
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({}) // Empty body for POST request
+        }
       })
 
       if (!response.ok) {

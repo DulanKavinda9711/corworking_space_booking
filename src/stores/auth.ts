@@ -10,12 +10,18 @@ export const useAuthStore = defineStore('auth', () => {
   const onboardingComplete = ref<string | null>(null)
   const demoPasswordDisabled = ref<string | null>(null)
   const companySetup = ref<string | null>(null)
+  const isFirstLogin  = ref<boolean | null>(null)
 
   // Getters
   const isAuthenticated = computed(() => !!authToken.value)
   const isOnboardingComplete = computed(() => !!onboardingComplete.value)
   const isPasswordReset = computed(() => !!passwordReset.value)
   const isDemoPasswordDisabled = computed(() => !!demoPasswordDisabled.value)
+
+
+  const setFirstTimeLogin = (firstLogin: boolean) => {
+    isFirstLogin.value = firstLogin
+  }
 
   // Actions
   const setAuthToken = (token: string | null) => {

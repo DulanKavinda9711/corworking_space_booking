@@ -1,5 +1,20 @@
 <template>
   <AdminLayout>
+    <!-- Success Snackbar -->
+    <div v-if="showSnackbar" class="fixed top-4 right-4 z-50">
+      <div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path :d="mdiCheckCircle" />
+        </svg>
+        <span class="font-medium">{{ snackbarMessage }}</span>
+        <button @click="closeSnackbar" class="ml-2 text-white hover:text-gray-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="space-y-6">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -240,7 +255,8 @@ import {
   mdiOfficeBuilding,
   mdiCalendarPlus,
   mdiMapMarker,
-  mdiChartLine
+  mdiChartLine,
+  mdiCheckCircle
 } from '@mdi/js'
 
 const router = useRouter()
@@ -370,6 +386,10 @@ const chartSeries = ref([{
 const searchQuery = ref('')
 const showSearchResults = ref(false)
 const filteredResults = ref<any[]>([])
+
+// Snackbar state
+const showSnackbar = ref(false)
+const snackbarMessage = ref('')
 
 // All bookings data for search
 const allBookings = ref([
@@ -575,6 +595,10 @@ const updateCurrentTime = () => {
   })
 }
 
+const closeSnackbar = () => {
+  showSnackbar.value = false
+}
+
 // Close search results when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
@@ -592,6 +616,14 @@ onMounted(() => {
   
   // Add click outside listener
   document.addEventListener('click', handleClickOutside)
+
+  // Check for login success message
+  const loginSuccessMessage = sessionStorage.getItem('loginSuccessMessage')
+  if (loginSuccessMessage) {
+    snackbarMessage.value = loginSuccessMessage
+    showSnackbar.value = true
+    sessionStorage.removeItem('loginSuccessMessage')
+  }
 })
 
 onUnmounted(() => {

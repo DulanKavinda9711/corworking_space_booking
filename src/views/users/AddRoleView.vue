@@ -92,54 +92,20 @@
       </div>
 
       <!-- Success Modal -->
-      <div v-if="showSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSuccessModal">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
-          <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Success!</h3>
-            <div class="mt-2 px-7 py-3">
-              <p class="text-sm text-gray-500">Role created successfully</p>
-            </div>
-            <div class="items-center px-4 py-3">
-              <button @click="closeSuccessModal"
-                class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SuccessModal
+        v-model="showSuccessModal"
+        message="Role created successfully"
+        @close="closeSuccessModal"
+      />
 
       <!-- Error Modal -->
-      <div v-if="showErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeErrorModal">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
-          <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-              <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Error</h3>
-            <div class="mt-2 px-7 py-3">
-              <p class="text-sm text-gray-500">{{ errorMessage }}</p>
-            </div>
-            <div class="items-center px-4 py-3 flex space-x-3">
-              <button @click="closeErrorModal"
-                class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 flex-1">
-                Close
-              </button>
-              <button @click="retryCreateRole"
-                class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 flex-1">
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ErrorModal
+        v-model="showErrorModal"
+        :message="errorMessage"
+        :show-retry="true"
+        @close="closeErrorModal"
+        @retry="retryCreateRole"
+      />
     </div>
   </AdminLayout>
 </template>
@@ -148,6 +114,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
+import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { usePermissionsStore } from '@/stores/permissions'
 import { permissionApi } from '@/services/api'
 

@@ -8,63 +8,76 @@
             class="h-15 w-80 "
           />
         </div>
-        <h2 class="mt-6 text-center text-xl font-extrabold text-gray-900">
+        <br></br>
+        <!-- <h2 class="mt-6 text-center text-xl font-extrabold text-gray-900">
           Welcome to Your Admin Dashboard
-        </h2>
+        </h2> -->
         <p class="mt-2 text-center text-sm text-gray-600">
-          {{ currentStep === 1 ? 'First, let\'s set up a secure password' : 'Setup complete! You can now access your dashboard' }}
+          Let's set up a secure password for your account
         </p>
+        
+        <!-- Back to Login Button -->
+        <div class="mt-4 text-center">
+          <button
+            @click="goToLogin"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Login
+          </button>
+        </div>
       </div>
       
-      <div class="mt-8">
-        <div class="flex items-center justify-center">
-          <div class="flex items-center justify-center w-10 h-10 rounded-full" 
-              :class="[currentStep >= 1 ? 'bg-green-600' : 'bg-gray-300']">
-            <span class="text-white font-medium">1</span>
-          </div>
-          <div class="w-16 h-1" :class="[currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300']"></div>
-          <div class="flex items-center justify-center w-10 h-10 rounded-full" 
-              :class="[currentStep >= 2 ? 'bg-green-600' : 'bg-gray-300']">
-            <span class="text-white font-medium">2</span>
-          </div>
-        </div>
-        <div class="flex justify-center mt-4 space-x-16 text-sm text-gray-600">
-          <span :class="[currentStep >= 1 ? 'text-green-600 font-medium' : '']">Password</span>
-          <span :class="[currentStep >= 2 ? 'text-green-600 font-medium' : '']">Complete</span>
-        </div>
-      </div>
-
-      <!-- Step 1: Set New Password -->
-      <div v-if="currentStep === 1" class="bg-white rounded-xl shadow-lg p-8">
+      <!-- Set New Password -->
+      <div class="bg-white rounded-xl shadow-lg p-8">
         <h3 class="text-lg font-medium text-gray-900 mb-6">Set Your New Password</h3>
         <form class="space-y-6" @submit.prevent="handlePasswordChange">
           <div class="space-y-4">
             <div>
-              <label for="current-password" class="block text-sm font-medium text-gray-700">
+              <label for="username" class="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div class="mt-1">
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  readonly
+                  :value="currentUsername"
+                  class="appearance-none relative block w-full px-3 py-3 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm cursor-not-allowed"
+                  placeholder="Your username"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label for="old-password" class="block text-sm font-medium text-gray-700">
                 Current Password
               </label>
               <div class="mt-1 relative">
                 <input
-                  id="current-password"
-                  name="current-password"
-                  :type="showCurrentPassword ? 'text' : 'password'"
+                  id="old-password"
+                  name="old-password"
+                  :type="showOldPassword ? 'text' : 'password'"
                   required
-                  v-model="passwordForm.currentPassword"
+                  v-model="passwordForm.oldPassword"
                   class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your current password"
+                  placeholder="Enter current password"
                 />
                 <button
                   type="button"
-                  @click="showCurrentPassword = !showCurrentPassword"
+                  @click="showOldPassword = !showOldPassword"
                   class="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="showCurrentPassword ? mdiEyeOff : mdiEye" />
+                    <path :d="showOldPassword ? mdiEyeOff : mdiEye" />
                   </svg>
                 </button>
               </div>
             </div>
-
+            
             <div>
               <label for="new-password" class="block text-sm font-medium text-gray-700">
                 New Password
@@ -160,41 +173,20 @@
         </form>
       </div>
 
-      <!-- Step 2: Success -->
-      <div v-if="currentStep === 2" class="bg-white rounded-xl shadow-lg p-8 text-center">
-        <div class="mx-auto h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-          <svg class="h-10 w-10 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiCheckCircle" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Setup Complete!</h3>
-        <p class="text-gray-600 mb-8">
-          Your account has been successfully set up. You can now access your admin dashboard.
-        </p>
-        <button
-          @click="goToDashboard"
-          class="px-8 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-        >
-          Go to Dashboard
-        </button>
-      </div>
+      <!-- Success Modal -->
+      <SuccessModal
+        v-model="showSuccessModal"
+        title="Password Updated Successfully!"
+        message="Your password has been changed. Please login with your new password."
+        @close="closeSuccessModal"
+      />
 
-      <!-- Error message -->
-      <div v-if="error" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-        <div class="flex">
-          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiAlert" />
-          </svg>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800">
-              Setup Error
-            </h3>
-            <div class="mt-2 text-sm text-red-700">
-              <p>{{ error }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Error Modal -->
+      <ErrorModal
+        v-model="showErrorModal"
+        :message="error"
+        @close="closeErrorModal"
+      />
     </div>
   </div>
 
@@ -202,30 +194,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { authApi } from '@/services/api'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
+import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { mdiEye, mdiEyeOff, mdiCheckCircle, mdiAlert } from '@mdi/js'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
+// Prevent page refresh/close
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  // Show confirmation dialog
+  event.preventDefault()
+  event.returnValue = 'Are you sure you want to leave? Your progress will be lost.'
+}
+
+// Setup page protection
+onMounted(() => {
+  // Add beforeunload listener to handle page refresh/close
+  window.addEventListener('beforeunload', handleBeforeUnload)
+})
+
+onUnmounted(() => {
+  // Clean up event listeners
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
 const logo = '/assets/logo.png'
 
 // Form state for password change
 const passwordForm = ref({
-  currentPassword: '',
+  oldPassword: '',
   newPassword: '',
   confirmPassword: ''
 })
 
 const loading = ref(false)
 const error = ref('')
-const currentStep = ref(1)
 const passwordError = ref('')
-const showCurrentPassword = ref(false)
+const showOldPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
+
+// Modal states
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+
+// Get current username from auth store or session storage
+const currentUsername = computed(() => {
+  // First try to get from auth store user data
+  if (authStore.user?.username) {
+    return authStore.user.username
+  }
+  // Fallback to session storage (used for 403 password change flow)
+  if (sessionStorage.getItem('tempUsername')) {
+    return sessionStorage.getItem('tempUsername')
+  }
+  // Final fallback
+  return 'Unknown User'
+})
 
 // Password validation
 const passwordLength = computed(() => passwordForm.value.newPassword.length >= 8)
@@ -235,8 +265,7 @@ const isPasswordValid = computed(() =>
   passwordLength.value && 
   hasNumber.value && 
   hasSpecial.value && 
-  passwordForm.value.newPassword === passwordForm.value.confirmPassword &&
-  passwordForm.value.currentPassword === 'admin123'
+  passwordForm.value.newPassword === passwordForm.value.confirmPassword
 )
 
 // Password validation watchers
@@ -256,38 +285,72 @@ watch(() => passwordForm.value.confirmPassword, () => {
   }
 })
 
-// Handle password change (Step 1)
+// Handle password change
 const handlePasswordChange = async () => {
   loading.value = true
   error.value = ''
 
   if (!isPasswordValid.value) {
+    showErrorModal.value = true
     error.value = 'Please ensure your password meets all requirements'
     loading.value = false
     return
   }
 
   try {
-    // Simulate API call to change password
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Call API to change password
+    const response = await authApi.changePassword({
+      username: currentUsername.value,
+      old_password: passwordForm.value.oldPassword,
+      new_password: passwordForm.value.newPassword
+    })
 
-    // Store the new password securely (in a real app, this would be hashed and stored server-side)
-    authStore.setUserPassword(passwordForm.value.newPassword)
-    authStore.setPasswordReset('true')
-    authStore.setOnboardingComplete('true')
-    
-    // Move to success step
-    currentStep.value = 2
-  } catch {
-    error.value = 'An error occurred. Please try again.'
+    if (response.success) {
+      // Clear temporary sessionStorage flags used for 403 password change flow
+      sessionStorage.removeItem('passwordChangeRequired')
+      sessionStorage.removeItem('tempUsername')
+      
+      // Update auth store flags
+      authStore.setUserPassword(passwordForm.value.newPassword)
+      authStore.setPasswordReset('true')
+      authStore.setOnboardingComplete('true')
+      
+      // Show success modal
+      showSuccessModal.value = true
+    } else {
+      throw new Error(response.message || 'Failed to change password')
+    }
+  } catch (err: any) {
+    error.value = 'Error changing password. Try again'
+    showErrorModal.value = true
   } finally {
     loading.value = false
   }
 }
 
-// Go to dashboard
-const goToDashboard = () => {
-  router.push('/dashboard')
+// Modal handlers
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  // Clear auth and redirect to login for user to log in with new password
+  authStore.clearAuth()
+  router.push('/login')
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+}
+
+// Go to login page
+const goToLogin = () => {
+  // Clear authentication state to allow navigation to login
+  authStore.clearAuth()
+  
+  // Clear temporary session storage flags
+  sessionStorage.removeItem('passwordChangeRequired')
+  sessionStorage.removeItem('tempUsername')
+  
+  // Navigate to login
+  router.push('/login')
 }
 </script>
 

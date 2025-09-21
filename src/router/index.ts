@@ -326,44 +326,51 @@ router.beforeEach((to, from, next) => {
   const demoPasswordDisabled = authStore.demoPasswordDisabled
   const storedPassword = authStore.userPassword
 
-  // Check if user is super admin
-  const userData = authStore.user
-  const isSuperAdmin = userData ? userData.role === 'super-admin' : false
   
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // Not authenticated, redirect to login
+  // Check if user needs password change (temporary flag from 403 response)
+  const passwordChangeRequired = sessionStorage.getItem('passwordChangeRequired') === 'true'
+  
+  if (to.meta.requiresAuth && !isAuthenticated && !passwordChangeRequired) {
+    // Not authenticated and not in password change flow, redirect to login
+    console.log('🔐 Router Guard: Redirecting to login - requires auth but not authenticated')
     next('/login')
   } else if (to.path === '/login' && isAuthenticated) {
-    // Already authenticated, check if onboarding is needed
-    if (isSuperAdmin) {
-      // Super admin bypasses onboarding
-      next('/dashboard')
-    } else if (!passwordReset || !onboardingComplete) {
-      next('/onboarding')
-    } else {
-      next('/dashboard')
-    }
-  } else if (to.path === '/onboarding' && isAuthenticated && passwordReset === 'true' && onboardingComplete === 'true') {
-    // User has already completed onboarding, redirect to dashboard
+    // Already authenticated, redirect to appropriate page
+    console.log('🔄 Router Guard: Already authenticated, redirecting to dashboard')
     next('/dashboard')
-  } else if (to.path === '/dashboard' && isAuthenticated) {
+  } else if (to.path === '/onboarding' && isAuthenticated && authStore.isPasswordReset && authStore.isOnboardingComplete) {
+    // User has already completed onboarding, redirect to dashboard
+    console.log('✅ Router Guard: Onboarding complete, redirecting to dashboard')
+    next('/dashboard')
+  } else if (to.path === '/dashboard' && !isAuthenticated) {
     // Enhanced security check for dashboard access
-    if (isSuperAdmin) {
-      // Super admin has direct access
-      next()
-    } else if (demoPasswordDisabled === 'true' && storedPassword) {
+    console.log('🎯 Router Guard: Dashboard access check', {
+      demoPasswordDisabled,
+      storedPassword,
+      isPasswordReset: authStore.isPasswordReset,
+      isOnboardingComplete: authStore.isOnboardingComplete
+    })
+
+    if (demoPasswordDisabled === 'true' && storedPassword) {
       // User has set a custom password - allow access
+      console.log('🔑 Router Guard: Custom password set, allowing dashboard access')
       next()
-    } else if (passwordReset === 'true' && onboardingComplete === 'true') {
+    } else if (authStore.isPasswordReset && authStore.isOnboardingComplete) {
       // Fallback for existing users who completed onboarding
+      console.log('👑 Router Guard: Password reset and onboarding complete, allowing access')
       next()
-    } else if (!passwordReset || !onboardingComplete) {
+    } else if (!authStore.isPasswordReset || !authStore.isOnboardingComplete) {
       // Force onboarding if not completed
+      console.log('⚠️ Router Guard: Onboarding not complete, redirecting to onboarding')
       next('/onboarding')
     } else {
+      // Default allow access
+      console.log('✅ Router Guard: Default dashboard access allowed')
       next()
     }
   } else {
+    // Allow access for all other cases
+    console.log('✅ Router Guard: Allowing access to', to.path)
     next()
   }
 })

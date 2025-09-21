@@ -90,7 +90,14 @@
                     <!-- Dropdown Options -->
                     <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <div class="p-2">
-                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                        <div v-if="isLoadingRoles" class="p-2 text-center text-sm text-gray-500">
+                          <svg class="animate-spin h-4 w-4 mx-auto mb-1" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading roles...
+                        </div>
+                        <div v-for="option in roleOptions" :key="option.value" v-else @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
                           {{ option.label }}
                         </div>
                       </div>
@@ -285,7 +292,14 @@
                     <!-- Dropdown Options -->
                     <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <div class="p-2">
-                        <div v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                        <div v-if="isLoadingRoles" class="p-2 text-center text-sm text-gray-500">
+                          <svg class="animate-spin h-4 w-4 mx-auto mb-1" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading roles...
+                        </div>
+                        <div v-for="option in roleOptions" :key="option.value" v-else @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
                           {{ option.label }}
                         </div>
                       </div>
@@ -516,55 +530,18 @@
   </div>
 
   <!-- Status Success Modal -->
-  <div v-if="showStatusSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusSuccessModal">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
-      <div class="mt-3">
-        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
-          <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Success!</h3>
-        <div class="mt-2 px-7 py-3">
-          <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
-        </div>
-        <div class="flex items-center justify-center pt-4">
-          <button
-            @click="closeStatusSuccessModal"
-            class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <SuccessModal
+    v-model="showStatusSuccessModal"
+    :message="statusModalMessage"
+    @close="closeStatusSuccessModal"
+  />
 
   <!-- Status Error Modal -->
-  <div v-if="showStatusErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusErrorModal">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
-      <div class="mt-3">
-        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
-          <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Error</h3>
-        <div class="mt-2 px-7 py-3">
-          <p class="text-sm text-gray-500 text-center">{{ statusModalMessage }}</p>
-        </div>
-        <div class="flex items-center justify-center pt-4">
-          <button
-            @click="closeStatusErrorModal"
-            class="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <ErrorModal
+    v-model="showStatusErrorModal"
+    :message="statusModalMessage"
+    @close="closeStatusErrorModal"
+  />
 </template>
 
 <script setup lang="ts">
@@ -572,6 +549,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
+import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { mdiShieldAccount } from '@mdi/js'
 import { permissionApi } from '@/services/api'
 
@@ -648,13 +627,26 @@ const dropdownStates = ref({
 })
 
 // Dropdown options
-const roleOptions = [
-  { value: '', label: 'All Roles' },
-  { value: 'super-admin', label: 'Super Admin' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'operator', label: 'Operator' }
-]
+const roleOptions = computed(() => {
+  const options = [{ value: '', label: 'All Roles' }]
+  if (roles.value.length > 0) {
+    roles.value.forEach(role => {
+      options.push({
+        value: role.id.toString(),
+        label: role.name
+      })
+    })
+  } else {
+    // Fallback options while loading
+    options.push(
+      { value: 'super-admin', label: 'Super Admin' },
+      { value: 'admin', label: 'Admin' },
+      { value: 'manager', label: 'Manager' },
+      { value: 'operator', label: 'Operator' }
+    )
+  }
+  return options
+})
 
 const statusOptions = [
   { value: '', label: 'All Status' },
@@ -886,7 +878,7 @@ const closeAllDropdowns = () => {
 
 // Dropdown label functions
 const getRoleLabel = (value: string) => {
-  const option = roleOptions.find(opt => opt.value === value)
+  const option = roleOptions.value.find((opt: { value: string; label: string }) => opt.value === value)
   return option ? option.label : 'All Roles'
 }
 

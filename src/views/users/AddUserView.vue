@@ -13,7 +13,7 @@
           </router-link>
         </div>
           <div>
-        <h1 class="text-xl font-bold text-gray-900">Create New User</h1>
+        <h1 class="text-xl font-bold text-gray-900">Create New Admin</h1>
           </div>
         </div>
       </div>
@@ -98,20 +98,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                <select v-model="newUser.role" @change="updateUserPermissions"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
-                  <option v-for="role in availableRoles" :key="role.value" :value="role.value">
-                    {{ role.name }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select v-model="newUser.status"
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
-                  <option value="active">Active</option>
-                  <option value="blocked">Blocked</option>
-                </select>
+                <div class="relative">
+                  <select v-model="newUser.role" @change="updateUserPermissions"
+                    :disabled="isLoadingRoles"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                    <option value="" disabled v-if="isLoadingRoles">Loading roles...</option>
+                    <option value="" disabled v-else-if="availableRoles.length === 0 && !isLoadingRoles">No roles available</option>
+                    <option v-for="role in availableRoles" :key="role.value" :value="role.value">
+                      {{ role.name }}
+                    </option>
+                  </select>
+                  <div v-if="isLoadingRoles" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <p v-if="rolesError" class="mt-1 text-sm text-red-600">{{ rolesError }}</p>
               </div>
             </div>
           </div>
@@ -151,15 +155,48 @@
           </div>
         </form>
       </div>
+
+      <!-- Success Modal -->
+      <SuccessModal
+        v-model="showSuccessModal"
+        :message="successMessage"
+        @close="closeSuccessModal"
+      />
+
+      <!-- Error Modal -->
+      <ErrorModal
+        v-model="showErrorModal"
+        :message="errorMessage"
+        :show-retry="true"
+        @close="closeErrorModal"
+        @retry="retryCreateUser"
+      />
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
+import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { mdiAccountDetails, mdiShieldCheck, mdiAccountCog } from '@mdi/js'
+import { permissionApi } from '@/services/api'
+import { authApi } from '@/services/api'
+
+// Role interface from API
+interface ApiRole {
+  id: number
+  name: string
+  is_active: boolean
+  created_date: string
+  permission_details: Array<{
+    id: number
+    code_name: string
+    description: string
+  }>
+}
 
 // User interface
 interface User {
@@ -178,43 +215,39 @@ interface User {
   updatedAt: string
 }
 
-// Available roles with their permissions
-const availableRoles = ref([
-  {
-    name: 'Super Admin',
-    value: 'super-admin',
-    permissions: ['Dashboard Access', 'User Management', 'System Settings', 'Audit Trail', 'Reports Access']
-  },
-  {
-    name: 'Admin',
-    value: 'admin', 
-    permissions: ['Dashboard Access', 'User Management - View', 'Customer Management - View', 'Reports - View']
-  },
-  {
-    name: 'Manager',
-    value: 'manager',
-    permissions: ['Dashboard Access', 'Bookings - View', 'Customer Profile - View', 'Facilities - View']
-  },
-  {
-    name: 'Operator',
-    value: 'operator',
-    permissions: ['Bookings - View', 'Customer Profile - View']
-  }
-])
+// State for fetched roles
+const roles = ref<ApiRole[]>([])
+const isLoadingRoles = ref(false)
+const rolesError = ref<string | null>(null)
+
+// Computed property to transform API roles into the format expected by the template
+const availableRoles = computed(() => {
+  // Transform API roles to match the expected format
+  return roles.value
+    .filter(role => role.is_active) // Only show active roles
+    .map(role => ({
+      name: role.name,
+      value: role.id.toString(),
+      permissions: role.permission_details.map(perm => perm.code_name)
+    }))
+})
 
 // Function to add a new role (can be called when creating roles)
 const addNewRole = (roleName: string, permissions: string[]) => {
   const roleValue = roleName.toLowerCase().replace(/\s+/g, '-')
-  availableRoles.value.push({
-    name: roleName,
-    value: roleValue,
-    permissions: permissions
-  })
+  // Note: This would need to be updated to work with the new dynamic system
+  console.log('Adding new role:', roleName, permissions)
 }
 
 // State
 const router = useRouter()
 const isCreating = ref(false)
+
+// Modal states
+const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
 
 const newUser = ref({
   firstName: '',
@@ -222,10 +255,35 @@ const newUser = ref({
   username: '',
   email: '',
   phone: '',
-  role: 'operator' as string,
+  role: '' as string,
   permissions: [] as string[],
   status: 'active' as 'active' | 'blocked'
 })
+
+// Fetch roles from API
+const fetchRoles = async () => {
+  try {
+    isLoadingRoles.value = true
+    rolesError.value = null
+
+    const response = await permissionApi.getAllRoles()
+
+    if (response.success && response.data) {
+      roles.value = response.data
+      console.log('Roles fetched successfully:', response.data)
+    } else {
+      console.error('Failed to fetch roles:', response.message)
+      rolesError.value = response.message || 'Failed to load roles'
+      roles.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching roles:', error)
+    rolesError.value = 'Failed to load roles'
+    roles.value = []
+  } finally {
+    isLoadingRoles.value = false
+  }
+}
 
 // Methods
 const getRolePermissions = (roleValue: string) => {
@@ -251,64 +309,75 @@ const createUser = async () => {
   isCreating.value = true
 
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    const user: User = {
-      id: `USR-${Date.now()}`,
-      firstName: newUser.value.firstName,
-      lastName: newUser.value.lastName,
-      username: newUser.value.username,
+    // Prepare admin data for API
+    const adminData = {
+      first_name: newUser.value.firstName,
+      last_name: newUser.value.lastName,
+      user_name: newUser.value.username,
+      role_id: parseInt(newUser.value.role),
       email: newUser.value.email,
-      phone: newUser.value.phone || null,
-      role: newUser.value.role,
-      status: newUser.value.status,
-      lastLogin: null,
-      permissions: newUser.value.permissions,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      phone: newUser.value.phone || ''
     }
 
-    // Here you would typically make an API call to save the user
-    console.log('Creating user:', user)
+    // Call the API to create new admin
+    const response = await authApi.createNewAdmin(adminData)
 
-    // Reset form
-    newUser.value = {
-      firstName: '',
-      lastName: '',
-      username: '',
-      email: '',
-      phone: '',
-      role: 'operator',
-      permissions: [],
-      status: 'active'
+    if (response.success) {
+      console.log('Admin created successfully:', response.data)
+
+      // Reset form
+      newUser.value = {
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        phone: '',
+        role: '',
+        permissions: [],
+        status: 'active'
+      }
+
+      // Show success message and redirect
+      successMessage.value = 'Admin created successfully!'
+      showSuccessModal.value = true
+    } else {
+      console.error('Failed to create admin:', response.message)
+      errorMessage.value = `Failed to create admin: ${response.message}`
+      showErrorModal.value = true
     }
-
-    // Show success message and redirect
-    alert('User created successfully!')
-    router.push('/user-management')
 
   } catch (error) {
-    console.error('Error creating user:', error)
-    alert('Failed to create user. Please try again.')
+    console.error('Error creating admin:', error)
+    errorMessage.value = 'Failed to create admin. Please try again.'
+    showErrorModal.value = true
   } finally {
     isCreating.value = false
   }
 }
 
-// Initialize permissions on mount
+// Modal handlers
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  router.push('/user-management')
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+}
+
+const retryCreateUser = () => {
+  showErrorModal.value = false
+  // Optionally retry the creation, for now just close
+}
+
+// Initialize on mount
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  // Load roles from localStorage
-  if (typeof window !== 'undefined') {
-    const storedRoles = localStorage.getItem('availableRoles')
-    if (storedRoles) {
-      availableRoles.value = JSON.parse(storedRoles)
-    }
-  }
-  
+  // Fetch roles from API
+  fetchRoles()
+
+  // Update permissions when component mounts
   updateUserPermissions()
 })
 </script>
