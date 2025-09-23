@@ -32,7 +32,7 @@
               v-model="searchQuery"
               @input="handleSearchInput"
               @focus="showSearchResults = true"
-              class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-gray-800"
+              class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
             />
 
             <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">

@@ -38,5 +38,6 @@ export type {
   Payment,
   Message,
   CancellationRequest,
-  DashboardStats
+  DashboardStats,
+  Admin
 } from './api'

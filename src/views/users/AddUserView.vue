@@ -36,7 +36,7 @@
                   type="text"
                   v-model="newUser.firstName"
                   required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter first name"
                 />
               </div>
@@ -46,7 +46,7 @@
                   type="text"
                   v-model="newUser.lastName"
                   required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter last name"
                 />
               </div>
@@ -59,7 +59,7 @@
                   type="text"
                   v-model="newUser.username"
                   required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter username"
                 />
               </div>
@@ -69,7 +69,7 @@
                   type="email"
                   v-model="newUser.email"
                   required
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter email address"
                 />
               </div>
@@ -78,7 +78,7 @@
               <input
                 type="tel"
                 v-model="newUser.phone"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                 placeholder="Enter phone number"
               />
             </div>
@@ -99,19 +99,32 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                 <div class="relative">
-                  <select v-model="newUser.role" @change="updateUserPermissions"
-                    :disabled="isLoadingRoles"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed">
-                    <option value="" disabled v-if="isLoadingRoles">Loading roles...</option>
-                    <option value="" disabled v-else-if="availableRoles.length === 0 && !isLoadingRoles">No roles available</option>
-                    <option v-for="role in availableRoles" :key="role.value" :value="role.value">
-                      {{ role.name }}
-                    </option>
-                  </select>
-                  <div v-if="isLoadingRoles" class="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <svg class="animate-spin h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                    <span class="text-gray-900">{{ getRoleLabel(newUser.role) }}</span>
+                  </div>
+
+                  <!-- Dropdown Options -->
+                  <div v-if="dropdownStates.role" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div class="p-2">
+                      <div v-if="isLoadingRoles" class="p-2 text-sm text-gray-500 text-center">
+                        Loading roles...
+                      </div>
+                      <div v-else-if="availableRoles.length === 0" class="p-2 text-sm text-gray-500 text-center">
+                        No roles available
+                      </div>
+                      <div v-else v-for="option in roleOptions" :key="option.value" @click="selectRole(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                        {{ option.label }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Dropdown Arrow -->
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg :class="[
+                      'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                      dropdownStates.role ? 'transform rotate-180' : ''
+                    ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
@@ -220,6 +233,11 @@ const roles = ref<ApiRole[]>([])
 const isLoadingRoles = ref(false)
 const rolesError = ref<string | null>(null)
 
+// Dropdown states
+const dropdownStates = ref({
+  role: false
+})
+
 // Computed property to transform API roles into the format expected by the template
 const availableRoles = computed(() => {
   // Transform API roles to match the expected format
@@ -231,6 +249,24 @@ const availableRoles = computed(() => {
       permissions: role.permission_details.map(perm => perm.code_name)
     }))
 })
+
+// Computed property for role options
+const roleOptions = computed(() => {
+  const options = [{ value: '', label: 'Select Role' }]
+  availableRoles.value.forEach(role => {
+    options.push({
+      value: role.value,
+      label: role.name
+    })
+  })
+  return options
+})
+
+// Get role label for display
+const getRoleLabel = (roleValue: string) => {
+  const role = roleOptions.value.find(option => option.value === roleValue)
+  return role ? role.label : 'Select Role'
+}
 
 // Function to add a new role (can be called when creating roles)
 const addNewRole = (roleName: string, permissions: string[]) => {
@@ -293,6 +329,17 @@ const getRolePermissions = (roleValue: string) => {
 
 const updateUserPermissions = () => {
   newUser.value.permissions = getRolePermissions(newUser.value.role)
+}
+
+// Dropdown methods
+const toggleDropdown = (dropdown: 'role') => {
+  dropdownStates.value[dropdown] = !dropdownStates.value[dropdown]
+}
+
+const selectRole = (roleValue: string) => {
+  newUser.value.role = roleValue
+  updateUserPermissions()
+  dropdownStates.value.role = false
 }
 
 const getBackNavigationPath = () => {

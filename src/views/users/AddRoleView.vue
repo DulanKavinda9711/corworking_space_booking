@@ -24,7 +24,8 @@
             <input
               v-model="newRole.name"
               type="text"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+              class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+"
               placeholder="Enter role name"
               required
               :disabled="isSubmitting"
@@ -33,14 +34,30 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select
-              v-model="newRole.status"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
-              :disabled="isSubmitting"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+            <div class="relative">
+              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-md text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center" :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }">
+                <span class="text-gray-900">{{ getStatusLabel(newRole.status) }}</span>
+              </div>
+
+              <!-- Dropdown Options -->
+              <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div class="p-2">
+                  <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                    {{ option.label }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dropdown Arrow -->
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg :class="[
+                  'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                  dropdownStates.status ? 'transform rotate-180' : ''
+                ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           <div class="md:col-span-2">
@@ -111,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
@@ -139,6 +156,11 @@ const showErrorModal = ref(false)
 const isSubmitting = ref(false)
 const errorMessage = ref<string>('')
 
+// Dropdown states
+const dropdownStates = ref({
+  status: false
+})
+
 // Form state
 const newRole = ref({
   name: '',
@@ -148,6 +170,17 @@ const newRole = ref({
 
 // Selected permission IDs
 const selectedPermissionIds = ref<number[]>([])
+
+// Computed properties for status dropdown
+const statusOptions = computed(() => [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+])
+
+const getStatusLabel = (statusValue: string) => {
+  const status = statusOptions.value.find(option => option.value === statusValue)
+  return status ? status.label : 'Select Status'
+}
 
 // Fetch permissions on component mount
 onMounted(async () => {
@@ -161,6 +194,16 @@ const getBackNavigationPath = () => {
 
 const getBackNavigationLabel = () => {
   return ""
+}
+
+// Dropdown methods
+const toggleDropdown = (dropdown: 'status') => {
+  dropdownStates.value[dropdown] = !dropdownStates.value[dropdown]
+}
+
+const selectStatus = (statusValue: string) => {
+  newRole.value.status = statusValue as 'active' | 'inactive'
+  dropdownStates.value.status = false
 }
 
 // Methods

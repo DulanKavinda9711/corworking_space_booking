@@ -70,15 +70,6 @@
                   </div>
                 </div>
 
-                <!-- Date Range Picker -->
-                <div class="relative flex-no min-w-0">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <AdvancedDateRangePicker
-                    :dateRange="roleCreationDateRange"
-                    @dateRangeChange="handleRoleCreationDateRangeChange"
-                  />
-                </div>
-
                 <!-- Role Filter -->
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
@@ -161,8 +152,6 @@
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Permissions</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
-                      At</th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status
                     </th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
@@ -197,7 +186,6 @@
                         </span>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(role.created_date) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span :class="getStatusClass(role.is_active ? 'active' : 'inactive')" class="px-2 py-1 text-xs font-medium rounded-full">
                         {{ role.is_active ? 'active' : 'inactive' }}
@@ -206,7 +194,9 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
                         <button @click.stop="toggleRoleStatus(role)"
-                          :class="role.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
+                          :class="[
+                            role.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
+                          ]"
                           class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
                           :title="role.is_active ? 'Make Role Inactive' : 'Make Role Active'">
                           <span>{{ role.is_active ? 'Inactive' : 'Active' }}</span>
@@ -219,7 +209,7 @@
                 <!-- Loading State Row -->
                 <tbody v-if="isLoadingRoles" class="bg-white">
                   <tr>
-                    <td colspan="5" class="px-6 py-12 text-center">
+                    <td colspan="4" class="px-6 py-12 text-center">
                       <div class="flex items-center justify-center">
                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -234,7 +224,7 @@
                 <!-- Empty State Row -->
                 <tbody v-if="!isLoadingRoles && filteredRoles.length === 0" class="bg-white">
                   <tr>
-                    <td colspan="5" class="px-6 py-12 text-center">
+                    <td colspan="4" class="px-6 py-12 text-center">
                       <div>
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -270,15 +260,6 @@
                       </svg>
                     </div>
                   </div>
-                </div>
-
-                <!-- Date Range Picker -->
-                <div class="relative flex-no min-w-0">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                  <AdvancedDateRangePicker
-                    :dateRange="userCreationDateRange"
-                    @dateRangeChange="handleUserCreationDateRangeChange"
-                  />
                 </div>
 
                 <!-- Role Filter -->
@@ -367,50 +348,49 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
-                      At</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated
-                      At</th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status
                     </th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody v-if="filteredUsers.length > 0" class="bg-white divide-y divide-gray-200">
-                  <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 cursor-pointer"
-                    @click="viewUser(user)">
+                <tbody v-if="filteredAdmins.length > 0" class="bg-white divide-y divide-gray-200">
+                  <tr v-for="admin in filteredAdmins" :key="admin.id" class="hover:bg-gray-50 cursor-pointer" @click="viewAdmin(admin)">
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10">
-                          <img class="h-10 w-10 rounded-full object-cover" :src="user.avatar" :alt="user.name">
+                          <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                          </div>
                         </div>
                         <div class="ml-4">
-                          <div class="text-sm font-medium text-gray-900">{{ user.name.split(' ')[0] }} {{ user.name.split(' ')[1] || '' }}</div>
+                          <div class="text-sm font-medium text-gray-900">{{ admin.full_name }}</div>
                         </div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.username }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ admin.email }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ admin.username }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getRoleClass(user.role)" class="px-2 py-1 text-xs font-medium rounded-full">
-                        {{ formatRole(user.role) }}
+                      <span :class="getRoleClass(admin.role_name.toLowerCase().replace(' ', '-'))" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ admin.role_name }}
                       </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(user.createdAt) }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(user.updatedAt) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getStatusClass(user.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                        {{ user.status }}
+                      <span :class="getStatusClass(admin.is_active ? 'active' : 'inactive')" class="px-2 py-1 text-xs font-medium rounded-full">
+                        {{ admin.is_active ? 'active' : 'inactive' }}
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
-                        <button @click.stop="toggleUserStatus(user)"
-                          :class="user.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border cursor-pointer flex items-center justify-center space-x-1"
-                          :title="user.status === 'active' ? 'Make User Inactive' : 'Make User Active'">
-                          <span>{{ user.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                        <button @click.stop="toggleAdminStatus(admin)"
+                          :class="[
+                            admin.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
+                          ]"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                          :title="admin.is_active ? 'Make Admin Inactive' : 'Make Admin Active'">
+                          <span>{{ admin.is_active ? 'Inactive' : 'Active' }}</span>
                         </button>
                       </div>
                     </td>
@@ -418,31 +398,31 @@
                 </tbody>
 
                 <!-- Loading State Row -->
-                <tbody v-if="isLoadingUsers" class="bg-white">
+                <tbody v-if="isLoadingAdmins" class="bg-white">
                   <tr>
-                    <td colspan="8" class="px-6 py-12 text-center">
+                    <td colspan="6" class="px-6 py-12 text-center">
                       <div class="flex items-center justify-center">
                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-gray-500">Loading users...</span>
+                        <span class="text-gray-500">Loading admins...</span>
                       </div>
                     </td>
                   </tr>
                 </tbody>
 
                 <!-- Empty State Row -->
-                <tbody v-if="!isLoadingUsers && filteredUsers.length === 0" class="bg-white">
+                <tbody v-if="!isLoadingAdmins && filteredAdmins.length === 0" class="bg-white">
                   <tr>
-                    <td colspan="8" class="px-6 py-12 text-center">
+                    <td colspan="6" class="px-6 py-12 text-center">
                       <div>
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-                        <p class="mt-1 text-sm text-gray-500">No users match the current search and filters.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No admins found</h3>
+                        <p class="mt-1 text-sm text-gray-500">No admins match the current search and filters.</p>
                       </div>
                     </td>
                   </tr>
@@ -458,21 +438,18 @@
   </AdminLayout>
 
   <!-- Status Toggle Confirmation Modal -->
-  <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
+  <div v-if="showStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusModal">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
       <div class="mt-3">
-        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'bg-red-100' : 'bg-green-100'">
-          <svg class="w-6 h-6" :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'text-red-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' : 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'"/>
+        <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="(selectedUser?.status === 'active' || selectedRole?.is_active || selectedAdmin?.is_active) ? 'bg-amber-100' : 'bg-green-100'">
+          <svg class="w-6 h-6" :class="(selectedUser?.status === 'active' || selectedRole?.is_active || selectedAdmin?.is_active) ? 'text-amber-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+            <path :d="(selectedUser?.status === 'active' || selectedRole?.is_active || selectedAdmin?.is_active) ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' : 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'"/>
           </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
-          {{ (selectedUser?.status === 'active' || selectedRole?.is_active) ? 'Make Inactive' : 'Make Active' }} {{ selectedUser ? 'User' : 'Role' }}
+          {{ (selectedUser?.status === 'active' || selectedRole?.is_active || selectedAdmin?.is_active) ? 'Make Inactive' : 'Make Active' }} {{ selectedUser ? 'User' : selectedRole ? 'Role' : 'Admin' }}
         </h3>
         <div class="mt-2 px-7 py-3">
-          <p class="text-sm text-gray-500 text-center">
-            Are you sure you want to {{ (selectedUser?.status === 'active' || selectedRole?.is_active) ? 'make inactive' : 'make active' }} {{ selectedUser ? selectedUser.name : selectedRole?.name }}?
-          </p>
           <div v-if="selectedUser" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div class="text-sm space-y-1">
               <div class="flex items-center space-x-3">
@@ -504,26 +481,47 @@
               </div>
             </div>
           </div>
+          <div v-if="selectedAdmin" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="text-sm space-y-1">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900">{{ selectedAdmin.full_name }}</div>
+                  <div class="text-gray-500">{{ selectedAdmin.email }}</div>
+                  <div class="text-gray-500">{{ selectedAdmin.username }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="my-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p class="text-sm text-green-700 text-center">
+              Are you sure you want to <strong>{{ (selectedUser?.status === 'active' || selectedRole?.is_active || selectedAdmin?.is_active) ? 'make this ' + (selectedUser ? 'user' : selectedRole ? 'role' : 'admin') + ' inactive' : 'make this ' + (selectedUser ? 'user' : selectedRole ? 'role' : 'admin') + ' active' }}</strong>?
+            </p>
+          </div>
         </div>
         <div class="flex items-center justify-center pt-4 space-x-4">
           <button
-            @click="closeStatusToggleModal"
-            class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+            @click="closeStatusModal"
+            class="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors"
           >
             Cancel
           </button>
           <button
-            @click="confirmStatusToggle"
-            :disabled="isTogglingStatus"
-            class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            :class="(selectedUser?.status === 'active' || selectedRole?.is_active) ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'"
-          >
-            <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>{{ isTogglingStatus ? 'Processing...' : ((selectedUser?.status === 'active' || selectedRole?.is_active) ? 'Make Inactive' : 'Make Active') }}</span>
-          </button>
+              @click="confirmToggleCustomerStatus"
+              :disabled="isProcessing"
+              class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :class="customerToToggle?.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
+            >
+              <svg v-if="isProcessing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ isProcessing ? 'Processing...' : (customerToToggle?.status === 'active' ? 'Inactive' : 'Active') }}</span>
+            </button>
         </div>
       </div>
     </div>
@@ -548,11 +546,10 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { mdiShieldAccount } from '@mdi/js'
-import { permissionApi } from '@/services/api'
+import { permissionApi, authApi } from '@/services/api'
 
 // Role interface
 interface Role {
@@ -589,6 +586,18 @@ interface User {
   updatedAt: string
 }
 
+// Admin interface
+interface Admin {
+  id: number
+  full_name: string
+  email: string
+  username: string
+  role_name: string
+  created_at: string
+  updated_at: string
+  is_active: boolean
+}
+
 // Sample roles data
 const roles = ref<Role[]>([])
 
@@ -599,26 +608,19 @@ const searchQuery = ref('')
 // Loading states
 const isLoadingRoles = ref(false)
 const isLoadingUsers = ref(false)
+const isLoadingAdmins = ref(false)
 const loadingError = ref<string | null>(null)
 
 // Modal state
-const showStatusToggleModal = ref(false)
-const isTogglingStatus = ref(false)
+const showStatusModal = ref(false)
+const customerToToggle = ref<any>(null)
+const isProcessing = ref(false)
 const showStatusSuccessModal = ref(false)
 const showStatusErrorModal = ref(false)
 const statusModalMessage = ref('')
 const selectedUser = ref<User | null>(null)
 const selectedRole = ref<Role | null>(null)
-
-// Date range state for both tabs
-const userCreationDateRange = ref({
-  startDate: '',
-  endDate: ''
-})
-const roleCreationDateRange = ref({
-  startDate: '',
-  endDate: ''
-})
+const selectedAdmin = ref<Admin | null>(null)
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
@@ -638,12 +640,20 @@ const roleOptions = computed(() => {
     })
   } else {
     // Fallback options while loading
-    options.push(
-      { value: 'super-admin', label: 'Super Admin' },
-      { value: 'admin', label: 'Admin' },
-      { value: 'manager', label: 'Manager' },
-      { value: 'operator', label: 'Operator' }
-    )
+    const roleOptions = computed(() => {
+      const options = [{ value: '', label: 'All Roles' }]
+      if (roles.value.length > 0) {
+        roles.value.forEach(role => {
+          options.push({
+            value: role.id.toString(),
+            label: role.name
+          })
+        })
+      } else {
+        // Fallback options while loading
+      }
+      return options
+    })
   }
   return options
 })
@@ -656,14 +666,15 @@ const statusOptions = [
 
 // Filters
 const filters = ref({
-  startDate: '',
-  endDate: '',
   role: '',
   status: ''
 })
 
 // Sample users data
 const users = ref<User[]>([])
+
+// Sample admins data
+const admins = ref<Admin[]>([])
 
 // Computed properties
 const filteredUsers = computed(() => {
@@ -680,19 +691,6 @@ const filteredUsers = computed(() => {
     )
   }
 
-  // Apply date range filter
-  if (filters.value.startDate && filters.value.endDate) {
-    filtered = filtered.filter(user => {
-      const userDate = new Date(user.createdAt).toISOString().split('T')[0]
-      return userDate >= filters.value.startDate && userDate <= filters.value.endDate
-    })
-  } else if (filters.value.startDate) {
-    filtered = filtered.filter(user => {
-      const userDate = new Date(user.createdAt).toISOString().split('T')[0]
-      return userDate === filters.value.startDate
-    })
-  }
-
   // Apply role filter
   if (filters.value.role) {
     filtered = filtered.filter(user => user.role === filters.value.role)
@@ -701,6 +699,23 @@ const filteredUsers = computed(() => {
   // Apply status filter
   if (filters.value.status) {
     filtered = filtered.filter(user => user.status === filters.value.status)
+  }
+
+  return filtered
+})
+
+const filteredAdmins = computed(() => {
+  let filtered = admins.value
+
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(admin =>
+      admin.full_name.toLowerCase().includes(query) ||
+      admin.email.toLowerCase().includes(query) ||
+      admin.username.toLowerCase().includes(query) ||
+      admin.role_name.toLowerCase().includes(query)
+    )
   }
 
   return filtered
@@ -719,36 +734,7 @@ const filteredRoles = computed(() => {
     )
   }
 
-  // Apply date range filter
-  if (filters.value.startDate && filters.value.endDate) {
-    filtered = filtered.filter(role => {
-      const roleDate = new Date(role.createdAt || role.created_date).toISOString().split('T')[0]
-      return roleDate >= filters.value.startDate && roleDate <= filters.value.endDate
-    })
-  } else if (filters.value.startDate) {
-    filtered = filtered.filter(role => {
-      const roleDate = new Date(role.createdAt || role.created_date).toISOString().split('T')[0]
-      return roleDate === filters.value.startDate
-    })
-  }
-
   return filtered
-})
-
-// Computed property for date range display
-const dateRangeDisplay = computed(() => {
-  if (filters.value.startDate && filters.value.endDate) {
-    const startParts = filters.value.startDate.split('-')
-    const endParts = filters.value.endDate.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]))
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-  } else if (filters.value.startDate) {
-    const startParts = filters.value.startDate.split('-')
-    const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]))
-    return `${startDate.toLocaleDateString()}`
-  }
-  return ''
 })
 
 // Methods
@@ -811,6 +797,29 @@ const fetchUsers = async () => {
   }
 }
 
+const fetchAdmins = async () => {
+  try {
+    isLoadingAdmins.value = true
+    loadingError.value = null
+
+    const response = await authApi.getAllAdmins()
+
+    if (response.success && response.data) {
+      admins.value = response.data
+    } else {
+      console.error('Failed to fetch admins:', response.message)
+      loadingError.value = response.message || 'Failed to load admins'
+      admins.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching admins:', error)
+    loadingError.value = 'Failed to load admins'
+    admins.value = []
+  } finally {
+    isLoadingAdmins.value = false
+  }
+}
+
 const getStatusClass = (status: string) => {
   switch (status) {
     case 'active':
@@ -824,15 +833,6 @@ const getStatusClass = (status: string) => {
   }
 }
 
-const formatRole = (role: string) => {
-  const roleMap: Record<string, string> = {
-    'super-admin': 'Super Admin',
-    'admin': 'Admin',
-    'manager': 'Manager',
-    'operator': 'Operator'
-  }
-  return roleMap[role] || role
-}
 
 const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never'
@@ -849,8 +849,6 @@ const formatDate = (dateString: string | null) => {
 const resetFilters = () => {
   searchQuery.value = ''
   filters.value = {
-    startDate: '',
-    endDate: '',
     role: '',
     status: ''
   }
@@ -906,24 +904,17 @@ const viewRole = (role: Role) => {
   router.push(`/user-management/role/${role.id}`)
 }
 
-const toggleUserStatus = (user: User) => {
-  selectedUser.value = user
+const viewAdmin = (admin: Admin) => {
+  router.push(`/user-management/admin/${admin.id}`)
+}
+
+
+const toggleAdminStatus = (admin: Admin) => {
+  selectedUser.value = null
   selectedRole.value = null
-  showStatusToggleModal.value = true
-}
-
-// Handle date range change for user creation tab
-const handleUserCreationDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
-  userCreationDateRange.value = newDateRange
-  filters.value.startDate = newDateRange.startDate
-  filters.value.endDate = newDateRange.endDate
-}
-
-// Handle date range change for role creation tab
-const handleRoleCreationDateRangeChange = (newDateRange: { startDate: string; endDate: string }) => {
-  roleCreationDateRange.value = newDateRange
-  filters.value.startDate = newDateRange.startDate
-  filters.value.endDate = newDateRange.endDate
+  selectedAdmin.value = admin
+  customerToToggle.value = { ...admin, status: admin.is_active ? 'active' : 'inactive' }
+  showStatusModal.value = true
 }
 
 // Tabs definition with counts
@@ -941,7 +932,7 @@ const tabs = computed(() => [
 // Function to get tab count dynamically
 const getTabCount = (tabId: string) => {
   if (tabId === 'role-creation') return filteredRoles.value.length
-  if (tabId === 'user-creation') return filteredUsers.value.length
+  if (tabId === 'user-creation') return filteredAdmins.value.length
   return 0
 }
 
@@ -975,14 +966,18 @@ const setActiveTab = (tabId: string) => {
 const toggleRoleStatus = (role: Role) => {
   selectedRole.value = role
   selectedUser.value = null
-  showStatusToggleModal.value = true
+  selectedAdmin.value = null
+  customerToToggle.value = { ...role, status: role.is_active ? 'active' : 'inactive' }
+  showStatusModal.value = true
 }
 
 // Modal handler functions
-const closeStatusToggleModal = () => {
-  showStatusToggleModal.value = false
+const closeStatusModal = () => {
+  showStatusModal.value = false
   selectedUser.value = null
   selectedRole.value = null
+  selectedAdmin.value = null
+  customerToToggle.value = null
 }
 
 const closeStatusSuccessModal = () => {
@@ -995,44 +990,63 @@ const closeStatusErrorModal = () => {
   statusModalMessage.value = ''
 }
 
-const confirmStatusToggle = async () => {
-  if (!selectedUser.value && !selectedRole.value) return
-
-  isTogglingStatus.value = true
-  showStatusToggleModal.value = false
-
+const confirmToggleCustomerStatus = async () => {
+  if (!customerToToggle.value) return
+  
+  isProcessing.value = true
+  
   try {
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    if (selectedUser.value) {
-      const index = users.value.findIndex(u => u.id === selectedUser.value!.id)
-      if (index !== -1) {
-        const newStatus = users.value[index].status === 'inactive' ? 'active' : 'inactive'
-        users.value[index].status = newStatus
-        const action = newStatus === 'active' ? 'made active' : 'made inactive'
-        statusModalMessage.value = `User ${selectedUser.value.name} has been successfully ${action}.`
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
+    if (customerToToggle.value.full_name) { // admin
+      const response = await authApi.setAdminActiveStatus(customerToToggle.value.id, !customerToToggle.value.is_active)
+      if (response.success) {
+        const index = admins.value.findIndex(a => a.id === customerToToggle.value.id)
+        if (index !== -1) {
+          const newStatus = !admins.value[index].is_active
+          admins.value[index].is_active = newStatus
+          admins.value[index].updated_at = new Date().toISOString()
+          const action = newStatus ? 'activated' : 'made inactive'
+          const message = `Admin ${customerToToggle.value.full_name} has been ${action} successfully.`
+          statusModalMessage.value = message
+        }
+        showStatusSuccessModal.value = true
+      } else {
+        statusModalMessage.value = 'Failed to update status. Please try again.'
+        showStatusErrorModal.value = true
       }
-    } else if (selectedRole.value) {
-      const index = roles.value.findIndex(r => r.id === selectedRole.value!.id)
+    } else if (customerToToggle.value.permissions) { // role
+      const index = roles.value.findIndex(r => r.id === customerToToggle.value.id)
       if (index !== -1) {
         const newStatus = roles.value[index].is_active ? 'inactive' : 'active'
         roles.value[index].is_active = newStatus === 'active'
         roles.value[index].updatedAt = new Date().toISOString()
-        const action = newStatus === 'active' ? 'made active' : 'made inactive'
-        statusModalMessage.value = `Role ${selectedRole.value.name} has been successfully ${action}.`
+        const action = newStatus === 'active' ? 'activated' : 'made inactive'
+        const message = `Role ${customerToToggle.value.name} has been ${action} successfully.`
+        statusModalMessage.value = message
       }
+      showStatusSuccessModal.value = true
+    } else { // user
+      const index = users.value.findIndex(u => u.id === customerToToggle.value.id)
+      if (index !== -1) {
+        const newStatus = users.value[index].status === 'inactive' ? 'active' : 'inactive'
+        users.value[index].status = newStatus
+        const action = newStatus === 'active' ? 'activated' : 'made inactive'
+        const message = `User ${customerToToggle.value.name} has been ${action} successfully.`
+        statusModalMessage.value = message
+      }
+      showStatusSuccessModal.value = true
     }
-
-    showStatusSuccessModal.value = true
+    
+    closeStatusModal()
   } catch (error) {
     console.error('Error toggling status:', error)
-    statusModalMessage.value = 'Failed to update status. Please try again.'
+    statusModalMessage.value = 'An error occurred while updating status. Please try again.'
     showStatusErrorModal.value = true
   } finally {
-    isTogglingStatus.value = false
-    selectedUser.value = null
-    selectedRole.value = null
+    isProcessing.value = false
+    customerToToggle.value = null
   }
 }
 
@@ -1053,7 +1067,7 @@ onMounted(() => {
 
   // Fetch data from APIs
   fetchRoles()
-  fetchUsers()
+  fetchAdmins()
 })
 
 onUnmounted(() => {

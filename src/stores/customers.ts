@@ -8,11 +8,11 @@ interface Customer {
   phone: string
   customerType: 'registered' | 'guest'
   totalBookings: number
-  status: 'active' | 'blocked'
-  dateJoined: string
-  address: string
-  city: string
-  country: string
+  status: 'active' | 'inactive'
+  dateJoined?: string
+  address?: string
+  city?: string
+  country?: string
 }
 
 export const useCustomersStore = defineStore('customers', () => {
@@ -24,20 +24,27 @@ export const useCustomersStore = defineStore('customers', () => {
   const initializeCustomers = () => {
     if (customers.value.length === 0) {
       customers.value = [
-        {
-          id: 'dummy-001',
-          name: 'John Doe',
-          email: 'john.doe@example.com',
-          phone: '+1-555-0123',
-          customerType: 'registered',
-          totalBookings: 5,
-          status: 'active',
-          dateJoined: '2023-09-16',
-          address: '123 Main Street',
-          city: 'New York',
-          country: 'USA'
-        }
+        
       ]
+    }
+    // Load persisted statuses
+    loadPersistedStatuses()
+  }
+
+  // Load persisted customer statuses from localStorage
+  const loadPersistedStatuses = () => {
+    try {
+      const persistedStatuses = JSON.parse(localStorage.getItem('customerStatuses') || '{}')
+      customerStatuses.value = persistedStatuses
+      
+      // Apply persisted statuses to current customers
+      customers.value.forEach(customer => {
+        if (persistedStatuses[customer.id]) {
+          customer.status = persistedStatuses[customer.id]
+        }
+      })
+    } catch (error) {
+      console.error('Error loading persisted customer statuses:', error)
     }
   }  // Actions
   const updateCustomerStatus = (customerId: string, newStatus: Customer['status']) => {
@@ -45,13 +52,18 @@ export const useCustomersStore = defineStore('customers', () => {
     if (index !== -1) {
       customers.value[index].status = newStatus
       customerStatuses.value[customerId] = newStatus
+      
+      // Persist to localStorage
+      const persistedStatuses = JSON.parse(localStorage.getItem('customerStatuses') || '{}')
+      persistedStatuses[customerId] = newStatus
+      localStorage.setItem('customerStatuses', JSON.stringify(persistedStatuses))
     }
   }
 
   const toggleCustomerStatus = (customerId: string): Customer['status'] | null => {
     const customer = customers.value.find(c => c.id === customerId)
     if (customer) {
-      const newStatus: Customer['status'] = customer.status === 'blocked' ? 'active' : 'blocked'
+      const newStatus: Customer['status'] = customer.status === 'inactive' ? 'active' : 'inactive'
       updateCustomerStatus(customerId, newStatus)
       return newStatus
     }
@@ -67,8 +79,8 @@ export const useCustomersStore = defineStore('customers', () => {
     customers.value.filter(customer => customer.status === 'active')
   )
 
-  const blockedCustomers = computed(() =>
-    customers.value.filter(customer => customer.status === 'blocked')
+  const inactiveCustomers = computed(() =>
+    customers.value.filter(customer => customer.status === 'inactive')
   )
 
   // Initialize on store creation
@@ -84,9 +96,10 @@ export const useCustomersStore = defineStore('customers', () => {
     updateCustomerStatus,
     toggleCustomerStatus,
     getCustomerById,
+    loadPersistedStatuses,
 
     // Getters
     activeCustomers,
-    blockedCustomers
+    inactiveCustomers
   }
 })

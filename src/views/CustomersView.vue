@@ -306,7 +306,7 @@ import { mdiAccount, mdiAccountCheck, mdiAccountCancel } from '@mdi/js'
 const router = useRouter()
 
 // Use shared customers data
-const { customers, toggleCustomerStatus: toggleStatus, loadPersistedStatuses } = useCustomers()
+const { customers, toggleCustomerStatus: toggleStatus, fetchCustomers } = useCustomers()
 const rewardsStore = useRewardsStore()
 
 // State
@@ -338,14 +338,17 @@ const filters = ref({
 const statusOptions = [
   { value: '', label: 'All Status' },
   { value: 'active', label: 'Active' },
-  { value: 'blocked', label: 'Inactive' }
+  { value: 'inactive', label: 'Inactive' }
 ]
 
 // Computed properties
 const filteredCustomers = computed(() => {
-  // Start with only registered customers
-  let filtered = customers.value.filter((customer: Customer) => customer.customerType === 'registered')
-
+  console.log('Computing filtered customers...')
+  console.log('All customers:', customers.value)
+  // Start with all customers (temporarily remove the registered filter)
+  let filtered = customers.value // .filter((customer: Customer) => customer.customerType === 'registered')
+  console.log('All customers (no filter):', filtered)
+  
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -361,6 +364,7 @@ const filteredCustomers = computed(() => {
     filtered = filtered.filter((customer: Customer) => customer.status === filters.value.status)
   }
 
+  console.log('Final filtered customers:', filtered)
   return filtered
 })
 
@@ -404,10 +408,9 @@ const getStatusClass = (status: string) => {
     case 'active':
       return 'bg-green-100 text-green-800'
     case 'inactive':
-    case 'blocked':
       return 'bg-red-100 text-red-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-red-100 text-red-800'
   }
 }
 
@@ -495,11 +498,10 @@ const confirmToggleCustomerStatus = async () => {
   isProcessing.value = true
   
   try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    const newStatus = toggleStatus(customerToToggle.value.id)
+    const newStatus = await toggleStatus(customerToToggle.value.id)
     if (newStatus) {
+      // Update the local customer object immediately for UI responsiveness
+      customerToToggle.value.status = newStatus
       const action = newStatus === 'active' ? 'activated' : 'made inactive'
       const message = `Customer ${customerToToggle.value.name} has been ${action} successfully.`
       showSuccessModalWithMessage(message)
@@ -545,8 +547,8 @@ const handleClickOutside = (event: MouseEvent) => {
 }
 
 // Load persisted customer statuses on component mount
-onMounted(() => {
-  loadPersistedStatuses()
+onMounted(async () => {
+  await fetchCustomers() // Load customer data from API (this will also apply persisted statuses)
   document.addEventListener('click', handleClickOutside)
 })
 

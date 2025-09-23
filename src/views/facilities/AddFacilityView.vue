@@ -38,7 +38,7 @@
                     </label>
                     <input type="text" v-model="form.name"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
+                        'w-full rounded-lg px-4 py-3 text-left rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                         showValidation && !form.name.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
                       ]"
                       placeholder="Enter facility name" />
@@ -56,7 +56,7 @@
                         @click="showIconDropdown = !showIconDropdown"
                         type="button"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 text-left focus:ring-2 transition-colors flex items-center justify-between',
+                          'w-full rounded-lg px-4 py-3 text-left focus:ring-1 transition-colors flex items-center justify-between',
                           showValidation && !form.selectedIcon ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
                         ]"
                       >

@@ -197,7 +197,7 @@ interface User {
   email: string
   phone: string | null
   department: string | null
-  role: 'super-admin' | 'admin' | 'manager' | 'operator'
+  role: string
   status: 'active' | 'blocked'
   lastLogin: string | null
   permissions: string[]

@@ -1,16 +1,16 @@
 <template>
-  <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-green-50 to-green-100 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+  <div class="min-h-screen flex bg-white">
+    <!-- Left Section - Image -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-white-100 to-white-200 items-center justify-center">
+      <img :src="loginImage" alt="Login" class="w-full h-full object-cover" />
+    </div>
+
+    <!-- Right Section - Login Form -->
+    <div class="flex-1 lg:w-1/2 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-md w-full space-y-8">
         <div>
-          <div class="mx-au      // Check role for redirection
-      if (role === 'Super Admin' || role === 'SuperAdmin') {
-        console.log('Super Admin login, redirecting to dashboard')
-        router.push('/dashboard')
-        return
-      }x items-center justify-center mt-4 mb-6">
-            <img :src="logo" class="h-15 w-max " />
+          <div class="mx-auto flex items-center justify-center mt-4 mb-6">
+            <img :src="logo" class="h-15 w-max" />
           </div>
 
           <h2 class="mt-6 text-center text-3xl font-bold text-gray-900 tracking-tight">
@@ -92,7 +92,10 @@
           </div>
         </form>
 
-    <!-- Success Modal -->
+        <!-- Logo below form -->
+        <div class="mt-8 flex justify-center">
+          <img :src="logo2" alt="Logo" class="h-10 w-auto" />
+        </div>
       </div>
     </div>
 
@@ -263,6 +266,8 @@ import { authApi } from '@/services/api'
 import { jwtDecode } from 'jwt-decode'
 
 const logo = '/assets/logo.png'
+const loginImage = '/assets/loginImage.png'
+const logo2 = '/assets/logo2.png'
 
 const router = useRouter()
 const authStore = useAuthStore()

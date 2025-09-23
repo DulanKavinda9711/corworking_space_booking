@@ -1,6 +1,21 @@
 <template>
   <AdminLayout>
     <div class="space-y-6" v-if="customer && !loading">
+      <!-- Error state -->
+      <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Error loading customer</h3>
+            <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+          </div>
+        </div>
+      </div>
       <!-- Back Button -->
       <div class="flex items-center">
         <router-link to="/customers" class="flex items-center text-gray-600 hover:text-gray-900">
@@ -111,8 +126,8 @@
               <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-3">
                     <div class="flex items-center text-sm text-gray-600">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
-                      <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-2">
+                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiEmail" />
                       </svg>
                     </div>
@@ -129,8 +144,8 @@
                 </div>
                 <div class="space-y-3">
                     <div class="flex items-center text-sm text-gray-600">
-                    <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-2">
-                      <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-2">
+                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiCalendar" />
                       </svg>
                     </div>
@@ -141,7 +156,7 @@
                       {{ customer.customerType }}
                     </span>
                     <span :class="getStatusClass(customer.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                      {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
+                      {{ customer.status === 'active' ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                 </div>
@@ -152,13 +167,13 @@
           <div class="flex flex-col items-start space-y-3">
             <button 
               @click="toggleCustomerStatus"
-              :class="customer.status === 'blocked' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'"
+              :class="customer.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
               class="w-full px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center"
             >
               <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="customer.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
+                <path :d="customer.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
               </svg>
-              <span>{{ customer.status === 'blocked' ? 'Active User' : 'Inactive User' }}</span>
+              <span>{{ customer.status === 'active' ? 'Make Inactive' : 'Make Active' }}</span>
             </button>
             
             <button 
@@ -348,8 +363,8 @@
     <div v-if="showSendMessageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSendMessageModal">
       <div class="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white" @click.stop>
         <div class="mt-3">
-          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-blue-100">
-            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
               <path :d="mdiMessage" />
             </svg>
           </div>
@@ -358,8 +373,8 @@
             <div v-if="customer" class="mb-4 p-3 bg-gray-50 rounded-lg">
               <div class="text-sm text-gray-900">
                 <div class="flex items-center space-x-2 mb-2">
-                  <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiAccount" />
                     </svg>
                   </div>
@@ -369,13 +384,37 @@
                   </div>
                 </div>
                 <div class="text-xs text-gray-600">
-                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
+                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'active' ? 'Active' : 'Inactive' }}
                 </div>
               </div>
             </div>
             
             <form @submit.prevent="sendMessage">
               <div class="mb-4">
+                <label for="contactMethod" class="block text-sm font-medium text-gray-700 mb-2">Send via</label>
+                <div class="space-y-3">
+                  <label class="flex items-center">
+                    <input
+                      v-model="messageForm.contactMethod"
+                      type="radio"
+                      value="email"
+                      class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                    />
+                    <span class="ml-2 text-sm text-gray-700">Email</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input
+                      v-model="messageForm.contactMethod"
+                      type="radio"
+                      value="phone"
+                      class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+                    />
+                    <span class="ml-2 text-sm text-gray-700">Phone Number</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div v-if="messageForm.contactMethod === 'email'" class="mb-4">
                 <label for="messageSubject" class="block text-sm font-medium text-gray-900 mb-2">Subject</label>
                 <input
                   id="messageSubject"
@@ -386,6 +425,7 @@
                   placeholder="Enter message subject"
                 />
               </div>
+              
               <div class="mb-4">
                 <label for="messageBody" class="block text-sm font-medium text-gray-700 mb-2">Message</label>
                 <textarea
@@ -397,29 +437,7 @@
                   placeholder="Enter your message to the customer..."
                 ></textarea>
               </div>
-              <div class="mb-4">
-                <label for="contactMethod" class="block text-sm font-medium text-gray-700 mb-2">Send via</label>
-                <div class="space-y-3">
-                  <label class="flex items-center">
-                    <input
-                      v-model="messageForm.contactMethod"
-                      type="radio"
-                      value="email"
-                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span class="ml-2 text-sm text-gray-700">Email</span>
-                  </label>
-                  <label class="flex items-center">
-                    <input
-                      v-model="messageForm.contactMethod"
-                      type="radio"
-                      value="phone"
-                      class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span class="ml-2 text-sm text-gray-700">Phone Number</span>
-                  </label>
-                </div>
-              </div>
+              
               <div v-if="messageForm.contactMethod === 'email'" class="mb-4">
                 <label for="recipientEmail" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <input
@@ -452,8 +470,8 @@
             </button>
             <button
               @click="sendMessage"
-              :disabled="isSendingMessage || !messageForm.subject.trim() || !messageForm.message.trim()"
-              class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              :disabled="isSendingMessage || !messageForm.message.trim() || (messageForm.contactMethod === 'email' && !messageForm.subject.trim())"
+              class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <svg v-if="isSendingMessage" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -491,7 +509,7 @@
                   </div>
                 </div>
                 <div class="text-xs text-gray-600">
-                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'blocked' ? 'Inactive' : customer.status }}
+                  <span class="font-medium">Customer Type:</span> {{ customer.customerType }} | <span class="font-medium">Status:</span> {{ customer.status === 'active' ? 'Active' : 'Inactive' }}
                 </div>
               </div>
             </div>
@@ -561,17 +579,17 @@
     <div v-if="showStatusToggleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeStatusToggleModal">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
         <div class="mt-3">
-          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="customer?.status === 'blocked' ? 'bg-green-100' : 'bg-red-100'">
-            <svg class="w-6 h-6" :class="customer?.status === 'blocked' ? 'text-green-600' : 'text-red-600'" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="customer?.status === 'blocked' ? mdiAccountCheck : mdiAccountCancel" />
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full" :class="customer?.status === 'active' ? 'bg-red-100' : 'bg-green-100'">
+            <svg class="w-6 h-6" :class="customer?.status === 'active' ? 'text-red-600' : 'text-green-600'" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="customer?.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
             </svg>
           </div>
           <h3 class="text-lg font-medium text-gray-900 text-center mt-4">
-            {{ customer?.status === 'blocked' ? 'Make Active' : 'Make Inactive' }} Customer
+            {{ customer?.status === 'active' ? 'Make Inactive' : 'Make Active' }} Customer
           </h3>
           <div class="mt-2 px-7 py-3">
             <p class="text-sm text-gray-500 text-center">
-              Are you sure you want to {{ customer?.status === 'blocked' ? 'make active' : 'make inactive' }} {{ customer?.name }}?
+              Are you sure you want to {{ customer?.status === 'active' ? 'make inactive' : 'make active' }} {{ customer?.name }}?
             </p>
             <div v-if="customer" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div class="text-sm space-y-1">
@@ -601,13 +619,13 @@
               @click="confirmStatusToggle"
               :disabled="isTogglingStatus"
               class="px-4 py-2 text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              :class="customer?.status === 'blocked' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700'"
+              :class="customer?.status === 'active' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'"
             >
               <svg v-if="isTogglingStatus" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isTogglingStatus ? 'Processing...' : (customer?.status === 'blocked' ? 'Make Active' : 'Make Inactive') }}</span>
+              <span>{{ isTogglingStatus ? 'Processing...' : (customer?.status === 'active' ? 'Make Inactive' : 'Make Active') }}</span>
             </button>
           </div>
         </div>
@@ -680,6 +698,7 @@ import { useCustomers } from '@/composables/useCustomers'
 import { useBookings } from '@/composables/useBookings'
 import { useRewardsStore } from '@/stores/rewards'
 import type { Booking } from '@/services/api'
+import { messageApi } from '@/services/api'
 import { 
   mdiAccount, 
   mdiEmail, 
@@ -733,19 +752,8 @@ const rewardsForm = ref({
 
 // Get customer data from shared store
 const customerId = route.params.id as string
-const customer = computed(() => {
-  // Get customer from shared store only
-  const sharedCustomer = getCustomerById(customerId)
-  if (sharedCustomer.value) {
-    // Update total bookings with actual data
-    return {
-      ...sharedCustomer.value,
-      totalBookings: customerBookings.value.length
-    }
-  }
-  // If not found, return null
-  return null
-})
+const customer = ref<any>(null)
+const error = ref<string | null>(null)
 
 // Customer statistics
 const customerStats = computed(() => {
@@ -804,10 +812,8 @@ const getStatusClass = (status: string) => {
       return 'bg-green-100 text-green-800'
     case 'inactive':
       return 'bg-red-100 text-red-800'
-    case 'blocked':
-      return 'bg-red-100 text-red-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-red-100 text-red-800'
   }
 }
 
@@ -858,14 +864,13 @@ const confirmStatusToggle = async () => {
   showStatusToggleModal.value = false
 
   try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Toggle the status
-    const newStatus = toggleStatus(customer.value.id)
+    // Toggle the status using the API
+    const newStatus = await toggleStatus(customerId, customer.value.status)
 
     if (newStatus) {
-      const action = newStatus === 'blocked' ? 'made inactive' : 'made active'
+      // Update local customer data
+      customer.value.status = newStatus
+      const action = newStatus === 'active' ? 'made active' : 'made inactive'
       statusModalMessage.value = `Customer ${customer.value.name} has been successfully ${action}.`
       showStatusSuccessModal.value = true
     } else {
@@ -900,11 +905,40 @@ const sendMessage = async () => {
   isSendingMessage.value = true
   
   try {
-    // Simulate API call to send message
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Show success message
-    alert(`Message sent successfully to ${customer.value.name} via ${messageForm.value.contactMethod}`)
+    if (messageForm.value.contactMethod === 'phone') {
+      // Send SMS
+      const result = await messageApi.sendSMS(
+        messageForm.value.recipientPhone,
+        messageForm.value.message
+      )
+      
+      if (result.success) {
+        alert(`SMS sent successfully to ${customer.value.name}`)
+      } else {
+        alert(`Failed to send SMS: ${result.message}`)
+        return
+      }
+    } else if (messageForm.value.contactMethod === 'email') {
+      // Send email (currently mock implementation)
+      const result = await messageApi.sendMessage({
+        customerId: customer.value.id,
+        customerName: customer.value.name,
+        customerEmail: messageForm.value.recipientEmail,
+        subject: messageForm.value.subject,
+        message: messageForm.value.message,
+        contactMethod: 'email',
+        recipientContact: messageForm.value.recipientEmail,
+        sentBy: 'Admin', // TODO: Get from auth store
+        priority: 'normal'
+      })
+      
+      if (result.success) {
+        alert(`Email sent successfully to ${customer.value.name}`)
+      } else {
+        alert(`Failed to send email: ${result.message}`)
+        return
+      }
+    }
     
     // Close modal
     closeSendMessageModal()
@@ -994,6 +1028,24 @@ onMounted(async () => {
   // Load persisted customer statuses from localStorage
   loadPersistedStatuses()
   console.log('Loading customer details for ID:', route.params.id)
+  
+  try {
+    // Fetch customer data from API
+    const customerData = await getCustomerById(customerId)
+    if (customerData) {
+      customer.value = {
+        ...customerData,
+        totalBookings: 0 // Will be updated when bookings are fetched
+      }
+      console.log('Customer data loaded:', customer.value)
+    } else {
+      error.value = 'Customer not found'
+      console.error('Customer not found for ID:', customerId)
+    }
+  } catch (err) {
+    error.value = 'Failed to load customer data'
+    console.error('Error loading customer:', err)
+  }
   
   // Fetch customer bookings
   await fetchCustomerBookings()

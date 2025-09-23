@@ -75,6 +75,21 @@ export interface Role {
   permission_details: PermissionDetail[]
 }
 
+export interface Admin {
+  id: number
+  full_name: string
+  email: string
+  username: string
+  role_name: string
+  phone: string
+  created_at: string
+  updated_at: string
+  is_active: boolean
+  role_id: number
+  is_deleted: boolean
+  permission_list?: string[]
+}
+
 export interface Booking {
   id: string
   productName: string
@@ -112,8 +127,8 @@ export interface Customer {
   phone: string
   customerType: 'registered' | 'guest'
   totalBookings: number
-  status: 'active' | 'inactive' | 'blocked'
-  dateJoined: string
+  status: 'active' | 'inactive'
+  dateJoined?: string
   address?: string
   city?: string
   country?: string
@@ -610,6 +625,85 @@ export const authApi = {
       console.error('Create admin error:', error)
       return errorResponse('Network error while creating admin', [error.message])
     }
+  },
+
+  /**
+   * Get all admins
+   */
+  async getAllAdmins(): Promise<ApiResponse<any[]>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('admins/get-all-admins'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Admins retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve admins')
+      }
+    } catch (error: any) {
+      console.error('Get all admins error:', error)
+      return errorResponse('Network error while retrieving admins', [error.message])
+    }
+  },
+
+  /**
+   * Set admin active status
+   */
+  async setAdminActiveStatus(adminId: number, isActive: boolean): Promise<ApiResponse<string>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('admins/set-active-status'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          admin_id: adminId,
+          is_active: isActive
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Request processed successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update admin status')
+      }
+    } catch (error: any) {
+      console.error('Set admin active status error:', error)
+      return errorResponse('Network error while updating admin status', [error.message])
+    }
   }
 }
 
@@ -1094,115 +1188,117 @@ export const customerApi = {
   /**
    * Get all customers
    */
-  async getAllCustomers(filters?: {
-    page?: number
-    limit?: number
+  async getAllCustomers(requestData?: {
+    id?: string
+    first_name?: string
+    last_name?: string
+    email?: string
+    phone?: string
     status?: string
-    type?: string
-    search?: string
+    total_bookings?: number
+    customer_type?: string
   }): Promise<ApiResponse<Customer[]>> {
     await delay(600)
 
-    // Real API call - uncomment when backend is ready
-    // try {
-    //   const token = localStorage.getItem('authToken')
-    //   const queryParams = new URLSearchParams()
-    //   
-    //   if (filters?.page) queryParams.append('page', filters.page.toString())
-    //   if (filters?.limit) queryParams.append('limit', filters.limit.toString())
-    //   if (filters?.status) queryParams.append('status', filters.status)
-    //   if (filters?.type) queryParams.append('type', filters.type)
-    //   if (filters?.search) queryParams.append('search', filters.search)
-    //   
-    //   const response = await fetch(`${API_CONFIG.BASE_URL}/customers?${queryParams}`, {
-    //     method: 'GET',
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Content-Type': 'application/json'
-    //     }
-    //   })
-    //   
-    //   if (!response.ok) {
-    //     if (response.status === 401) {
-    //       return errorResponse('Please log in again')
-    //     }
-    //     throw new Error(`HTTP error! status: ${response.status}`)
-    //   }
-    //   
-    //   const data = await response.json()
-    //   
-    //   if (data.success && data.customers) {
-    //     // Update local storage for offline access
-    //     MockDataStore.getInstance().updateCustomers(data.customers)
-    //     
-    //     return {
-    //       success: true,
-    //       data: data.customers,
-    //       pagination: data.pagination,
-    //       message: 'Customers retrieved successfully'
-    //     }
-    //   } else {
-    //     return errorResponse(data.message || 'Failed to retrieve customers')
-    //   }
-    // } catch (error) {
-    //   console.error('Get customers error:', error)
-    //   return errorResponse('Network error while fetching customers', [error.message])
-    // }
+    // Real API call
+    try {
+      const token = localStorage.getItem('authToken')
+      console.log('Making API call to:', `${API_CONFIG.API_BASE_URL}/users/get-all-users`)
+      console.log('With request data:', requestData)
+      console.log('Auth token present:', !!token)
+      
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/users/get-all-users`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData || {})
+      })
 
-    // Mock API call - remove when real API is implemented
-    return {
-      success: true,
-      data: [],
-      pagination: {
-        currentPage: filters?.page || 1,
-        totalPages: 0,
-        totalItems: 0,
-        itemsPerPage: filters?.limit || 10
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('401 Unauthorized - auth token issue')
+          return errorResponse('Please log in again')
+        }
+        console.log('Response not ok, status:', response.status)
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-    }
-  },
 
-  /**
+      const data = await response.json()
+      console.log('Parsed response data:', data)
+
+      if (data.status_code === 200) {
+        console.log('API returned status_code 200, data:', data.data)
+        return {
+          success: true,
+          data: Array.isArray(data.data) ? data.data : [],
+          message: data.message || 'Users retrieved successfully.'
+        }
+      } else {
+        console.log('API returned different status_code:', data.status_code, 'message:', data.message)
+        return errorResponse(data.message || 'Failed to retrieve customers')
+      }
+    } catch (error) {
+      console.error('Get customers error:', error)
+      return errorResponse('Network error while fetching customers', [error instanceof Error ? error.message : 'Unknown error'])
+    }
+  },  /**
    * Get customer by ID
    */
-  async getCustomerById(_id: string): Promise<ApiResponse<Customer>> {
+  async getCustomerById(id: string): Promise<ApiResponse<Customer>> {
     await delay(500)
 
-    // Real API call - uncomment when backend is ready
-    // try {
-    //   const token = localStorage.getItem('authToken')
-    //   const response = await fetch(`${API_CONFIG.BASE_URL}/customers/${id}`, {
-    //     method: 'GET',
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Content-Type': 'application/json'
-    //     }
-    //   })
-    //   
-    //   if (!response.ok) {
-    //     if (response.status === 404) {
-    //       return errorResponse('Customer not found')
-    //     }
-    //     if (response.status === 401) {
-    //       return errorResponse('Please log in again')
-    //     }
-    //     throw new Error(`HTTP error! status: ${response.status}`)
-    //   }
-    //   
-    //   const data = await response.json()
-    //   
-    //   if (data.success && data.customer) {
-    //     return successResponse(data.customer)
-    //   } else {
-    //     return errorResponse(data.message || 'Customer not found')
-    //   }
-    // } catch (error) {
-    //   console.error('Get customer error:', error)
-    //   return errorResponse('Network error while fetching customer', [error.message])
-    // }
+    try {
+      const token = localStorage.getItem('authToken')
+      console.log('Making API call to:', `${API_CONFIG.API_BASE_URL}/users/get-user-by-id`)
+      console.log('With user_id:', id)
 
-    // Mock API call - remove when real API is implemented
-    return errorResponse('Customer not found')
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/users/get-user-by-id`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: parseInt(id) })
+      })
+
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('401 Unauthorized - auth token issue')
+          return errorResponse('Please log in again')
+        }
+        if (response.status === 404) {
+          return errorResponse('Customer not found')
+        }
+        console.log('Response not ok, status:', response.status)
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('Parsed response data:', data)
+
+      if (data.status_code === 200) {
+        console.log('API returned status_code 200, data:', data.data)
+        return {
+          success: true,
+          data: data.data,
+          message: data.message || 'User retrieved successfully.'
+        }
+      } else {
+        console.log('API returned different status_code:', data.status_code, 'message:', data.message)
+        return errorResponse(data.message || 'Failed to retrieve customer')
+      }
+    } catch (error) {
+      console.error('Get customer by ID error:', error)
+      return errorResponse('Network error while fetching customer', [error instanceof Error ? error.message : 'Unknown error'])
+    }
   },
 
   /**
@@ -1298,6 +1394,47 @@ export const customerApi = {
 
     // Mock API call - remove when real API is implemented
     return errorResponse('Customer bookings retrieval not implemented', ['Real API not yet implemented'])
+  },
+
+  /**
+   * Activate or deactivate a customer
+   */
+  async activateUser(userData: { id: number; is_active: boolean }): Promise<ApiResponse<string>> {
+    await delay(600)
+
+    try {
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(`${API_CONFIG.API_BASE_URL}/users/activate-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          return errorResponse('Please log in again')
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return {
+          success: true,
+          data: data.data || 'User updated successfully',
+          message: data.message || 'Request processed successfully'
+        }
+      } else {
+        return errorResponse(data.message || 'Failed to update user status')
+      }
+    } catch (error) {
+      console.error('Activate user error:', error)
+      return errorResponse('Network error while updating user status', [error instanceof Error ? error.message : 'Unknown error'])
+    }
   }
 }
 
@@ -2841,6 +2978,36 @@ export const messageApi = {
   },
 
   /**
+   * Send SMS to customer
+   */
+  async sendSMS(contactNumber: string, message: string): Promise<ApiResponse<{ success: boolean; messageId?: string }>> {
+    try {
+      const response = await fetch(buildApiUrl('/sms-service/send'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
+        },
+        body: JSON.stringify({
+          contact_number: contactNumber,
+          message: message
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse({ success: true, messageId: data.data?.messageId }, data.message || 'SMS sent successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to send SMS')
+      }
+    } catch (error: any) {
+      console.error('Send SMS error:', error)
+      return errorResponse('Network error while sending SMS', [error.message])
+    }
+  },
+
+  /**
    * Get all sent messages
    */
   async getAllMessages(): Promise<ApiResponse<Message[]>> {
@@ -2917,6 +3084,46 @@ export const dashboardApi = {
       companies,
       locations
     })
+  },
+
+  /**
+   * Get admin by ID
+   */
+  async getAdminById(adminId: number): Promise<ApiResponse<Admin>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('admins/get-admin-by-id'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: adminId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Admin retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve admin')
+      }
+    } catch (error: any) {
+      console.error('Get admin by ID error:', error)
+      return errorResponse('Network error while retrieving admin', [error.message])
+    }
   }
 }
 
@@ -2987,8 +3194,8 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://192.168.56.1:9011',
-  API_BASE_URL: 'http://192.168.56.1:9011/api',
+  BASE_URL: 'http://192.168.1.45:9011',
+  API_BASE_URL: 'http://192.168.1.45:9011/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3
 }

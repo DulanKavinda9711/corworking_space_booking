@@ -17,7 +17,7 @@
         <!-- Month/Year Header -->
         <div v-if="calendarView === 'dates'" class="flex items-center space-x-1">
           <button @click.stop="calendarView = 'years'"
-            class="text-lg font-semibold text-gray-900 hover:text-green-600 transition-colors px-2 py-1 rounded hover:bg-gray-100">
+            class="text-lg font-semibold text-gray-900 hover:text-green-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
             {{ selectedYear }}
           </button>
           <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">

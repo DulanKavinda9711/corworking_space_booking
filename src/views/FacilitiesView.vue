@@ -49,7 +49,7 @@
                   type="text"
                   placeholder="Search facilities by name..."
                   v-model="searchQuery"
-                  class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
+                  class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                 />
               </div>
             </div>
