@@ -24,7 +24,7 @@
             <input
               v-model="newRole.name"
               type="text"
-              class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+              class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
 "
               placeholder="Enter role name"
               required
@@ -35,7 +35,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div class="relative">
-              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-md text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center" :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }">
+              <div @click="toggleDropdown('status')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.status ? 'border-2 border-green-500 focus:ring-0 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300', { 'opacity-50 cursor-not-allowed': isSubmitting }]">
                 <span class="text-gray-900">{{ getStatusLabel(newRole.status) }}</span>
               </div>
 
@@ -62,7 +62,7 @@
 
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-4">Permissions</label>
-            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4">
+            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10">
               <div v-if="permissionsStore.loading" class="text-center py-4">
                 <div class="text-gray-500">Loading permissions...</div>
               </div>

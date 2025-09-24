@@ -60,7 +60,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Search Roles</label>
                   <div class="relative">
                     <input v-model="searchQuery" type="text" placeholder="Search by name, permissions..."
-                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900" />
+                      class="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900 w-96" />
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +74,7 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                   <div class="relative">
-                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                    <div @click="toggleDropdown('role')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.role ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
                       <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
                     </div>
 
@@ -110,7 +110,7 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <div class="relative">
-                    <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                    <div @click="toggleDropdown('status')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
                       <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
                     </div>
 
@@ -252,7 +252,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Search Users</label>
                   <div class="relative">
                     <input v-model="searchQuery" type="text" placeholder="Search by name, email, username..."
-                      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900" />
+                      class="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900 w-96" />
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -266,7 +266,7 @@
                 <div class="relative flex-none w-40 overflow-visible">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                   <div class="relative">
-                    <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                    <div @click="toggleDropdown('role')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.role ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
                       <span class="text-gray-900">{{ getRoleLabel(filters.role) }}</span>
                     </div>
 
@@ -302,7 +302,7 @@
                 <div class="relative flex-none w-40">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <div class="relative">
-                    <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                    <div @click="toggleDropdown('status')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
                       <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
                     </div>
 

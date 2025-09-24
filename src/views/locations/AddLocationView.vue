@@ -89,8 +89,8 @@
                     </label>
                     <input type="text" v-model="form.name"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.name.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                        showValidation && !form.name.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                       ]"
                       placeholder="Enter location name" />
                     <div v-if="showValidation && !form.name.trim()" class="mt-1 text-sm text-red-600">
@@ -111,8 +111,8 @@
                       </label>
                       <input type="text" v-model="form.street"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && !form.street.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                          showValidation && !form.street.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]"
                         placeholder="Enter street address" />
                       <div v-if="showValidation && !form.street.trim()" class="mt-1 text-sm text-red-600">
@@ -124,7 +124,7 @@
                         Street 2
                       </label>
                       <input type="text" v-model="form.streetTwo"
-                        class="w-full rounded-lg px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-primary-500 text-gray-900 transition-colors"
+                        class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                         placeholder="Additional street address (optional)" />
                     </div>
                     <div>
@@ -133,8 +133,8 @@
                       </label>
                       <input type="text" v-model="form.postalCode"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && (!form.postalCode.trim() || !isValidPostalCode(form.postalCode)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                          showValidation && (!form.postalCode.trim() || !isValidPostalCode(form.postalCode)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]"
                         placeholder="Enter 5-digit postal code"
                         maxlength="5"
@@ -152,8 +152,8 @@
                       </label>
                       <input type="text" v-model="form.town"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && !form.town.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                          showValidation && !form.town.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]"
                         placeholder="Enter town/city" />
                       <div v-if="showValidation && !form.town.trim()" class="mt-1 text-sm text-red-600">
@@ -164,38 +164,34 @@
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         District <span class="text-red-500">*</span>
                       </label>
-                      <select v-model="form.district"
-                        :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && !form.district.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                      <div class="relative" ref="districtDropdownRef">
+                        <div @click="toggleDropdown('district')" :class="[
+                          'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                          dropdownStates.district ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                          showValidation && !form.district.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]">
-                        <option value="">Select District</option>
-                        <option value="Ampara">Ampara</option>
-                        <option value="Anuradhapura">Anuradhapura</option>
-                        <option value="Badulla">Badulla</option>
-                        <option value="Batticaloa">Batticaloa</option>
-                        <option value="Colombo">Colombo</option>
-                        <option value="Galle">Galle</option>
-                        <option value="Gampaha">Gampaha</option>
-                        <option value="Hambantota">Hambantota</option>
-                        <option value="Jaffna">Jaffna</option>
-                        <option value="Kalutara">Kalutara</option>
-                        <option value="Kandy">Kandy</option>
-                        <option value="Kegalle">Kegalle</option>
-                        <option value="Kilinochchi">Kilinochchi</option>
-                        <option value="Kurunegala">Kurunegala</option>
-                        <option value="Mannar">Mannar</option>
-                        <option value="Matale">Matale</option>
-                        <option value="Matara">Matara</option>
-                        <option value="Monaragala">Monaragala</option>
-                        <option value="Mullaitivu">Mullaitivu</option>
-                        <option value="Nuwara Eliya">Nuwara Eliya</option>
-                        <option value="Polonnaruwa">Polonnaruwa</option>
-                        <option value="Puttalam">Puttalam</option>
-                        <option value="Ratnapura">Ratnapura</option>
-                        <option value="Trincomalee">Trincomalee</option>
-                        <option value="Vavuniya">Vavuniya</option>
-                      </select>
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ form.district || 'Select District' }}</span>
+                        </div>
+
+                        <!-- Dropdown Options -->
+                        <div v-if="dropdownStates.district" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <div class="p-2">
+                            <div v-for="district in districtOptions" :key="district.value" @click="selectDistrict(district.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                              {{ district.label }}
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Dropdown Arrow -->
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg :class="[
+                            'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                            dropdownStates.district ? 'transform rotate-180' : ''
+                          ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
                       <div v-if="showValidation && !form.district.trim()" class="mt-1 text-sm text-red-600">
                         District is required
                       </div>
@@ -206,8 +202,8 @@
                       </label>
                       <input type="url" v-model="form.mapUrl"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                          showValidation && !form.mapUrl.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                          showValidation && !form.mapUrl.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]"
                         placeholder="https://maps.google.com/..." />
                       <div v-if="showValidation && !form.mapUrl.trim()" class="mt-1 text-sm text-red-600">
@@ -235,8 +231,8 @@
                     </label>
                     <input type="text" v-model="form.contactName"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.contactName.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                        showValidation && !form.contactName.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                       ]"
                       placeholder="Enter contact person name" />
                     <div v-if="showValidation && !form.contactName.trim()" class="mt-1 text-sm text-red-600">
@@ -249,8 +245,8 @@
                     </label>
                     <input type="tel" v-model="form.contactPhone"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && (!form.contactPhone.trim() || !isValidPhoneNumber(form.contactPhone)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                        showValidation && (!form.contactPhone.trim() || !isValidPhoneNumber(form.contactPhone)) ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                       ]"
                       placeholder="+94701234567"
                       maxlength="12"
@@ -268,8 +264,8 @@
                     </label>
                     <input type="email" v-model="form.contactEmail"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                        showValidation && !form.contactEmail.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
+                        'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
+                        showValidation && !form.contactEmail.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                       ]"
                       placeholder="contact@company.com" />
                     <div v-if="showValidation && !form.contactEmail.trim()" class="mt-1 text-sm text-red-600">
@@ -306,7 +302,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { locationApi } from '@/services/api'
@@ -474,4 +470,74 @@ const retryCreateLocation = () => {
   showErrorModal.value = false
   saveLocation()
 }
+
+// Dropdown states
+const dropdownStates = ref({
+  district: false
+})
+
+// Dropdown refs
+const districtDropdownRef = ref<HTMLElement | null>(null)
+
+// District options
+const districtOptions = [
+  { value: 'Ampara', label: 'Ampara' },
+  { value: 'Anuradhapura', label: 'Anuradhapura' },
+  { value: 'Badulla', label: 'Badulla' },
+  { value: 'Batticaloa', label: 'Batticaloa' },
+  { value: 'Colombo', label: 'Colombo' },
+  { value: 'Galle', label: 'Galle' },
+  { value: 'Gampaha', label: 'Gampaha' },
+  { value: 'Hambantota', label: 'Hambantota' },
+  { value: 'Jaffna', label: 'Jaffna' },
+  { value: 'Kalutara', label: 'Kalutara' },
+  { value: 'Kandy', label: 'Kandy' },
+  { value: 'Kegalle', label: 'Kegalle' },
+  { value: 'Kilinochchi', label: 'Kilinochchi' },
+  { value: 'Kurunegala', label: 'Kurunegala' },
+  { value: 'Mannar', label: 'Mannar' },
+  { value: 'Matale', label: 'Matale' },
+  { value: 'Matara', label: 'Matara' },
+  { value: 'Monaragala', label: 'Monaragala' },
+  { value: 'Mullaitivu', label: 'Mullaitivu' },
+  { value: 'Nuwara Eliya', label: 'Nuwara Eliya' },
+  { value: 'Polonnaruwa', label: 'Polonnaruwa' },
+  { value: 'Puttalam', label: 'Puttalam' },
+  { value: 'Ratnapura', label: 'Ratnapura' },
+  { value: 'Trincomalee', label: 'Trincomalee' },
+  { value: 'Vavuniya', label: 'Vavuniya' }
+]
+
+// Dropdown methods
+const toggleDropdown = (dropdown: string) => {
+  if (dropdown === 'district') {
+    dropdownStates.value.district = !dropdownStates.value.district
+    if (dropdownStates.value.district) {
+      // Add click outside listener when dropdown opens
+      document.addEventListener('click', handleClickOutside)
+    } else {
+      // Remove click outside listener when dropdown closes
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }
+}
+
+const selectDistrict = (value: string) => {
+  form.value.district = value
+  dropdownStates.value.district = false
+  document.removeEventListener('click', handleClickOutside)
+}
+
+const handleClickOutside = (event: Event) => {
+  const target = event.target as HTMLElement
+  if (districtDropdownRef.value && !districtDropdownRef.value.contains(target)) {
+    dropdownStates.value.district = false
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+// Cleanup event listener on component unmount
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>

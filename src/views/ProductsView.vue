@@ -40,15 +40,15 @@
                 type="text"
                 placeholder="Search products..."
                 v-model="searchQuery"
-                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
+                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 text-black"
               />
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div class="relative" @click.stop>
-              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+              <div @click="toggleDropdown('status')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                <span class="text-gray-900 leading-5 h-5 flex items-center">{{ getStatusLabel(filters.status) }}</span>
               </div>
 
               <!-- Dropdown Options -->
@@ -74,8 +74,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
             <div class="relative" @click.stop>
-              <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                <span class="text-gray-900 truncate">{{ getLocationLabel(filters.location) }}</span>
+              <div @click="toggleDropdown('location')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.location ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(filters.location) }}</span>
               </div>
 
               <!-- Dropdown Options -->
@@ -101,8 +101,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
             <div class="relative" @click.stop>
-              <div @click="toggleDropdown('productType')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                <span class="text-gray-900 truncate">{{ getProductTypeLabel(filters.productType) }}</span>
+              <div @click="toggleDropdown('productType')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.productType ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getProductTypeLabel(filters.productType) }}</span>
               </div>
 
               <!-- Dropdown Options -->

@@ -32,7 +32,7 @@
               v-model="searchQuery"
               @input="handleSearchInput"
               @focus="showSearchResults = true"
-              class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+              class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900"
             />
 
             <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -79,8 +79,14 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">Today's Bookings</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.todayBookings }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ stats.todayBookings }} new bookings today</p>
+              <div v-if="statsLoading" class="mt-2">
+                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-3/4"></div>
+              </div>
+              <div v-else>
+                <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.todayBookings }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ stats.todayBookings }} new bookings today</p>
+              </div>
             </div>
             <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
               <svg class="w-7 h-7 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarCheck"/></svg>
@@ -93,8 +99,14 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">Upcoming (7d)</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.upcomingBookings }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ stats.upcomingBookings }} bookings for the next 7 days</p>
+              <div v-if="statsLoading" class="mt-2">
+                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-4/5"></div>
+              </div>
+              <div v-else>
+                <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.upcomingBookings }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ stats.upcomingBookings }} bookings for the next 7 days</p>
+              </div>
             </div>
             <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center border border-green-100">
               <svg class="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCalendarClock"/></svg>
@@ -107,8 +119,14 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">Total Revenue Today</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.todayRevenue.toLocaleString() }}</p>
-              <p class="text-xs text-green-600 mt-1 font-medium">+55% since yesterday</p>
+              <div v-if="statsLoading" class="mt-2">
+                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-2/3"></div>
+              </div>
+              <div v-else>
+                <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.todayRevenue.toLocaleString() }}</p>
+                <p class="text-xs text-green-600 mt-1 font-medium">+55% since yesterday</p>
+              </div>
             </div>
             <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center border border-orange-100">
               <svg class="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCurrencyUsd"/></svg>
@@ -121,8 +139,14 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">Cancellations</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.cancellations }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ stats.cancellations }} cancelled today</p>
+              <div v-if="statsLoading" class="mt-2">
+                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-3/5"></div>
+              </div>
+              <div v-else>
+                <p class="text-3xl font-bold mt-2 text-gray-900">{{ stats.cancellations }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ stats.cancellations }} cancelled today</p>
+              </div>
             </div>
             <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center border border-red-100">
               <svg class="w-7 h-7 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCancel"/></svg>
@@ -135,8 +159,14 @@
           <div class="flex items-start justify-between">
             <div>
               <p class="text-sm text-gray-500">SquareHub Commission</p>
-              <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.SquareHubCommission.toLocaleString() }}</p>
-              <p class="text-xs text-gray-500 mt-1">{{ stats.SquareHubPeriod }}</p>
+              <div v-if="statsLoading" class="mt-2">
+                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-4/6"></div>
+              </div>
+              <div v-else>
+                <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.SquareHubCommission.toLocaleString() }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ stats.SquareHubPeriod }}</p>
+              </div>
             </div>
             <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center border border-yellow-100">
               <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCashMultiple"/></svg>
@@ -152,24 +182,26 @@
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-lg font-semibold text-gray-900">Bookings — Last 30 days</h2>
-              <p class="text-sm text-gray-500 mt-1">Daily booking trends and patterns</p>
+          
             </div>
             <div class="flex items-center space-x-2">
               <div class="flex items-center space-x-1">
                 <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                 <span class="text-sm text-gray-600">Bookings</span>
               </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-gray-900">{{ chartSeries[0].data.slice(-1)[0] }}</div>
-                <div class="text-xs text-green-600 flex items-center">
-                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiTrendingUp"/></svg>
-                  +12% from last week
-                </div>
+              <div class="text-right text-green-600">
+                <div v-if="chartLoading" class="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+                <div v-else class="text-2xl font-bold text-gray-900">{{ chartSeries[0].data.slice(-1)[0] || 0 }}</div>
+                
               </div>
             </div>
           </div>
           <div class="relative">
+            <div v-if="chartLoading" class="flex items-center justify-center h-64">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            </div>
             <apex-chart
+              v-else
               type="area"
               :options="chartOptions"
               :series="chartSeries"
@@ -186,8 +218,15 @@
               <h3 class="text-md font-medium text-gray-900">Recent Bookings</h3>
               <router-link to="/bookings" class="text-sm text-green-600">View all</router-link>
             </div>
-            <div class="space-y-3">
-              <div v-for="booking in recentBookings" :key="booking.id" 
+            <div class="space-y-3 max-h-70 overflow-y-auto">
+              <div v-if="recentBookings.length === 0" class="text-center py-8 text-gray-500">
+                <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-sm">No recent bookings</p>
+                <p class="text-xs text-gray-400 mt-1">Recent bookings will appear here</p>
+              </div>
+              <div v-for="booking in recentBookings.slice(0, 4)" :key="booking.id" 
                    @click="viewBookingDetails(booking.id)"
                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
                 <div class="flex items-center gap-3">
@@ -258,6 +297,7 @@ import {
   mdiChartLine,
   mdiCheckCircle
 } from '@mdi/js'
+import { dashboardApi } from '@/services/api'
 
 const router = useRouter()
 
@@ -321,12 +361,7 @@ const chartOptions = ref({
     }
   },
   xaxis: {
-    categories: [
-      'Aug 1', 'Aug 2', 'Aug 3', 'Aug 4', 'Aug 5', 'Aug 6', 'Aug 7',
-      'Aug 8', 'Aug 9', 'Aug 10', 'Aug 11', 'Aug 12', 'Aug 13', 'Aug 14',
-      'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20', 'Aug 21',
-      'Aug 22', 'Aug 23', 'Aug 24', 'Aug 25', 'Aug 26', 'Aug 27', 'Aug 28'
-    ],
+    categories: [] as string[],
     axisBorder: {
       show: false
     },
@@ -349,6 +384,9 @@ const chartOptions = ref({
     }
   },
   tooltip: {
+    style: {
+        colors: '#059669',
+    },
     theme: 'light',
     x: {
       format: 'MMM dd, yyyy'
@@ -379,7 +417,7 @@ const chartOptions = ref({
 
 const chartSeries = ref([{
   name: 'Bookings',
-  data: [12, 19, 15, 25, 22, 18, 14, 21, 28, 24, 31, 27, 23, 19, 26, 33, 29, 24, 21, 28, 35, 31, 27, 22, 18, 25, 32, 29]
+  data: [] as number[]
 }])
 
 // Search state
@@ -391,155 +429,109 @@ const filteredResults = ref<any[]>([])
 const showSnackbar = ref(false)
 const snackbarMessage = ref('')
 
+// Loading state for stats
+const statsLoading = ref(true)
+
+// Loading state for chart
+const chartLoading = ref(true)
+
 // All bookings data for search
-const allBookings = ref([
-  // Confirmed Bookings
-  {
-    id: 'BR-2034',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    date: '2025-08-20',
-    startTime: '10:00 AM',
-    endTime: '12:00 PM',
-    totalPrice: 100,
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2035',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    date: '2025-08-21',
-    startTime: '9:00 AM',
-    endTime: '5:00 PM',
-    totalPrice: 64,
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2036',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    customerName: 'Robert Chen',
-    customerEmail: 'robert.chen@example.com',
-    date: '2025-08-22',
-    startTime: '2:00 PM',
-    endTime: '4:00 PM',
-    totalPrice: 100,
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2037',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    customerName: 'Emily Rodriguez',
-    customerEmail: 'emily.rodriguez@example.com',
-    date: '2025-08-23',
-    startTime: '8:00 AM',
-    endTime: '12:00 PM',
-    totalPrice: 32,
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2038',
-    productName: 'Private Dedicated Desk',
-    productType: 'Dedicated Desk',
-    customerName: 'David Kim',
-    customerEmail: 'david.kim@example.com',
-    date: '2025-08-24',
-    startTime: '9:00 AM',
-    endTime: '6:00 PM',
-    totalPrice: 450,
-    status: 'confirmed'
-  },
-  // Completed Bookings
-  {
-    id: 'BR-2020',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    customerName: 'Mike Johnson',
-    customerEmail: 'mike.johnson@example.com',
-    date: '2025-08-15',
-    startTime: '9:00 AM',
-    endTime: '11:00 AM',
-    totalPrice: 100,
-    status: 'completed'
-  },
-  {
-    id: 'BR-2021',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    customerName: 'Lisa Thompson',
-    customerEmail: 'lisa.thompson@example.com',
-    date: '2025-08-16',
-    startTime: '8:00 AM',
-    endTime: '4:00 PM',
-    totalPrice: 64,
-    status: 'completed'
-  },
-  // Cancelled Bookings
-  {
-    id: 'BR-2010',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    date: '2025-08-12',
-    startTime: '3:00 PM',
-    endTime: '5:00 PM',
-    totalPrice: 100,
-    status: 'cancelled'
-  }
-])
+const allBookings = ref<any[]>([])
 
 // Current time
 const currentTime = ref('')
 
 // Stats data
 const stats = ref({
-  todayBookings: 12,
-  upcomingBookings: 18,
-  cancellations: 2,
-  todayRevenue: 1250,
-  SquareHubCommission: 875,
-  SquareHubPeriod: 'This week: LKR 875 | This month: LKR 3,420'
+  todayBookings: 0,
+  upcomingBookings: 0,
+  cancellations: 0,
+  todayRevenue: 0,
+  SquareHubCommission: 0,
+  SquareHubPeriod: 'Loading...'
 })
 
 // Recent bookings data
-const recentBookings = ref([
-  {
-    id: 'BR-2034',
-    customer: 'John Doe',
-    product: 'Board Room – Main Branch',
-    date: '12 Aug 2025, 10:00 AM',
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2033',
-    customer: 'Jane Smith',
-    product: 'Hot Desk – Second Floor',
-    date: '12 Aug 2025, 2:00 PM',
-    status: 'confirmed'
-  },
-  {
-    id: 'BR-2032',
-    customer: 'Mike Johnson',
-    product: 'Private Office – Building A',
-    date: '11 Aug 2025, 9:00 AM',
-    status: 'completed'
-  },
-  {
-    id: 'BR-2031',
-    customer: 'Sarah Wilson',
-    product: 'Meeting Room – Ground Floor',
-    date: '11 Aug 2025, 3:00 PM',
-    status: 'cancelled'
-  }
-])
+const recentBookings = ref<any[]>([])
 
 // Methods
+const loadBookingSummary = async () => {
+  try {
+    statsLoading.value = true
+    const response = await dashboardApi.getBookingSummary()
+    
+    if (response.success && response.data) {
+      stats.value = {
+        todayBookings: response.data.todays_booking_count,
+        upcomingBookings: response.data.upcoming_booking_count,
+        cancellations: response.data.todays_cancelled_booking_count,
+        todayRevenue: response.data.todays_revenue,
+        SquareHubCommission: response.data.square_hub_commission,
+        SquareHubPeriod: `This week: LKR ${response.data.square_hub_commission} | This month: LKR ${(response.data.square_hub_commission * 4).toLocaleString()}`
+      }
+    } else {
+      console.error('Failed to load booking summary:', response.message)
+      // Keep default values on error
+    }
+  } catch (error) {
+    console.error('Error loading booking summary:', error)
+    // Keep default values on error
+  } finally {
+    statsLoading.value = false
+  }
+}
+
+const loadLast30DaysBookings = async () => {
+  try {
+    chartLoading.value = true
+    const response = await dashboardApi.getLast30DaysBookings()
+    
+    if (response.success && response.data) {
+      // Extract dates and booking counts
+      const dates = response.data.last30_days_summary.map(item => {
+        const date = new Date(item.date)
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      })
+      const bookings = response.data.last30_days_summary.map(item => item.total_bookings)
+      
+      // Update chart data
+      chartOptions.value.xaxis.categories = dates
+      chartSeries.value[0].data = bookings
+    } else {
+      console.error('Failed to load last 30 days bookings:', response.message)
+      // Keep default values on error
+    }
+  } catch (error) {
+    console.error('Error loading last 30 days bookings:', error)
+    // Keep default values on error
+  } finally {
+    chartLoading.value = false
+  }
+}
+
+const loadUpcomingBookings = async () => {
+  try {
+    const response = await dashboardApi.getUpcomingTenBookings()
+    
+    if (response.success && response.data) {
+      // Map API response to component expected format
+      recentBookings.value = response.data.map(booking => ({
+        id: booking.order_id,
+        customer: `${booking.first_name} ${booking.last_name}`,
+        product: booking.product_name,
+        date: `${booking.booking_date} ${booking.start_time}-${booking.end_time}`,
+        status: 'upcoming' // Since these are upcoming bookings
+      }))
+    } else {
+      console.error('Failed to load upcoming bookings:', response.message)
+      recentBookings.value = []
+    }
+  } catch (error) {
+    console.error('Error loading upcoming bookings:', error)
+    recentBookings.value = []
+  }
+}
+
 const handleSearchInput = () => {
   if (!searchQuery.value.trim()) {
     filteredResults.value = []
@@ -547,14 +539,9 @@ const handleSearchInput = () => {
     return
   }
 
-  const query = searchQuery.value.toLowerCase().trim()
-  filteredResults.value = allBookings.value.filter(booking => 
-    booking.id.toLowerCase().includes(query) ||
-    booking.customerName.toLowerCase().includes(query) ||
-    booking.customerEmail.toLowerCase().includes(query) ||
-    booking.productName.toLowerCase().includes(query)
-  ).slice(0, 8) // Limit to 8 results for better UX
-
+  // TODO: Implement API call to fetch search results
+  // For now, show no results since hardcoded data is removed
+  filteredResults.value = []
   showSearchResults.value = true
 }
 
@@ -574,6 +561,8 @@ const getStatusClass = (status: string) => {
   switch (status) {
     case 'confirmed':
       return 'bg-green-100 text-green-800'
+    case 'upcoming':
+      return 'bg-blue-100 text-blue-800'
     case 'completed':
       return 'bg-gray-100 text-gray-800'
     case 'cancelled':
@@ -616,6 +605,15 @@ onMounted(() => {
   
   // Add click outside listener
   document.addEventListener('click', handleClickOutside)
+
+  // Load booking summary data
+  loadBookingSummary()
+
+  // Load chart data
+  loadLast30DaysBookings()
+
+  // Load upcoming bookings for recent bookings section
+  loadUpcomingBookings()
 
   // Check for login success message
   const loginSuccessMessage = sessionStorage.getItem('loginSuccessMessage')

@@ -74,9 +74,9 @@
                       </option>
                     </select>
                     <!-- Debug info -->
-                    <div class="mt-1 text-xs text-gray-500">
+                    <!-- <div class="mt-1 text-xs text-gray-500">
                       Current locationId: {{ form.locationId }} | Available locations: {{ allLocations.length }}
-                    </div>
+                    </div> -->
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg 
                         :class="[

@@ -242,9 +242,7 @@
               </svg>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">{{ errorTitle }}</h3>
-            <p class="text-sm text-gray-600 mb-6 leading-relaxed">
-              {{ errorMessage }}
-            </p>
+            <br></br>
             <button
               @click="closeErrorModal"
               class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">

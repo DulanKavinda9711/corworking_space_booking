@@ -15,7 +15,7 @@
             </button>
             <div>
               <h1 class="text-2xl font-bold text-gray-900">{{ isSubscription ? 'Cancel Subscription' : 'Cancel Booking' }}</h1>
-              <p class="text-sm text-gray-600 mt-1">{{ isSubscription ? 'Cancel subscription and manage refunds' : 'Cancel booking and manage refunds' }}</p>
+              
             </div>
           </div>
 
@@ -68,8 +68,8 @@
         <!-- Booking Information -->
         <div class="bg-white rounded-xl shadow-card p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="mdiInformationOutline" />
               </svg>
             </div>
@@ -124,14 +124,14 @@
 
             <div class="flex justify-between items-center py-3 border-b border-gray-100">
               <span class="text-sm font-medium text-gray-600">{{ isSubscription ? 'Monthly/Annual Price' : 'Total Price' }}</span>
-              <span class="text-sm font-bold text-gray-900">${{ booking.totalPrice }}</span>
+              <span class="text-sm font-bold text-gray-900">LKR {{ booking.totalPrice }}</span>
             </div>
 
             <!-- Status -->
             <div class="flex justify-between items-center py-3">
               <span class="text-sm font-medium text-gray-600">Current Status</span>
-              <span :class="getStatusClass(booking.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                {{ booking.status }}
+              <span :class="getStatusClass(getDynamicStatus(booking))" class="px-2 py-1 text-xs font-medium rounded-full">
+                {{ getStatusDisplayText(getDynamicStatus(booking)) }}
               </span>
             </div>
           </div>
@@ -164,7 +164,7 @@
             </div>
 
             <!-- Payment Slip Option -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <label class="flex items-start space-x-3">
                 <input
                   v-model="cancellationForm.sendPaymentSlip"
@@ -218,7 +218,7 @@
                   
                   <!-- Selected File Display -->
                   <div v-else class="space-y-2">
-                    <svg class="mx-auto h-12 w-12 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiFileDocument" />
                     </svg>
                     <div>
@@ -246,8 +246,8 @@
             </div>
 
             <!-- Notification Options -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 class="text-sm font-medium text-blue-800 mb-3">Customer Notification</h3>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 class="text-sm font-medium text-gray-800 mb-3">Customer Notification</h3>
               <div class="space-y-4">
                 <div class="text-sm text-gray-700">Notifications will be sent to the customer's contact below. Choose which channels to use.</div>
 
@@ -255,7 +255,7 @@
                   <input
                     v-model="cancellationForm.notifyEmail"
                     type="checkbox"
-                    class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-gray-500"
                   />
                   <div>
                     <div class="text-sm font-medium text-gray-900">Email</div>
@@ -294,9 +294,7 @@
                   :disabled="!canCancel"
                   class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
                 >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path :d="mdiCancel" />
-                  </svg>
+                  
                   <span>Cancel Booking</span>
                 </button>
               </div>
@@ -460,9 +458,113 @@ const getStatusClass = (status: string) => {
       return 'bg-gray-100 text-gray-800'
     case 'cancelled':
       return 'bg-red-100 text-red-800'
+    case 'on going':
+    case 'ongoing':
+      return 'bg-blue-100 text-blue-800'
+    case 'up comming':
+    case 'upcoming':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'complete':
+      return 'bg-gray-100 text-gray-800'
     default:
       return 'bg-gray-100 text-gray-800'
   }
+}
+
+const getStatusDisplayText = (status: string) => {
+  switch (status) {
+    case 'on going':
+      return 'Ongoing'
+    case 'up comming':
+      return 'Upcoming'
+    case 'complete':
+      return 'Completed'
+    case 'cancelled':
+      return 'Cancelled'
+    case 'confirmed':
+      return 'Confirmed'
+    case 'completed':
+      return 'Completed'
+    case 'ongoing':
+      return 'Ongoing'
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1)
+  }
+}
+
+// Get dynamic status based on current time and booking time
+const getDynamicStatus = (booking: any) => {
+  // Handle cancelled bookings - they stay cancelled
+  if (booking.status === 'cancelled') {
+    return 'cancelled'
+  }
+
+  // Handle subscriptions differently
+  if (booking.productType === 'Subscription') {
+    const now = new Date()
+    const subscribedDate = new Date(booking.subscribedDate)
+
+    if (booking.subscriptionType === 'monthly') {
+      // For monthly subscriptions, check if current month is within subscription period
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    } else if (booking.subscriptionType === 'annually') {
+      // For annual subscriptions, check if current year is within subscription period
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    }
+    return booking.status
+  }
+
+  // Handle regular bookings - always calculate based on current time
+  const now = new Date()
+  const bookingDate = new Date(booking.date)
+
+  // Set the booking date with start and end times
+  const [startHour, startMinute] = parseTime(booking.startTime)
+  const [endHour, endMinute] = parseTime(booking.endTime)
+
+  const bookingStartTime = new Date(bookingDate)
+  bookingStartTime.setHours(startHour, startMinute, 0, 0)
+
+  const bookingEndTime = new Date(bookingDate)
+  bookingEndTime.setHours(endHour, endMinute, 0, 0)
+
+  // Compare current time with booking times
+  if (now >= bookingStartTime && now <= bookingEndTime) {
+    return 'on going'
+  } else if (now < bookingStartTime) {
+    return 'up comming'
+  } else {
+    return 'complete'
+  }
+}
+
+// Helper function to parse time strings like "10:00 AM" or "2:00 PM"
+const parseTime = (timeStr: string) => {
+  const [time, period] = timeStr.split(' ')
+  const [hours, minutes] = time.split(':').map(Number)
+
+  let hour24 = hours
+  if (period === 'PM' && hours !== 12) {
+    hour24 = hours + 12
+  } else if (period === 'AM' && hours === 12) {
+    hour24 = 0
+  }
+
+  return [hour24, minutes]
 }
 
 const loadBookingDetails = async () => {
@@ -654,3 +756,9 @@ onMounted(() => {
   loadBookingDetails()
 })
 </script>
+<style>
+input[type="checkbox"] {
+  transition: all 0.2s ease;
+  accent-color: #16a34a; /* Green-600 for fill color */
+}
+</style>

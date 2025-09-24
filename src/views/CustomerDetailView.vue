@@ -370,7 +370,7 @@
           </div>
           <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Send Message to Customer</h3>
           <div class="mt-2 px-4 py-3">
-            <div v-if="customer" class="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div v-if="customer" class="mb-4 p-3 border b bg-gray-50 rounded-lg">
               <div class="text-sm text-gray-900">
                 <div class="flex items-center space-x-2 mb-2">
                   <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -421,7 +421,7 @@
                   v-model="messageForm.subject"
                   type="text"
                   required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter message subject"
                 />
               </div>
@@ -433,7 +433,7 @@
                   v-model="messageForm.message"
                   rows="4"
                   required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter your message to the customer..."
                 ></textarea>
               </div>
@@ -445,7 +445,7 @@
                   v-model="messageForm.recipientEmail"
                   type="email"
                   placeholder="Enter email"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                 />
               </div>
               <div v-if="messageForm.contactMethod === 'phone'" class="mb-4">
@@ -455,7 +455,7 @@
                   v-model="messageForm.recipientPhone"
                   type="tel"
                   :placeholder="customer?.phone || ''"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                 />
               </div>
             </form>
@@ -767,9 +767,10 @@ const customerStats = computed(() => {
   const customerBookingsList = customerBookings.value
   const totalSpent = customerBookingsList.reduce((sum, booking) => sum + booking.totalPrice, 0)
   const upcomingBookings = customerBookingsList.filter(booking => {
+    if (!booking.date) return false
     const bookingDate = new Date(booking.date)
     const today = new Date()
-    return bookingDate > today && (booking.status === 'confirmed' || booking.status === 'pending')
+    return bookingDate > today && (booking.status === 'confirmed' || booking.status === 'ongoing')
   }).length
   const cancellations = customerBookingsList.filter(booking => booking.status === 'cancelled').length
   return {
@@ -819,11 +820,10 @@ const getStatusClass = (status: string) => {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
 }
 
 const toggleCustomerStatus = () => {
@@ -1051,3 +1051,9 @@ onMounted(async () => {
   await fetchCustomerBookings()
 })
 </script>
+<style>
+input[type="radio"] {
+  transition: all 0.2s ease;
+  accent-color: #16a34a; /* Green-600 for fill color */
+}
+</style>

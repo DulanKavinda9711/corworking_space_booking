@@ -100,15 +100,15 @@ export interface Booking {
   customerEmail?: string
   customerPhone?: string
   userType: 'registered' | 'guest'
-  date: string
-  startTime: string
-  endTime: string
-  duration: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  duration?: string
   totalPrice: number
   basePrice?: number
   additionalFacilities?: number
   taxes?: number
-  status: 'confirmed' | 'completed' | 'cancelled' | 'pending'
+  status: 'confirmed' | 'completed' | 'cancelled' | 'ongoing'
   location: string
   locationName: string
   companyName: string
@@ -266,6 +266,23 @@ export interface CancellationRequest {
   processedDate?: string
 }
 
+export interface SubscriptionDetailResponse {
+  booking_id: string
+  location_name: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  product_type: string
+  subscribed_date: string
+  next_billing_date: string
+  subscription_end_date: string
+  total_price: number
+  status: string
+  package_type: string
+  customer_type: string
+}
+
 export interface DashboardStats {
   totalBookings: number
   totalRevenue: number
@@ -280,6 +297,32 @@ export interface DashboardStats {
     revenue: number
     customers: number
   }
+}
+
+export interface BookingSummaryResponse {
+  todays_booking_count: number
+  upcoming_booking_count: number
+  todays_revenue: number
+  todays_cancelled_booking_count: number
+  square_hub_commission: number
+}
+
+export interface Last30DaysBookingResponse {
+  last30_days_summary: Array<{
+    date: string
+    total_bookings: number
+  }>
+}
+
+export interface UpcomingBooking {
+  order_id: string
+  first_name: string
+  last_name: string
+  product_name: string
+  location_name: string
+  booking_date: string
+  start_time: string
+  end_time: string
 }
 
 // ============================================================================
@@ -1027,6 +1070,122 @@ export const bookingApi = {
 
     // Mock API call - remove when real API is implemented
     return errorResponse('Booking deletion not implemented', ['Real API not yet implemented'])
+  },
+
+  /**
+   * Get admin booking tab table data
+   */
+  async getAdminBookingTabTable(filters?: any): Promise<ApiResponse<any[]>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/admin-booking-tab-table'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(filters || {})
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('DEBUG: API getAdminBookingTabTable response:', data)
+
+      if (data.status_code === 200) {
+        console.log('DEBUG: API returned', data.data?.length || 0, 'bookings')
+        return successResponse(data.data, data.message || 'Filtered bookings retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve bookings')
+      }
+    } catch (error: any) {
+      console.error('Get admin booking tab table error:', error)
+      return errorResponse('Network error while retrieving bookings', [error.message])
+    }
+  },
+
+  /**
+   * Get admin subscription table data
+   */
+  async getAdminSubscriptionTable(filters?: any): Promise<ApiResponse<any[]>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/admin-subscription-table'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(filters || {})
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Subscription data retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve subscription data')
+      }
+    } catch (error: any) {
+      console.error('Get admin subscription table error:', error)
+      return errorResponse('Network error while retrieving subscription data', [error.message])
+    }
+  },
+
+  /**
+   * Get admin booking view details
+   */
+  async getAdminBookingView(orderId: string): Promise<ApiResponse<any>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/admin-booking-view'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ order_id: orderId })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Payment detail retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve booking details')
+      }
+    } catch (error: any) {
+      console.error('Get admin booking view error:', error)
+      return errorResponse('Network error while retrieving booking details', [error.message])
+    }
   }
 }
 
@@ -1177,6 +1336,44 @@ export const subscriptionApi = {
 
     // Mock API call - remove when real API is implemented
     return errorResponse('Subscription cancellation not implemented', ['Real API not yet implemented'])
+  },
+
+  /**
+   * Get subscription by order ID
+   */
+  async getSubscriptionByOrderId(orderId: string): Promise<ApiResponse<SubscriptionDetailResponse>> {
+    try {
+      const token = localStorage.getItem('authToken')
+      const response = await fetch(buildApiUrl('/booking/get-subscription-by-orderid'), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ order_id: orderId })
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          return errorResponse('Please log in again')
+        }
+        if (response.status === 404) {
+          return errorResponse('Subscription not found')
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Subscription retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve subscription')
+      }
+    } catch (error: any) {
+      console.error('Get subscription by order ID error:', error)
+      return errorResponse('Network error while fetching subscription', [error.message])
+    }
   }
 }
 
@@ -2118,6 +2315,49 @@ export const facilityApi = {
       console.error('API - Delete facility error:', error)
       return errorResponse('Network error while deleting facility', [(error as Error).message])
     }
+  },
+
+  /**
+   * Activate/Deactivate facility type
+   */
+  async activateFacilityType(id: number, isActive: boolean): Promise<ApiResponse<null>> {
+    try {
+      console.log('API - Activating/Deactivating facility type with ID:', id, 'isActive:', isActive)
+
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('facility-type/activate-facility-type'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: id,
+          is_active: isActive
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(null, data.message || 'Facility type status updated successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to update facility type status')
+      }
+    } catch (error) {
+      console.error('API - Activate facility type error:', error)
+      return errorResponse('Network error while updating facility type status', [(error as Error).message])
+    }
   }
 }
 
@@ -2135,7 +2375,7 @@ const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicat
     return 'Meeting Room'
   } else if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk')) {
     return 'Hot Desk'
-  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private') || normalizedType.includes('workspace')) {
     return 'Dedicated Desk'
   }
   
@@ -2820,7 +3060,10 @@ export const paymentApi = {
   }): Promise<ApiResponse<Payment[]>> {
     // Real API call
     try {
-      const token = localStorage.getItem('authToken')
+      //const token = localStorage.getItem('authToken')
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
       if (!token) {
         return errorResponse('No authentication token found')
       }
@@ -2834,7 +3077,9 @@ export const paymentApi = {
         // Add body if filters are provided
         body: filters ? JSON.stringify(filters) : undefined,
       })
-
+      
+      console.log('Get payments with filters:', response)
+      
       if (!response.ok) {
         return errorResponse(`HTTP error! status: ${response.status}`)
       }
@@ -2844,29 +3089,29 @@ export const paymentApi = {
       if (result.status_code === 200) {
         // Map API response to Payment interface
         const payments: Payment[] = result.data.map((item: any) => {
-          const additionalFacilities = item.facility_list?.map((f: any) => ({
-            name: f.facility_name,
-            price: parseFloat(f.price) || 0
-          })) || []
-
-          const dateTime = item.updated_at?.split(' ') || ['', '']
+          // Parse payment_date format: "2025-09-23 10:58:51"
+          const dateTime = item.payment_date?.split(' ') || ['', '']
           const date = dateTime[0] || ''
-          const time = dateTime[1] || '00:00 AM'
+          const time = dateTime[1] || '00:00:00'
 
           return {
-            id: item.order_id || '',
-            bookingId: item.order_id || '',
-            customerName: '', // Not provided in API response
+            id: item.booking_id || '',
+            bookingId: item.booking_id || '',
+            customerName: `${item.first_name || ''} ${item.last_name || ''}`.trim(),
             customerEmail: '', // Not provided in API response
             productName: '', // Not provided in API response
-            productType: item.product_type || '',
+            productType: '', // Not provided in API response
             locationName: item.location_name || '',
             baseAmount: 0, // Not provided, calculate if needed
-            additionalFacilities,
+            additionalFacilities: [], // Not provided in current API response
             totalAmount: parseFloat(item.total_price) || 0,
             status: 'paid', // Assuming confirmed payments are paid
             date,
-            time
+            time,
+            SquareHubCommission: parseFloat(item.squarehub_commission) || 0,
+            SquareHubRate: 0, // Will be calculated from store
+            ceylincoCommission: parseFloat(item.celynco_commission) || 0,
+            ceylincoRate: 0 // Will be calculated from store
           }
         })
 
@@ -2886,7 +3131,10 @@ export const paymentApi = {
   async getPaymentById(id: string): Promise<ApiResponse<Payment>> {
     // Real API call
     try {
-      const token = localStorage.getItem('authToken')
+      //const token = localStorage.getItem('authToken')
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
       if (!token) {
         return errorResponse('No authentication token found')
       }
@@ -2909,7 +3157,8 @@ export const paymentApi = {
       if (result.status_code === 200) {
         // Map API response to Payment interface
         const item = result.data
-        const additionalFacilities = item.facility_list?.map((f: any) => ({
+        const product = item.products && item.products.length > 0 ? item.products[0] : null
+        const additionalFacilities = product?.facility_list?.map((f: any) => ({
           name: f.facility_name,
           price: parseFloat(f.price) || 0
         })) || []
@@ -2923,12 +3172,12 @@ export const paymentApi = {
           bookingId: item.order_id || '',
           customerName: `${item.first_name || ''} ${item.last_name || ''}`.trim(),
           customerEmail: item.email || '',
-          productName: item.product_type || '', // Using product_type as productName since product name not provided
-          productType: item.product_type || '',
-          locationName: item.location_name || '',
-          baseAmount: parseFloat(item.product_price) || 0,
+          productName: product?.product_type || '', // Using product_type as productName since product name not provided
+          productType: product?.product_type || '',
+          locationName: product?.location_name || '',
+          baseAmount: parseFloat(product?.product_price) || 0,
           additionalFacilities,
-          totalAmount: parseFloat(item.total_price) || 0,
+          totalAmount: parseFloat(product?.total_price) || 0,
           status: item.status || 'paid',
           date,
           time
@@ -3124,6 +3373,117 @@ export const dashboardApi = {
       console.error('Get admin by ID error:', error)
       return errorResponse('Network error while retrieving admin', [error.message])
     }
+  },
+
+  /**
+   * Get booking summary statistics for dashboard key metrics
+   */
+  async getBookingSummary(): Promise<ApiResponse<BookingSummaryResponse>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/summary'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Booking summary retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve booking summary')
+      }
+    } catch (error: any) {
+      console.error('Get booking summary error:', error)
+      return errorResponse('Network error while retrieving booking summary', [error.message])
+    }
+  },
+
+  /**
+   * Get last 30 days booking data for chart
+   */
+  async getLast30DaysBookings(): Promise<ApiResponse<Last30DaysBookingResponse>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/last30days'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Last 30 days booking data retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve last 30 days booking data')
+      }
+    } catch (error: any) {
+      console.error('Get last 30 days bookings error:', error)
+      return errorResponse('Network error while retrieving last 30 days booking data', [error.message])
+    }
+  },
+
+  /**
+   * Get upcoming ten bookings for dashboard recent bookings
+   */
+  async getUpcomingTenBookings(): Promise<ApiResponse<UpcomingBooking[]>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/upcoming-ten-bookings'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Upcoming bookings retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve upcoming bookings')
+      }
+    } catch (error: any) {
+      console.error('Get upcoming ten bookings error:', error)
+      return errorResponse('Network error while retrieving upcoming bookings', [error.message])
+    }
   }
 }
 
@@ -3194,8 +3554,8 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration
  */
 export const API_CONFIG = {
-  BASE_URL: 'http://192.168.1.45:9011',
-  API_BASE_URL: 'http://192.168.1.45:9011/api',
+  BASE_URL: 'http://10.99.234.73:9011',
+  API_BASE_URL: 'http://10.99.234.73:9011/api',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3
 }
@@ -3441,6 +3801,51 @@ export const permissionApi = {
 }
 
 // ============================================================================
+// PROMOTIONS API
+// ============================================================================
+
+export const promotionApi = {
+  /**
+   * Create a new promotion
+   */
+  async createPromotion(promotionData: {
+    PromotionName: string
+    Images: string[]
+    Description: string
+  }): Promise<ApiResponse<string>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('advertising/create-promotion'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(promotionData)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data || 'Advertising created successfully', data.message || 'Request processed successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to create promotion')
+      }
+    } catch (error: any) {
+      console.error('Create promotion error:', error)
+      return errorResponse('Network error while creating promotion', [error.message])
+    }
+  }
+}
+
+// ============================================================================
 // DEFAULT EXPORT
 // ============================================================================
 
@@ -3458,5 +3863,6 @@ export default {
   payment: paymentApi,
   message: messageApi,
   dashboard: dashboardApi,
-  permission: permissionApi
+  permission: permissionApi,
+  promotion: promotionApi
 }

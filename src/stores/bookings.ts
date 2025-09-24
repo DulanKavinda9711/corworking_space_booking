@@ -1,5 +1,109 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { bookingApi } from '@/services/api'
+
+// Helper functions
+const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' => {
+  if (!apiType) return 'Meeting Room'
+  
+  const normalizedType = apiType.toLowerCase().trim()
+  if (normalizedType.includes('meeting')) return 'Meeting Room'
+  if (normalizedType.includes('hot')) return 'Hot Desk'
+  if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private') || normalizedType.includes('workspace')) return 'Dedicated Desk'
+  return 'Meeting Room' // default
+}
+
+const mapStatus = (apiStatus: string): Booking['status'] => {
+  const normalizedStatus = apiStatus.toLowerCase().trim()
+  if (normalizedStatus === 'upcoming') return 'confirmed'
+  if (normalizedStatus === 'ongoing') return 'ongoing'
+  if (normalizedStatus === 'completed') return 'completed'
+  if (normalizedStatus === 'cancelled') return 'cancelled'
+  return 'confirmed' // default
+}
+
+const convertTo12Hour = (time24: string): string => {
+  if (!time24) return ''
+  const [hours, minutes] = time24.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const hour12 = hours % 12 || 12
+  return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`
+}
+
+const calculateDynamicStatus = (booking: any): string => {
+  // Handle cancelled bookings - they stay cancelled
+  if (booking.status === 'cancelled') {
+    return 'cancelled'
+  }
+
+  // Handle subscriptions differently
+  if (booking.productType === 'Subscription') {
+    const now = new Date()
+    const subscribedDate = new Date(booking.subscribedDate)
+
+    if (booking.subscriptionType === 'monthly') {
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    } else if (booking.subscriptionType === 'annually') {
+      const nextBillingDate = new Date(booking.nextBillingDate)
+      if (now >= subscribedDate && now < nextBillingDate) {
+        return 'on going'
+      } else if (now < subscribedDate) {
+        return 'up comming'
+      } else {
+        return 'complete'
+      }
+    }
+    return booking.status
+  }
+
+  // Handle regular bookings - always calculate based on current time
+  const now = new Date()
+  const bookingDate = new Date(booking.date)
+
+  if (!booking.startTime || !booking.endTime) {
+    return booking.status // If no times, keep current status
+  }
+
+  // Parse time strings like "10:00 AM" or "2:00 PM"
+  const parseTime = (timeStr: string) => {
+    const [time, period] = timeStr.split(' ')
+    const [hours, minutes] = time.split(':').map(Number)
+
+    let hour24 = hours
+    if (period === 'PM' && hours !== 12) {
+      hour24 = hours + 12
+    } else if (period === 'AM' && hours === 12) {
+      hour24 = 0
+    }
+
+    return [hour24, minutes]
+  }
+
+  const [startHour, startMinute] = parseTime(booking.startTime)
+  const [endHour, endMinute] = parseTime(booking.endTime)
+
+  const bookingStartTime = new Date(bookingDate)
+  bookingStartTime.setHours(startHour, startMinute, 0, 0)
+
+  const bookingEndTime = new Date(bookingDate)
+  bookingEndTime.setHours(endHour, endMinute, 0, 0)
+
+  // Compare current time with booking times
+  if (now >= bookingStartTime && now <= bookingEndTime) {
+    return 'on going'
+  } else if (now < bookingStartTime) {
+    return 'up comming'
+  } else {
+    return 'complete'
+  }
+}
 
 interface Booking {
   id: string
@@ -10,16 +114,17 @@ interface Booking {
   customerName: string
   customerEmail?: string
   customerPhone?: string
+  customerType?: string
   userType: 'registered' | 'guest'
-  date: string
-  startTime: string
-  endTime: string
-  duration: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  duration?: string
   totalPrice: number
   basePrice?: number
   additionalFacilities?: number
   taxes?: number
-  status: 'confirmed' | 'completed' | 'cancelled'
+  status: 'confirmed' | 'completed' | 'cancelled' | 'ongoing'
   location: string
   locationName: string
   companyName: string
@@ -36,50 +141,66 @@ export const useBookingsStore = defineStore('bookings', () => {
   const allBookings = ref<Booking[]>([])
   const bookingStatuses = ref<Record<string, Booking['status']>>({})
 
-  // Initialize from localStorage
-  const initializeBookings = () => {
-    try {
-      const savedBookings = localStorage.getItem('allBookings')
-      if (savedBookings) {
-        const parsedBookings = JSON.parse(savedBookings)
-        if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
-          allBookings.value = parsedBookings
-          console.log('✅ Loaded bookings from localStorage:', parsedBookings.length)
-        }
-      }
-
-      // Update booking statuses from localStorage
-      const savedStatuses = localStorage.getItem('bookingStatuses')
-      if (savedStatuses) {
-        bookingStatuses.value = JSON.parse(savedStatuses)
-        // Apply statuses to bookings
-        allBookings.value.forEach(booking => {
-          if (bookingStatuses.value[booking.id]) {
-            booking.status = bookingStatuses.value[booking.id]
-          }
-        })
-      }
-    } catch (error) {
-      console.warn('⚠️ Error initializing bookings from localStorage:', error)
-    }
-  }
-
   // Actions
-  const saveBookings = () => {
-    try {
-      localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
-    } catch (error) {
-      console.warn('⚠️ Error saving bookings to localStorage:', error)
-    }
-  }
-
   const updateBookingStatus = (id: string, status: Booking['status']) => {
     const booking = allBookings.value.find(b => b.id === id)
     if (booking) {
       booking.status = status
       bookingStatuses.value[id] = status
-      localStorage.setItem('bookingStatuses', JSON.stringify(bookingStatuses.value))
-      saveBookings()
+    }
+  }
+
+  const fetchBookings = async (filters?: any) => {
+    try {
+      const response = await bookingApi.getAdminBookingTabTable(filters)
+      if (response.success && response.data) {
+        console.log('DEBUG: Raw API booking data:', response.data)
+        const mappedBookings = response.data.map((item: any) => {
+          console.log('DEBUG: Raw product_type:', item.product_type, 'Mapped to:', mapProductType(item.product_type))
+          const booking = {
+            id: item.booking_id,
+            productName: item.product_type,
+            productType: mapProductType(item.product_type),
+            productId: '',
+            productImage: '',
+            customerName: `${item.first_name} ${item.last_name}`,
+            customerEmail: '',
+            customerPhone: '',
+            customerType: item.customer_type || 'Registered',
+            userType: item.customer_type || 'Registered',
+            date: item.booking_date,
+            startTime: item.start_time ? convertTo12Hour(item.start_time) : '',
+            endTime: item.end_time ? convertTo12Hour(item.end_time) : '',
+            duration: item.duration || '',
+            totalPrice: item.total_price,
+            basePrice: item.total_price,
+            additionalFacilities: 0,
+            taxes: 0,
+            status: mapStatus(item.status), // Initial status from API
+            location: '',
+            locationName: item.location_name,
+            companyName: '',
+            capacity: 0,
+            facilities: [],
+            subscriptionType: '',
+            subscribedDate: '',
+            nextBillingDate: '',
+            customerMessage: ''
+          }
+
+          // Calculate real-time status based on current time
+          const dynamicStatus = calculateDynamicStatus(booking)
+          booking.status = dynamicStatus === 'on going' ? 'ongoing' :
+                          dynamicStatus === 'up comming' ? 'confirmed' :
+                          dynamicStatus === 'complete' ? 'completed' :
+                          dynamicStatus === 'cancelled' ? 'cancelled' : booking.status
+
+          return booking
+        })
+        allBookings.value = mappedBookings
+      }
+    } catch (error) {
+      console.error('Failed to fetch bookings:', error)
     }
   }
 
@@ -97,27 +218,14 @@ export const useBookingsStore = defineStore('bookings', () => {
         additionalFacilities: foundBooking.additionalFacilities || 0,
         taxes: foundBooking.taxes || 0,
         capacity: foundBooking.capacity || (foundBooking.productType === 'Meeting Room' ? 12 : 1),
-        facilities: foundBooking.facilities || getFacilitiesByProductType(foundBooking.productType)
+        facilities: foundBooking.facilities || []
       }
     }
 
     return null
   }
 
-  const getFacilitiesByProductType = (productType: string): string[] => {
-    switch (productType) {
-      case 'Meeting Room':
-        return ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-      case 'Hot Desk':
-        return ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-      case 'Dedicated Desk':
-        return ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-      case 'Subscription':
-        return ['High-speed WiFi', 'Storage Locker', '24/7 Access', 'Printing Credits']
-      default:
-        return ['WiFi', 'Basic Amenities']
-    }
-  }
+
 
   // Getters (computed)
   const confirmedBookings = computed(() =>
@@ -140,19 +248,15 @@ export const useBookingsStore = defineStore('bookings', () => {
     subscriptions.value.filter(b => b.status === 'confirmed')
   )
 
-  // Initialize on store creation
-  initializeBookings()
-
   return {
     // State
     allBookings,
     bookingStatuses,
 
     // Actions
-    initializeBookings,
-    saveBookings,
     updateBookingStatus,
     getBookingById,
+    fetchBookings,
 
     // Getters
     confirmedBookings,

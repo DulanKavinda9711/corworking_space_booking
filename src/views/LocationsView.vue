@@ -50,15 +50,15 @@
                 type="text"
                 placeholder="Search by location name or address..."
                 v-model="searchQuery"
-                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
+                class="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 text-black"
               />
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <div class="relative" @click.stop>
-              <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                <span class="text-gray-900">{{ getStatusLabel(filters.status) }}</span>
+              <div @click="toggleDropdown('status')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                <span class="text-gray-900 leading-5 h-5 flex items-center">{{ getStatusLabel(filters.status) }}</span>
               </div>
 
               <!-- Dropdown Options -->
@@ -84,8 +84,8 @@
           <div class="md:w-48">
             <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
             <div class="relative" @click.stop>
-              <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                <span class="text-gray-900 truncate">{{ getLocationLabel(filters.location) }}</span>
+              <div @click="toggleDropdown('location')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.location ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(filters.location) }}</span>
               </div>
 
               <!-- Dropdown Options -->
@@ -118,7 +118,7 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
+      <!-- <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
         <div class="flex items-center justify-center">
           <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -126,22 +126,10 @@
           </svg>
           <span class="ml-3 text-gray-600">Loading locations...</span>
         </div>
-      </div>
-
-        <!-- Error State -->
-        <div v-if="errorMessage" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading locations</h3>
-          <p class="mt-1 text-sm text-red-500">{{ errorMessage }}</p>
-          <button @click="fetchLocations" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-            Try Again
-          </button>
-        </div>
+      </div> -->
 
         <!-- Locations Table -->
-        <div v-else-if="!isLoading" class="overflow-x-auto h-[410px]">
+        <div class="overflow-x-auto h-[410px]">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>

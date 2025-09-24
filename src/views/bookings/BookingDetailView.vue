@@ -1,6 +1,36 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6 max-w-6xl mx-auto" v-if="booking">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex items-center justify-center h-64">
+      <!-- <div class="text-center">
+        <svg class="w-16 h-16 text-primary-600 animate-spin mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Loading Booking Details</h3>
+        <p class="text-gray-600">Please wait while we fetch the booking information...</p>
+      </div> -->
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="flex items-center justify-center h-64">
+      <div class="text-center">
+        <svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Booking</h3>
+        <p class="text-gray-600 mb-4">{{ error }}</p>
+        <router-link :to="getBackNavigationPath()" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          {{ getBackNavigationLabel() }}
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Booking Details -->
+    <div v-else-if="booking" class="space-y-6 max-w-6xl mx-auto">
       <!-- Back Button -->
       <div class="flex items-center">
         <router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
@@ -22,13 +52,13 @@
             <span :class="getStatusClass(booking.status)" class="px-3 py-1 text-sm font-medium rounded-full">
               {{ booking.status }}
             </span>
-            <!-- <button 
+            <button 
               v-if="booking.status !== 'cancelled'"
               @click="confirmCancelBooking"
               class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
             >
               Cancel Booking
-            </button> -->
+            </button>
           </div>
         </div>
       </div>
@@ -44,8 +74,8 @@
           </h2>
           <div class="space-y-4">
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiAccount" />
                 </svg>
               </div>
@@ -83,7 +113,7 @@
               <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Message</label>
               <p class="text-sm text-gray-900 mt-1 bg-gray-50 p-3 rounded-lg">{{ booking.customerMessage }}</p>
             </div>
-            <div v-if="booking.userType === 'registered'" class="pt-4 border-t border-gray-200">
+            <!-- <div v-if="booking.userType === 'registered'" class="pt-4 border-t border-gray-200">
               <div class="flex items-center space-x-4">
                 <button v-if="getCustomerDetails(booking).isRegistered" 
                         @click="viewCustomerProfile" 
@@ -103,7 +133,7 @@
                   Send Message
                 </button>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -117,7 +147,11 @@
           </h2>
           <div class="space-y-4">
             <div class="flex items-center space-x-4">
-              <img class="w-16 h-16 rounded-lg object-cover" :src="booking.productImage" :alt="booking.productName">
+              <div class="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path :d="mdiOfficeBuilding" />
+                </svg>
+              </div>
               <div>
                 <h3 class="text-sm font-medium text-gray-900">{{ booking.productName }}</h3>
                 <p class="text-sm text-gray-500">{{ booking.productType }}</p>
@@ -233,10 +267,20 @@
             <span class="text-gray-600">Base Price</span>
             <span class="text-gray-900">LKR {{ booking.basePrice }}</span>
           </div>
-          <div class="flex justify-between">
+          
+          <!-- Show individual facilities if available -->
+          <div v-if="booking.facilities && booking.facilities.length > 0" class="space-y-2">
+            <div class="text-sm font-medium text-gray-700">Additional Facilities:</div>
+            <div v-for="facility in getFacilityDetails()" :key="facility.name" class="flex justify-between text-sm">
+              <span class="text-gray-600">{{ facility.name }}</span>
+              <span class="text-gray-900">LKR {{ facility.price }}</span>
+            </div>
+          </div>
+          <div v-else class="flex justify-between">
             <span class="text-gray-600">Additional Facilities</span>
             <span class="text-gray-900">LKR {{ booking.additionalFacilities }}</span>
           </div>
+          
           <div class="border-t border-gray-200 pt-3">
             <div class="flex justify-between">
               <span class="text-lg font-semibold text-gray-900">Total</span>
@@ -395,7 +439,9 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers, type Customer } from '@/composables/useCustomers'
+import { type Booking } from '@/services/api'
 import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiEye, mdiMessage } from '@mdi/js'
+import { bookingApi } from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -414,564 +460,13 @@ const messageForm = ref({
   recipientPhone: ''
 })
 
-// Reactive bookings data - same as BookingsView
-const allBookings = ref([
-  // Confirmed Bookings (Active)
-  {
-    id: 'BR-2034',
-    productName: 'Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    customerPhone: '+1 (555) 123-4567',
-    userType: 'registered',
-    date: '2025-08-20',
-    startTime: '10:00 AM',
-    endTime: '12:00 PM',
-    duration: '2 hours',
-    totalPrice: 100, // $50/hour * 2 hours
-    basePrice: 100,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2035',
-    productName: 'Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop&crop=center',
-    customerName: 'Michael Brown',
-    customerEmail: 'michael.brown@example.com',
-    customerPhone: '+1 (555) 234-5678',
-    userType: 'guest',
-    date: '2025-08-21',
-    startTime: '9:00 AM',
-    endTime: '5:00 PM',
-    duration: '8 hours',
-    totalPrice: 64, // $8/hour * 8 hours
-    basePrice: 64,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2036',
-    productName: 'Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    customerPhone: '+1 (555) 234-5678',
-    userType: 'registered',
-    date: '2025-08-22',
-    startTime: '2:00 PM',
-    endTime: '4:00 PM',
-    duration: '2 hours',
-    totalPrice: 100,
-    basePrice: 100,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2037',
-    productName: 'Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    customerPhone: '+1 (555) 987-6543',
-    userType: 'registered',
-    date: '2025-08-23',
-    startTime: '8:00 AM',
-    endTime: '12:00 PM',
-    duration: '4 hours',
-    totalPrice: 32,
-    basePrice: 32,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2038',
-    productName: 'Dedicated Desk',
-    productType: 'Dedicated Desk',
-    productId: 'PROD003',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Emma Davis',
-    customerEmail: 'emma.davis@example.com',
-    customerPhone: '+1 (555) 567-8901',
-    userType: 'guest',
-    date: '2025-08-24',
-    startTime: '9:00 AM',
-    endTime: '6:00 PM',
-    duration: '9 hours',
-    totalPrice: 450,
-    basePrice: 450,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'business-center',
-    locationName: 'Business Center',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-  },
-  {
-    id: 'BR-2039',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    customerPhone: '+1 (555) 123-4567',
-    userType: 'registered',
-    date: '2025-08-25',
-    startTime: '1:00 PM',
-    endTime: '3:00 PM',
-    duration: '2 hours',
-    totalPrice: 100,
-    basePrice: 100,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2040',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    customerPhone: '+1 (555) 234-5678',
-    userType: 'registered',
-    date: '2025-08-26',
-    startTime: '10:00 AM',
-    endTime: '6:00 PM',
-    duration: '8 hours',
-    totalPrice: 64,
-    basePrice: 64,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2041',
-    productName: 'Private Dedicated Desk',
-    productType: 'Dedicated Desk',
-    productId: 'PROD003',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Robert Taylor',
-    customerEmail: 'robert.taylor@example.com',
-    customerPhone: '+1 (555) 890-1234',
-    userType: 'guest',
-    date: '2025-08-27',
-    startTime: '8:00 AM',
-    endTime: '5:00 PM',
-    duration: '9 hours',
-    totalPrice: 450,
-    basePrice: 450,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'business-center',
-    locationName: 'Business Center',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-  },
-  // Completed Bookings (History)
-  {
-    id: 'BR-2020',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    customerPhone: '+1 (555) 987-6543',
-    userType: 'registered',
-    date: '2025-08-15',
-    startTime: '9:00 AM',
-    endTime: '11:00 AM',
-    duration: '2 hours',
-    totalPrice: 100,
-    basePrice: 100,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2021',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    customerPhone: '+1 (555) 123-4567',
-    userType: 'registered',
-    date: '2025-08-16',
-    startTime: '8:00 AM',
-    endTime: '4:00 PM',
-    duration: '8 hours',
-    totalPrice: 64,
-    basePrice: 64,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2022',
-    productName: 'Private Dedicated Desk',
-    productType: 'Dedicated Desk',
-    productId: 'PROD003',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Lisa Anderson',
-    customerEmail: 'lisa.anderson@example.com',
-    customerPhone: '+1 (555) 345-6789',
-    userType: 'guest',
-    date: '2025-08-17',
-    startTime: '10:00 AM',
-    endTime: '6:00 PM',
-    duration: '8 hours',
-    totalPrice: 400,
-    basePrice: 400,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'business-center',
-    locationName: 'Business Center',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-  },
-  {
-    id: 'BR-2023',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    customerPhone: '+1 (555) 234-5678',
-    userType: 'registered',
-    date: '2025-08-18',
-    startTime: '1:00 PM',
-    endTime: '4:00 PM',
-    duration: '3 hours',
-    totalPrice: 150,
-    basePrice: 150,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2024',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'David Miller',
-    customerEmail: 'david.miller@example.com',
-    customerPhone: '+1 (555) 456-7890',
-    userType: 'guest',
-    date: '2025-08-14',
-    startTime: '9:00 AM',
-    endTime: '1:00 PM',
-    duration: '4 hours',
-    totalPrice: 32,
-    basePrice: 32,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2025',
-    productName: 'Private Dedicated Desk',
-    productType: 'Dedicated Desk',
-    productId: 'PROD003',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    customerPhone: '+1 (555) 123-4567',
-    userType: 'registered',
-    date: '2025-08-13',
-    startTime: '8:00 AM',
-    endTime: '5:00 PM',
-    duration: '9 hours',
-    totalPrice: 450,
-    basePrice: 450,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'completed',
-    location: 'business-center',
-    locationName: 'Business Center',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-  },
-  // Cancelled Bookings
-  {
-    id: 'BR-2010',
-    productName: 'Executive Meeting Room',
-    productType: 'Meeting Room',
-    productId: 'PROD001',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jennifer Wilson',
-    customerEmail: 'jennifer.wilson@example.com',
-    customerPhone: '+1 (555) 567-8901',
-    userType: 'guest',
-    date: '2025-08-12',
-    startTime: '3:00 PM',
-    endTime: '5:00 PM',
-    duration: '2 hours',
-    totalPrice: 100,
-    basePrice: 100,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'cancelled',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    capacity: 12,
-    facilities: ['WiFi', 'Projector', 'Whiteboard', 'Video Conference', 'Air Conditioning']
-  },
-  {
-    id: 'BR-2011',
-    productName: 'Flexible Hot Desk',
-    productType: 'Hot Desk',
-    productId: 'PROD002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Kevin Martinez',
-    customerEmail: 'kevin.martinez@example.com',
-    customerPhone: '+1 (555) 678-9012',
-    userType: 'guest',
-    date: '2025-08-11',
-    startTime: '10:00 AM',
-    endTime: '2:00 PM',
-    duration: '4 hours',
-    totalPrice: 32,
-    basePrice: 32,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'cancelled',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    capacity: 1,
-    facilities: ['WiFi', 'Power Outlet', 'Shared Kitchen', 'Printer Access']
-  },
-  {
-    id: 'BR-2012',
-    productName: 'Private Dedicated Desk',
-    productType: 'Dedicated Desk',
-    productId: 'PROD003',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    customerPhone: '+1 (555) 987-6543',
-    userType: 'registered',
-    date: '2025-08-10',
-    startTime: '9:00 AM',
-    endTime: '5:00 PM',
-    duration: '8 hours',
-    totalPrice: 400,
-    basePrice: 400,
-    additionalFacilities: 0,
-    taxes: 0,
-    status: 'cancelled',
-    location: 'business-center',
-    locationName: 'Business Center',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
-  },
-  
-  // Subscription Data
-  {
-    id: 'SUB-3001',
-    productName: 'Monthly Dedicated Desk',
-    productType: 'Subscription',
-    productId: 'SUB001',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    customerPhone: '+1 (555) 987-6543',
-    userType: 'registered',
-    date: '2025-08-01',
-    startTime: '8:00 AM',
-    endTime: '6:00 PM',
-    duration: 'Monthly',
-    totalPrice: 800,
-    basePrice: 750,
-    additionalFacilities: 50,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    subscriptionType: 'monthly',
-    subscribedDate: '2025-08-01',
-    nextBillingDate: '2025-09-01',
-    capacity: 1,
-    facilities: ['High-speed WiFi', 'Storage Locker', '24/7 Access', 'Printing Credits']
-  },
-  {
-    id: 'SUB-3002',
-    productName: 'Weekly Hot Desk Pass',
-    productType: 'Subscription',
-    productId: 'SUB002',
-    productImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Sarah Wilson',
-    customerEmail: 'sarah.wilson@example.com',
-    customerPhone: '+1 (555) 234-5678',
-    userType: 'registered',
-    date: '2025-08-15',
-    startTime: '9:00 AM',
-    endTime: '5:00 PM',
-    duration: 'Weekly',
-    totalPrice: 120,
-    basePrice: 100,
-    additionalFacilities: 20,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'tech-hub',
-    locationName: 'Tech Hub',
-    subscriptionType: 'weekly',
-    subscribedDate: '2025-08-15',
-    nextBillingDate: '2025-08-22',
-    capacity: 1,
-    facilities: ['WiFi Access', 'Coffee/Tea', 'Meeting Room Credits']
-  },
-  {
-    id: 'SUB-3003',
-    productName: 'Enterprise Team Space',
-    productType: 'Subscription',
-    productId: 'SUB003',
-    productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=200&h=200&fit=crop&crop=center',
-    customerName: 'John Doe',
-    customerEmail: 'john.doe@example.com',
-    customerPhone: '+1 (555) 123-4567',
-    userType: 'registered',
-    date: '2025-07-01',
-    startTime: '8:00 AM',
-    endTime: '7:00 PM',
-    duration: 'Monthly',
-    totalPrice: 2500,
-    basePrice: 2200,
-    additionalFacilities: 300,
-    taxes: 0,
-    status: 'confirmed',
-    location: 'business-center',
-    locationName: 'Business Center',
-    subscriptionType: 'monthly',
-    subscribedDate: '2025-07-01',
-    nextBillingDate: '2025-09-01',
-    capacity: 10,
-    facilities: ['Private Office Space', 'Conference Room', 'Dedicated Phone Line', 'Admin Support']
-  },
-  {
-    id: 'SUB-3004',
-    productName: 'Virtual Office Package',
-    productType: 'Subscription',
-    productId: 'SUB004',
-    productImage: 'https://images.unsplash.com/photo-1486312338219-ce68e2c6b7a5?w=200&h=200&fit=crop&crop=center',
-    customerName: 'Jane Smith',
-    customerEmail: 'jane.smith@example.com',
-    customerPhone: '+1 (555) 987-6543',
-    userType: 'registered',
-    date: '2025-08-10',
-    startTime: '9:00 AM',
-    endTime: '5:00 PM',
-    duration: 'Monthly',
-    totalPrice: 150,
-    basePrice: 120,
-    additionalFacilities: 30,
-    taxes: 0,
-    status: 'completed',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    subscriptionType: 'monthly',
-    subscribedDate: '2025-07-10',
-    nextBillingDate: '2025-08-10',
-    capacity: 0,
-    facilities: ['Business Address', 'Mail Handling', 'Phone Answering Service', 'Meeting Room Credits']
-  }
-])
+// Reactive state for booking data
+const booking = ref<Booking | null>(null)
+const isLoading = ref(true)
+const error = ref<string | null>(null)
 
-// Current booking based on route parameter - now reactive with fallbacks
-const booking = computed(() => {
-  const bookingId = route.params.id as string
-  const foundBooking = allBookings.value.find(b => b.id === bookingId)
-  
-  if (foundBooking) {
-    console.log('Booking found:', foundBooking.id, foundBooking)
-    
-    // Return booking with fallbacks for missing fields
-    return {
-      ...foundBooking,
-      // Ensure all required fields have fallback values
-      customerEmail: foundBooking.customerEmail || `${foundBooking.customerName?.toLowerCase().replace(' ', '.')}@example.com`,
-      customerPhone: foundBooking.customerPhone || '+1 (555) 000-0000',
-      customerMessage: (foundBooking as any).customerMessage || '',
-      basePrice: foundBooking.basePrice || foundBooking.totalPrice || 0,
-      additionalFacilities: foundBooking.additionalFacilities || 0,
-      taxes: foundBooking.taxes || 0,
-      capacity: foundBooking.capacity || 1,
-      facilities: foundBooking.facilities || ['WiFi', 'Basic Amenities'],
-      locationName: foundBooking.locationName || 'Location Not Specified',
-      // Subscription-specific fields
-      subscriptionType: (foundBooking as any).subscriptionType || 'monthly',
-      subscribedDate: (foundBooking as any).subscribedDate || foundBooking.date,
-      nextBillingDate: (foundBooking as any).nextBillingDate || foundBooking.date
-    }
-  } else {
-    console.warn('Booking not found for ID:', bookingId)
-    console.log('Available booking IDs:', allBookings.value.map(b => b.id))
-  }
-  
-  return null
-})
+// Store original API data for facility details
+const apiBookingData = ref<any>(null)
 
 // Customer lookup function
 const getCustomerDetails = (booking: any) => {
@@ -1035,7 +530,7 @@ const getCustomerStatusClass = (status: string) => {
   }
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | undefined) => {
   if (!dateString) return 'N/A'
 
   const date = new Date(dateString)
@@ -1048,7 +543,7 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day}`
 }
 
-const formatSubscriptionDate = (dateString: string) => {
+const formatSubscriptionDate = (dateString: string | undefined) => {
   if (!dateString) return 'N/A'
   
   const date = new Date(dateString)
@@ -1059,11 +554,23 @@ const formatSubscriptionDate = (dateString: string) => {
   const day = String(date.getDate()).padStart(2, '0')
   
   return `${year}-${month}-${day}`
+}
+
+// Get facility details from stored API data
+const getFacilityDetails = () => {
+  if (!apiBookingData.value?.products?.[0]?.facility_list) return []
+  return apiBookingData.value.products[0].facility_list.map((facility: any) => ({
+    name: facility.facility_name || 'Unknown Facility',
+    price: facility.price || 0
+  }))
 }
 
 // Modal functions
-
-
+const confirmCancelBooking = () => {
+  if (booking.value) {
+    router.push(`/bookings/${booking.value.id}/cancel`)
+  }
+}
 
 const viewCustomerProfile = () => {
   if (!booking.value) return
@@ -1220,53 +727,71 @@ const getBackNavigationLabel = () => {
   return 'Back to Bookings'
 }
 
-onMounted(() => {
-  console.log('Loading booking details for ID:', route.params.id)
-  
-  // Method to sync missing bookings from BookingsView
-  const syncBookingsData = () => {
-    // Load bookings from localStorage if available (same as BookingsView)
-    const savedBookings = localStorage.getItem('allBookings')
-    if (savedBookings) {
-      try {
-        const parsedBookings = JSON.parse(savedBookings)
-        if (Array.isArray(parsedBookings) && parsedBookings.length > 0) {
-          // Replace current bookings with saved data to ensure sync
-          allBookings.value = parsedBookings
-          console.log('✅ Synced bookings from localStorage:', parsedBookings.length)
-          return true
-        }
-      } catch (error) {
-        console.warn('⚠️ Error loading bookings from localStorage:', error)
-      }
-    }
-    return false
-  }
-  
-  // Try to sync data first
-  const synced = syncBookingsData()
-  
-  // Update booking statuses from localStorage (sync with BookingsView)
-  const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
-  allBookings.value.forEach(booking => {
-    if (bookingStatuses[booking.id]) {
-      booking.status = bookingStatuses[booking.id]
-    }
-  })
-  
-  // Log current booking lookup for debugging
+onMounted(async () => {
   const bookingId = route.params.id as string
-  const foundBooking = allBookings.value.find(b => b.id === bookingId)
   
-  if (foundBooking) {
-    console.log('✅ Booking found and loaded:', foundBooking.id, foundBooking.productName)
-  } else {
-    console.error('❌ Booking not found for ID:', bookingId)
-    console.log('📋 Available bookings:', allBookings.value.map(b => ({ id: b.id, name: b.productName })))
+  if (!bookingId) {
+    error.value = 'No booking ID provided'
+    isLoading.value = false
+    return
+  }
+
+  try {
+    console.log('Fetching booking details for ID:', bookingId)
+    const response = await bookingApi.getAdminBookingView(bookingId)
     
-    if (!synced) {
-      console.log('💡 Tip: Make sure BookingsView and BookingDetailView are using the same data source')
+    if (response.success && response.data) {
+      const bookingData = response.data
+      apiBookingData.value = bookingData // Store original API data
+      
+      // Extract product data (assuming first product for now)
+      const product = bookingData.products?.[0] || {}
+      
+      // Calculate additional facilities cost
+      const additionalFacilitiesCost = product.facility_list?.reduce((total: number, facility: any) => 
+        total + (facility.price || 0), 0) || 0
+      
+      // Map API response to expected booking format
+      booking.value = {
+        id: bookingData.order_id || bookingId,
+        productName: product.product_type || 'Unknown Product',
+        productType: product.product_type === 'MeetingRoom' ? 'Meeting Room' : (product.product_type || 'Unknown Type'),
+        productId: product.product_id || '',
+        productImage: product.product_image || '/assets/meeting-room.png',
+        customerName: `${bookingData.first_name || ''} ${bookingData.last_name || ''}`.trim() || 'Unknown Customer',
+        customerEmail: bookingData.email || '',
+        customerPhone: bookingData.phone || '',
+        userType: bookingData.customer_type?.toLowerCase() === 'guest' ? 'guest' : 'registered',
+        date: product.booking_date || '',
+        startTime: product.start_time || '',
+        endTime: product.end_time || '',
+        duration: product.duration || '',
+        totalPrice: product.total_price || 0,
+        basePrice: product.product_price || 0,
+        additionalFacilities: additionalFacilitiesCost,
+        taxes: bookingData.taxes || 0,
+        status: bookingData.status?.toLowerCase() === 'success' ? 'confirmed' : (bookingData.status?.toLowerCase() || 'confirmed'),
+        location: product.location_name || '',
+        locationName: product.location_name || 'Location Not Specified',
+        companyName: bookingData.company_name || '',
+        capacity: product.capacity || 1,
+        facilities: product.facility_list?.map((f: any) => f.facility_name).filter(Boolean) || ['WiFi', 'Basic Amenities'],
+        subscriptionType: product.subscription_type || 'monthly',
+        subscribedDate: product.subscribed_date || product.booking_date || '',
+        nextBillingDate: product.next_billing_date || product.booking_date || '',
+        customerMessage: bookingData.customer_message || ''
+      }
+      
+      console.log('✅ Booking loaded from API:', booking.value.id, booking.value.productName)
+      console.log('📋 Full API response:', bookingData)
+    } else {
+      throw new Error(response.message || 'Failed to load booking details')
     }
+  } catch (err) {
+    console.error('❌ Error fetching booking:', err)
+    error.value = err instanceof Error ? err.message : 'Failed to load booking details'
+  } finally {
+    isLoading.value = false
   }
 })
 </script>

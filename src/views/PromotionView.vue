@@ -51,7 +51,7 @@
                   type="text"
                   placeholder="Search promotions by name or description..."
                   v-model="searchQuery"
-                  class="pl-10 pr-4 py-2 w-150px border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500  text-gray-900"
+                  class="pl-10 pr-6 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900 w-96"
                 />
               </div>
             </div>
@@ -262,7 +262,7 @@
     <!-- Create Promotion Modal -->
     <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
-        <div class="p-6 border-b border-gray-200 bg-green-100 rounded-t-xl">
+        <div class="p-6 border-b border-gray-200 bg-white-100 rounded-t-xl">
           <div class="flex items-center justify-between ">
             <h2 class="text-xl font-semibold text-green-900">Create Promotion</h2>
             <button @click="closeCreateModal" class="text-gray-400 hover:text-gray-600">
@@ -279,7 +279,7 @@
             <input
               type="text"
               v-model="newPromotion.name"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+              class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
               placeholder="Enter promotion name"
               required
             />
@@ -289,7 +289,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               v-model="newPromotion.description"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 resize-vertical"
+              class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
               placeholder="Enter promotion description"
               rows="3"
             ></textarea>
@@ -518,20 +518,16 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import { usePromotionsStore, type Promotion } from '@/stores/promotions'
+import { promotionApi } from '@/services/api'
 import {
     mdiBullhorn,
   mdiPlus,
   mdiPencil
 } from '@mdi/js'
 
-// Types
-interface Promotion {
-  id: string
-  name: string
-  description?: string
-  image: string
-  createdAt: string
-}
+// Store
+const promotionsStore = usePromotionsStore()
 
 // State
 const showCreateModal = ref(false)
@@ -546,19 +542,14 @@ const isEditing = ref(false)
 // View mode and pagination
 const viewMode = ref<'tile' | 'table'>('table')
 const searchQuery = ref('')
-// const currentPage = ref(1)
-// const itemsPerPage = ref(12)
-
-// Promotions data
-const promotions = ref<Promotion[]>([])
 
 // Computed properties for filtering and pagination
 const filteredPromotions = computed(() => {
   if (!searchQuery.value.trim()) {
-    return promotions.value
+    return promotionsStore.allPromotions
   }
   const query = searchQuery.value.toLowerCase()
-  return promotions.value.filter(promotion =>
+  return promotionsStore.allPromotions.filter(promotion =>
     promotion.name.toLowerCase().includes(query) ||
     (promotion.description && promotion.description.toLowerCase().includes(query))
   )
@@ -720,42 +711,57 @@ const confirmCreate = async () => {
   }
 
   isCreating.value = true
+  promotionsStore.setLoading(true)
+  promotionsStore.clearError()
 
   try {
-    // Simulate creation delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Create promotion with trimmed name and unique ID
-    const timestamp = Date.now()
-    const randomSuffix = Math.random().toString(36).substr(2, 9)
-    const promotion: Promotion = {
-      id: `PROMO-${timestamp}-${randomSuffix}`,
-      name: newPromotion.value.name.trim(),
-      description: newPromotion.value.description.trim(),
-      image: newPromotion.value.image,
-      createdAt: new Date().toISOString()
+    // Prepare API request data
+    const promotionData = {
+      PromotionName: newPromotion.value.name.trim(),
+      Images: [newPromotion.value.image], // API expects array of images
+      Description: newPromotion.value.description.trim()
     }
 
-    // Add to promotions array using spread operator for better reactivity
-    promotions.value = [...promotions.value, promotion]
+    // Call API
+    const response = await promotionApi.createPromotion(promotionData)
 
-    // Reset form immediately after successful creation
-    newPromotion.value = { name: '', description: '', image: '' }
-    isImageLoading.value = false
-    if (imageInput.value) {
-      imageInput.value.value = ''
+    if (response.success) {
+      // Create promotion object for store
+      const timestamp = Date.now()
+      const randomSuffix = Math.random().toString(36).substr(2, 9)
+      const promotion: Promotion = {
+        id: `PROMO-${timestamp}-${randomSuffix}`,
+        name: newPromotion.value.name.trim(),
+        description: newPromotion.value.description.trim(),
+        image: newPromotion.value.image,
+        createdAt: new Date().toISOString()
+      }
+
+      // Add to Pinia store
+      promotionsStore.addPromotion(promotion)
+
+      // Reset form immediately after successful creation
+      newPromotion.value = { name: '', description: '', image: '' }
+      isImageLoading.value = false
+      if (imageInput.value) {
+        imageInput.value.value = ''
+      }
+
+      // Close modal and show success
+      showCreateModal.value = false
+      showSuccessModal.value = true
+
+      console.log('Promotion created successfully:', promotion)
+    } else {
+      throw new Error(response.message || 'Failed to create promotion')
     }
-
-    // Close modal and show success
-    showCreateModal.value = false
-    showSuccessModal.value = true
-
-    console.log('Promotion created successfully:', promotion)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating promotion:', error)
-    alert('Failed to create promotion. Please try again.')
+    promotionsStore.setError(error.message || 'Failed to create promotion')
+    alert(error.message || 'Failed to create promotion. Please try again.')
   } finally {
     isCreating.value = false
+    promotionsStore.setLoading(false)
   }
 }
 
@@ -821,12 +827,12 @@ const confirmEdit = async () => {
   }
 
   isEditing.value = true
+  promotionsStore.setLoading(true)
+  promotionsStore.clearError()
 
   try {
-    // Simulate update delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // Update promotion
+    // For now, just update locally since there's no update API endpoint
+    // In a real implementation, you would call an update API here
     const updatedPromotion: Promotion = {
       ...promotionToEdit.value,
       name: editPromotionForm.value.name.trim(),
@@ -835,20 +841,19 @@ const confirmEdit = async () => {
       createdAt: promotionToEdit.value.createdAt // Keep original creation date
     }
 
-    // Update in promotions array
-    const index = promotions.value.findIndex(p => p.id === promotionToEdit.value!.id)
-    if (index !== -1) {
-      promotions.value[index] = updatedPromotion
-      alert('Promotion updated successfully!')
-    }
+    // Update in Pinia store
+    promotionsStore.updatePromotion(updatedPromotion)
 
     // Close modal
     closeEditModal()
-  } catch (error) {
+    alert('Promotion updated successfully!')
+  } catch (error: any) {
     console.error('Error updating promotion:', error)
-    alert('Failed to update promotion. Please try again.')
+    promotionsStore.setError(error.message || 'Failed to update promotion')
+    alert(error.message || 'Failed to update promotion. Please try again.')
   } finally {
     isEditing.value = false
+    promotionsStore.setLoading(false)
   }
 }
 
@@ -905,21 +910,4 @@ const resetFilters = () => {
 // watch(searchQuery, () => {
 //   currentPage.value = 1
 // })
-
-// Load promotions from localStorage on mount
-onMounted(() => {
-  const saved = localStorage.getItem('promotions')
-  if (saved) {
-    promotions.value = JSON.parse(saved)
-  }
-})
-
-// Save to localStorage whenever promotions change
-watch(promotions, (newPromotions) => {
-  try {
-    localStorage.setItem('promotions', JSON.stringify(newPromotions))
-  } catch (error) {
-    console.error('Error saving to localStorage:', error)
-  }
-}, { deep: true, immediate: false })
 </script>

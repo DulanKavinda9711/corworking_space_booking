@@ -92,7 +92,7 @@
               {{ booking.productName }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ formatDate(booking.date) }}
+              {{ booking.date ? formatDate(booking.date) : 'N/A' }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span :class="getStatusClass(booking.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">

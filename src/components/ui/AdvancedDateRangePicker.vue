@@ -5,7 +5,7 @@
       :value="displayValue"
       @click="showPicker = !showPicker"
       readonly
-      class="date-input w-full border border-gray-900 rounded-lg px-3 py-2 text-sm text-gray-900 cursor-pointer "
+  class="date-input appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
       :placeholder="placeholder"
     />
 
@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 interface Props {
   modelValue?: {
@@ -283,6 +283,17 @@ onMounted(() => {
     endDate.value = props.modelValue.endDate
   }
 })
+
+// Watch for changes to modelValue prop
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) {
+    startDate.value = newValue.startDate
+    endDate.value = newValue.endDate
+  } else {
+    startDate.value = ''
+    endDate.value = ''
+  }
+}, { deep: true })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)

@@ -21,13 +21,6 @@
               </svg>
             <span>Export CSV</span>
           </button>
-          <button @click="goToCommissionSetup"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiCog" />
-            </svg>
-            <span>Commission Setup</span>
-          </button>
         </div>
       </div>
 
@@ -44,8 +37,8 @@
             <div class="md:w-40">
               <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
               <div class="relative">
-                <div @click="toggleDropdown('product')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getProductLabel(filters.product) }}</span>
+                <div @click="toggleDropdown('product')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.product ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                  <span class="text-gray-900 leading-5 h-5 flex items-center">{{ getProductLabel(filters.product) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -71,8 +64,8 @@
             <div class="md:w-48">
               <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div class="relative">
-                <div @click="toggleDropdown('location')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getLocationLabel(filters.location) }}</span>
+                <div @click="toggleDropdown('location')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.location ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                  <span class="text-gray-900 leading-5 h-5 flex items-center">{{ getLocationLabel(filters.location) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -98,8 +91,8 @@
             <div class="md:w-40">
               <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
               <div class="relative">
-                <div @click="toggleDropdown('sortBy')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
-                  <span class="text-gray-900">{{ getSortByLabel(sortBy) }}</span>
+                <div @click="toggleDropdown('sortBy')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.sortBy ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
+                  <span class="text-gray-900 leading-5 h-5 flex items-center">{{ getSortByLabel(sortBy) }}</span>
                 </div>
 
                 <!-- Dropdown Options -->
@@ -148,10 +141,10 @@
                   Total Amount
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SquareHub Commission ({{ commissionSettings.SquareHubRate }}%)
+                  SquareHub Commission
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ceylinco Commission ({{ commissionSettings.ceylincoRate }}%)
+                  Ceylinco Commission
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
@@ -185,13 +178,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                          <path :d="mdiAccount" />
-                        </svg>
-                      </div>
-                    </div>
+                   
                     <div class="ml-3">
                       <div class="text-sm font-medium text-gray-900">{{ payment.customerName }}</div>
                       <div class="text-sm text-gray-500">{{ payment.customerEmail }}</div>
@@ -199,19 +186,19 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-gray-900">${{ payment.totalAmount }}</div>
+                  <div class="text-sm font-semibold text-gray-900">LKR {{ payment.totalAmount }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-gray-600">${{ payment.SquareHubCommission }}</div>
+                  <div class="text-sm font-semibold text-gray-600">LKR {{ payment.SquareHubCommission }}</div>
                   <!-- <div class="text-sm text-gray-500">{{ payment.SquareHubRate }}%</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-gray-600">${{ payment.ceylincoCommission }}</div>
+                  <div class="text-sm font-semibold text-gray-600">LKR {{ payment.ceylincoCommission }}</div>
                   <!-- <div class="text-sm text-gray-500">{{ payment.ceylincoRate }}%</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ payment.date }}</div>
-                  <div class="text-sm text-gray-500">{{ payment.time }}</div>
+                  <div class="text-sm text-gray-600">{{ formatDate(payment.date) }}</div>
+                  <div class="text-sm text-gray-500">{{ formatTime(payment.time) }}</div>
                 </td>
               </tr>
             </tbody>
@@ -267,6 +254,11 @@ interface Payment {
   status: string
   date: string
   time: string
+  SquareHubCommission?: number
+  SquareHubRate?: number
+  ceylincoCommission?: number
+  ceylincoRate?: number
+  totalCommission?: number
 }
 
 const router = useRouter()
@@ -402,15 +394,14 @@ const payments = ref<Payment[]>([])
 // Locations data (to be populated from API)
 const locations = ref<any[]>([])
 
-// Computed payments with dynamic commission calculation
+// Computed payments with commission rates (no recalculation needed since API provides values)
 const paymentsWithCommission = computed(() => {
   return payments.value.map(payment => ({
     ...payment,
-    SquareHubCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate),
+    // Commission values come directly from API, just add rates for display
     SquareHubRate: commissionSettings.value.SquareHubRate,
-    ceylincoCommission: calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate),
     ceylincoRate: commissionSettings.value.ceylincoRate,
-    totalCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate) + calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate)
+    totalCommission: (payment.SquareHubCommission || 0) + (payment.ceylincoCommission || 0)
   }))
 })
 
@@ -471,8 +462,8 @@ const sortedPayments = computed(() => {
         bVal = b.bookingId
         break
       case 'commission':
-        aVal = a.SquareHubCommission
-        bVal = b.SquareHubCommission
+        aVal = a.SquareHubCommission || 0
+        bVal = b.SquareHubCommission || 0
         break
       default:
         aVal = a.date
@@ -490,14 +481,21 @@ const sortedPayments = computed(() => {
 })
 
 // Methods
-// const formatDate = (dateString: string) => {
-//   const date = new Date(dateString)
-//   return date.toLocaleDateString('en-US', {
-//     year: 'numeric',
-//     month: 'short',
-//     day: 'numeric'
-//   })
-// }
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}.${month}.${day}`
+}
+
+const formatTime = (timeString: string) => {
+  const [hours, minutes] = timeString.split(':')
+  const hour = parseInt(hours)
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  const displayHour = hour % 12 || 12
+  return `${displayHour}:${minutes} ${ampm}`
+}
 
 const resetFilters = () => {
   filters.value = {
@@ -505,6 +503,10 @@ const resetFilters = () => {
     dateTo: '',
     product: '',
     location: ''
+  }
+  dateRange.value = {
+    startDate: '',
+    endDate: ''
   }
   sortBy.value = 'date'
   sortOrder.value = 'desc'
@@ -598,16 +600,6 @@ const exportToCSV = () => {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
-
-const goToCommissionSetup = () => {
-  // Navigate to the commission setup page
-  router.push('/payments/commission-setup')
-}
-
-// Refresh commission settings when returning from commission setup
-// const refreshCommissionSettings = () => {
-//   loadCommissionSettings()
-// }
 
 const navigateToPaymentDetail = (paymentId: string) => {
   // Navigate to the payment detail page

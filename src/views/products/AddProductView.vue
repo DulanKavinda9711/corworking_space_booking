@@ -22,9 +22,9 @@
             <!-- Single Card with All Sections -->
             <div class="bg-white rounded-xl shadow-card overflow-visible relative">
               <!-- Product Number Header -->
-              <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4">
+                <div class="bg-gradient-to-r rounded-t-xl from-green-500 to-green-600 text-white px-8 py-4">
                 <h3 class="text-lg font-semibold">Product {{ idx + 1 }}</h3>
-              </div>
+                </div>
 
               <!-- Remove button for second and subsequent products -->
               <div v-if="idx > 0" class="absolute top-4 right-4 z-10">
@@ -41,7 +41,7 @@
                 <!-- Location Selection - Only show for first product -->
                 <div v-if="idx === 0">
                   <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h- mr-3" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiOfficeBuilding" />
                     </svg>
                     Location

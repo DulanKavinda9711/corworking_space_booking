@@ -36,7 +36,7 @@
                   type="text"
                   v-model="newUser.firstName"
                   required
-                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter first name"
                 />
               </div>
@@ -46,7 +46,7 @@
                   type="text"
                   v-model="newUser.lastName"
                   required
-                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter last name"
                 />
               </div>
@@ -59,7 +59,7 @@
                   type="text"
                   v-model="newUser.username"
                   required
-                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter username"
                 />
               </div>
@@ -69,7 +69,7 @@
                   type="email"
                   v-model="newUser.email"
                   required
-                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                   placeholder="Enter email address"
                 />
               </div>
@@ -78,7 +78,7 @@
               <input
                 type="tel"
                 v-model="newUser.phone"
-                class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
+                class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                 placeholder="Enter phone number"
               />
             </div>
@@ -99,7 +99,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                 <div class="relative">
-                  <div @click="toggleDropdown('role')" class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center">
+                  <div @click="toggleDropdown('role')" :class="['w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center', dropdownStates.role ? 'border-2 border-green-500 focus:ring-0 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300']">
                     <span class="text-gray-900">{{ getRoleLabel(newUser.role) }}</span>
                   </div>
 
@@ -128,7 +128,7 @@
                     </svg>
                   </div>
                 </div>
-                <p v-if="rolesError" class="mt-1 text-sm text-red-600">{{ rolesError }}</p>
+                <!-- <p v-if="rolesError" class="mt-1 text-sm text-red-600">{{ rolesError }}</p> -->
               </div>
             </div>
           </div>
