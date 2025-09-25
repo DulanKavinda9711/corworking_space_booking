@@ -52,13 +52,13 @@
             <span :class="getStatusClass(booking.status)" class="px-3 py-1 text-sm font-medium rounded-full">
               {{ booking.status }}
             </span>
-            <button 
+            <!-- <button 
               v-if="booking.status !== 'cancelled'"
               @click="confirmCancelBooking"
               class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
             >
               Cancel Booking
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -74,8 +74,8 @@
           </h2>
           <div class="space-y-4">
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+              <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiAccount" />
                 </svg>
               </div>
@@ -147,11 +147,7 @@
           </h2>
           <div class="space-y-4">
             <div class="flex items-center space-x-4">
-              <div class="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center">
-                <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path :d="mdiOfficeBuilding" />
-                </svg>
-              </div>
+              <img class="w-16 h-16 rounded-lg object-cover" :src="booking.productImage" :alt="booking.productName">
               <div>
                 <h3 class="text-sm font-medium text-gray-900">{{ booking.productName }}</h3>
                 <p class="text-sm text-gray-500">{{ booking.productType }}</p>
@@ -566,11 +562,8 @@ const getFacilityDetails = () => {
 }
 
 // Modal functions
-const confirmCancelBooking = () => {
-  if (booking.value) {
-    router.push(`/bookings/${booking.value.id}/cancel`)
-  }
-}
+
+
 
 const viewCustomerProfile = () => {
   if (!booking.value) return

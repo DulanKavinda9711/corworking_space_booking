@@ -166,16 +166,16 @@
                 <div v-if="dropdownStates.productType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   <div class="p-2">
                     <!-- Select All / Clear All -->
-                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
-                      <button @click="filters.productType = productTypeOptions.map(opt => opt.value)"
+                    <!-- <div class="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                      <button @click="selectAllProductTypes"
                               class="text-xs text-green-600 hover:text-green-800 font-medium">
                         Select All
                       </button>
-                      <button @click="filters.productType = []"
+                      <button @click="clearProductTypes"
                               class="text-xs text-red-600 hover:text-red-800 font-medium">
                         Clear All
                       </button>
-                    </div>
+                    </div> -->
 
                     <!-- Individual Checkboxes -->
                     <label v-for="option in productTypeOptions" :key="option.value"
@@ -328,14 +328,14 @@
                   <div class="text-xs text-gray-500">{{ booking.customerType }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="activeTab === 'subscriptions' || (activeTab === 'all' && booking.productType === 'Subscription')" class="text-sm text-gray-900">{{ formatDate(booking.subscribedDate) }}
+                  <div v-if="activeTab === 'subscriptions' || (activeTab === 'all' && booking.productType === 'Subscription')" class="text-sm text-gray-900">{{ booking.subscribedDate }}
                   </div>
                   <div v-else-if="activeTab === 'all'">
-                    <div class="text-sm text-gray-900">{{ formatDate(booking.date) }}</div>
+                    <div class="text-sm text-gray-900">{{ booking.date }}</div>
                     <div v-if="booking.startTime && booking.endTime" class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                   <div v-else>
-                    <div class="text-sm text-gray-900">{{ formatDate(booking.date) }}</div>
+                    <div class="text-sm text-gray-900">{{ booking.date }}</div>
                     <div v-if="booking.startTime && booking.endTime" class="text-sm text-gray-500">{{ booking.startTime }} - {{ booking.endTime }}</div>
                   </div>
                 </td>
@@ -361,11 +361,11 @@
                   <template v-else>{{ booking.duration }}</template>
                 </td>
                 <td v-if="activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription'" class="text-sm text-gray-900">{{ formatDate(booking.subscribedDate) }}</div>
+                  <div v-if="booking.productType === 'Subscription'" class="text-sm text-gray-900">{{ booking.subscribedDate }}</div>
                   <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription' && booking.status === 'ongoing'" class="text-sm text-gray-900">{{ formatDate(booking.nextBillingDate) }}
+                  <div v-if="booking.productType === 'Subscription' && booking.status === 'ongoing'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
                   </div>
                   <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
                   <div v-else class="text-sm text-gray-500">-</div>
@@ -517,17 +517,6 @@ const dropdownStates = ref({
   status: false
 })
 
-// Helper function to map product types
-const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' => {
-  if (!apiType) return 'Meeting Room'
-  
-  const normalizedType = apiType.toLowerCase().trim()
-  if (normalizedType.includes('meeting')) return 'Meeting Room'
-  if (normalizedType.includes('hot')) return 'Hot Desk'
-  if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private') || normalizedType.includes('workspace')) return 'Dedicated Desk'
-  return 'Meeting Room' // default
-}
-
 // Locations state
 const locations = ref<any[]>([])
 const locationsLoading = ref(false)
@@ -574,11 +563,10 @@ const filteredBookings = computed(() => {
     // Show all bookings and subscriptions combined
     bookings = [...allBookings.value, ...subscriptions.value]
   } else if (activeTab.value === 'bookings') {
-    // Show only Meeting Room and Hot Desk bookings that are not cancelled and not completed
+    // Show only Meeting Room and Hot Desk bookings that are not cancelled
     bookings = allBookings.value.filter(b => 
       (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
-      b.status !== 'cancelled' &&
-      getDynamicStatus(b) !== 'complete'
+      b.status !== 'cancelled'
     )
   } else if (activeTab.value === 'subscriptions') {
     // Use subscription data from API
@@ -624,17 +612,11 @@ const filteredBookings = computed(() => {
   }
 
   // Apply other filters
-  console.log('DEBUG: Active tab:', activeTab.value)
-  console.log('DEBUG: Product type filters:', filters.value.productType)
+  if (filters.value.location) {
+    bookings = bookings.filter(b => b.locationName === filters.value.location)
+  }
   if (filters.value.productType && filters.value.productType.length > 0) {
-    console.log('DEBUG: Applying product type filter')
-    bookings = bookings.filter(b => {
-      // Always use mapped productType for filtering
-      const mappedType = b.productType;
-      console.log('DEBUG: Booking productType:', b.productType, 'mappedType:', mappedType, 'includes:', filters.value.productType.includes(mappedType))
-      return filters.value.productType.includes(mappedType);
-    });
-    console.log('DEBUG: After product type filter, bookings count:', bookings.length)
+    bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
   }
   if (filters.value.status && filters.value.status.length > 0) {
     bookings = bookings.filter(b => {
@@ -689,7 +671,7 @@ const visiblePages = computed(() => {
 
 const getTableColspan = computed(() => {
   if (activeTab.value === 'all') return 11
-  if (activeTab.value === 'subscriptions') return 10
+  if (activeTab.value === 'subscriptions') return 9
   if (activeTab.value === 'bookings') return 9
   if (activeTab.value === 'history') return 8
   return 11 // fallback
@@ -730,7 +712,12 @@ const getAllBookingDetails = () => {
   return allBookings.value.map(booking => ({
     ...booking,
     // Add computed fields for better detail view
-    formattedDate: booking.date ? formatDate(booking.date) : 'N/A',
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A',
     timeSlot: `${booking.startTime} - ${booking.endTime}`,
     statusColor: getStatusClass(booking.status),
     isUpcoming: booking.status === 'confirmed' && booking.date && new Date(booking.date) > new Date(),
@@ -749,7 +736,12 @@ const getBookingById = (bookingId: string) => {
   // Return booking with enhanced details
   return {
     ...booking,
-    formattedDate: booking.date ? formatDate(booking.date) : 'N/A',
+    formattedDate: booking.date ? new Date(booking.date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A',
     timeSlot: `${booking.startTime} - ${booking.endTime}`,
     statusColor: getStatusClass(booking.status),
     isUpcoming: booking.status === 'ongoing' && booking.date && new Date(booking.date) > new Date(),
@@ -801,11 +793,10 @@ const getTabCount = (tabId: string) => {
     // Count all bookings and subscriptions combined
     return allBookings.value.length + subscriptions.value.length
   } else if (tabId === 'bookings') {
-    // Count Meeting Room and Hot Desk bookings that are not cancelled and not completed
+    // Count Meeting Room and Hot Desk bookings that are not cancelled
     return allBookings.value.filter(b => 
       (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
-      b.status !== 'cancelled' &&
-      getDynamicStatus(b) !== 'complete'
+      b.status !== 'cancelled'
     ).length
   } else if (tabId === 'subscriptions') {
     // Count subscriptions from API data
@@ -920,12 +911,6 @@ const getDynamicStatus = (booking: any) => {
 
   // Handle regular bookings - always calculate based on current time
   const now = new Date()
-  
-  // Check if booking has required time fields
-  if (!booking.date || !booking.startTime || !booking.endTime) {
-    return booking.status || 'confirmed' // Return current status if time data is missing
-  }
-  
   const bookingDate = new Date(booking.date)
 
   // Set the booking date with start and end times
@@ -950,8 +935,6 @@ const getDynamicStatus = (booking: any) => {
 
 // Helper function to parse time strings like "10:00 AM" or "2:00 PM"
 const parseTime = (timeStr: string) => {
-  if (!timeStr) return [0, 0] // Return default time if undefined
-  
   const [time, period] = timeStr.split(' ')
   const [hours, minutes] = time.split(':').map(Number)
 
@@ -974,12 +957,12 @@ const getSubscriptionEndDate = (subscription: any) => {
   const endDate = new Date(nextBillingDate)
   endDate.setDate(endDate.getDate() - 1)
 
-  // Return in YYYY.MM.DD format
+  // Return in YYYY-MM-DD format
   const year = endDate.getFullYear()
   const month = String(endDate.getMonth() + 1).padStart(2, '0')
   const day = String(endDate.getDate()).padStart(2, '0')
 
-  return `${year}.${month}.${day}`
+  return `${year}-${month}-${day}`
 }
 
 // Row click handler to view booking details
@@ -1076,18 +1059,18 @@ const exportToCSV = () => {
 
       // Date columns based on tab
       if (activeTab.value === 'subscriptions') {
-        row.push(formatDate(booking.subscribedDate) || '')
+        row.push(booking.subscribedDate || '')
       } else if (activeTab.value === 'all') {
         // For 'all' tab, show booking date
         if (booking.productType === 'Subscription') {
-          row.push(formatDate(booking.subscribedDate) || '')
+          row.push(booking.subscribedDate || '')
         } else {
-          row.push(formatDate(booking.date) || '')
+          row.push(booking.date || '')
         }
       } else if (activeTab.value === 'bookings') {
-        row.push(`${formatDate(booking.date) || ''} ${booking.startTime || ''} - ${booking.endTime || ''}`)
+        row.push(`${booking.date || ''} ${booking.startTime || ''} - ${booking.endTime || ''}`)
       } else {
-        row.push(formatDate(booking.date) || '')
+        row.push(booking.date || '')
       }
 
       // Additional columns for 'all' tab
@@ -1134,7 +1117,7 @@ const exportToCSV = () => {
       // Next Billing and Subscription End Date for subscriptions and all tabs
       if (activeTab.value === 'subscriptions' || activeTab.value === 'all') {
         if (booking.productType === 'Subscription' && booking.status === 'ongoing') {
-          row.push(formatDate(booking.nextBillingDate) || '')
+          row.push(booking.nextBillingDate || '')
           row.push(getSubscriptionEndDate(booking))
         } else {
           row.push('-')
@@ -1268,7 +1251,7 @@ const locationOptions = computed(() => {
   const options = [{ value: '', label: 'All Locations' }]
   locations.value.forEach(location => {
     options.push({
-      value: location.name, // Use location name as value to match locationName in booking data
+      value: location.id,
       label: location.name
     })
   })
@@ -1400,7 +1383,7 @@ const fetchSubscriptions = async () => {
         customerName: `${item.first_name} ${item.last_name}`,
         customerEmail: item.email,
         productName: item.product_type,
-        productType: mapProductType(item.product_type),
+        productType: 'Subscription',
         locationName: item.location_name,
         subscribedDate: item.subscribed_date,
         nextBillingDate: item.next_billing_date,
@@ -1408,7 +1391,6 @@ const fetchSubscriptions = async () => {
         totalPrice: item.total_price,
         status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
         subscriptionType: item.package_type,
-        customerType: item.customer_type || 'Registered',
         userType: 'registered' // Default assumption
       }))
     } else {
@@ -1506,16 +1488,6 @@ watch(activeTab, (newTab) => {
 
 // Expose public functions for external access
 // These functions can be called from parent components or other parts of the application
-
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A'
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}.${month}.${day}`
-}
-
 defineExpose({
   viewBookingDetails,
   navigateToBookingDetails,

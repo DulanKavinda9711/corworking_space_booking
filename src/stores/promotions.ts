@@ -12,65 +12,53 @@ export interface Promotion {
 export const usePromotionsStore = defineStore('promotions', () => {
   // State
   const promotions = ref<Promotion[]>([])
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
 
   // Getters
-  const allPromotions = computed(() => promotions.value)
-  const promotionsCount = computed(() => promotions.value.length)
+  const filteredPromotions = computed(() => {
+    return promotions.value
+  })
+
+  const getPromotionById = computed(() => {
+    return (id: string) => promotions.value.find(p => p.id === id)
+  })
 
   // Actions
+  const addPromotion = (promotion: Promotion) => {
+    promotions.value = [...promotions.value, promotion]
+  }
+
+  const updatePromotion = (id: string, updatedPromotion: Partial<Promotion>) => {
+    const index = promotions.value.findIndex(p => p.id === id)
+    if (index !== -1) {
+      promotions.value[index] = { ...promotions.value[index], ...updatedPromotion }
+    }
+  }
+
+  const removePromotion = (id: string) => {
+    promotions.value = promotions.value.filter(p => p.id !== id)
+  }
+
   const setPromotions = (newPromotions: Promotion[]) => {
     promotions.value = newPromotions
   }
 
-  const addPromotion = (promotion: Promotion) => {
-    promotions.value.unshift(promotion) // Add to beginning of array
-  }
-
-  const updatePromotion = (updatedPromotion: Promotion) => {
-    const index = promotions.value.findIndex(p => p.id === updatedPromotion.id)
-    if (index !== -1) {
-      promotions.value[index] = updatedPromotion
-    }
-  }
-
-  const removePromotion = (promotionId: string) => {
-    const index = promotions.value.findIndex(p => p.id === promotionId)
-    if (index !== -1) {
-      promotions.value.splice(index, 1)
-    }
-  }
-
-  const setLoading = (loading: boolean) => {
-    isLoading.value = loading
-  }
-
-  const setError = (errorMessage: string | null) => {
-    error.value = errorMessage
-  }
-
-  const clearError = () => {
-    error.value = null
+  const clearPromotions = () => {
+    promotions.value = []
   }
 
   return {
     // State
     promotions,
-    isLoading,
-    error,
 
     // Getters
-    allPromotions,
-    promotionsCount,
+    filteredPromotions,
+    getPromotionById,
 
     // Actions
-    setPromotions,
     addPromotion,
     updatePromotion,
     removePromotion,
-    setLoading,
-    setError,
-    clearError
+    setPromotions,
+    clearPromotions
   }
 })

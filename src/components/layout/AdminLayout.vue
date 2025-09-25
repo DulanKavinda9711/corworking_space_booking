@@ -150,7 +150,8 @@ import {
   mdiCancel,
   mdiSeat,
   mdiBullhorn,
-  mdiCheckCircle
+  mdiCheckCircle,
+  mdiMessage
 } from '@mdi/js'
 
 const route = useRoute()
@@ -176,7 +177,8 @@ const mdiIcons = {
   mdiBell,
   mdiBookOpen,
   mdiCancel,
-  mdiBullhorn
+  mdiBullhorn,
+  mdiMessage
 }
 
 // Menu items
@@ -184,6 +186,7 @@ const menuItems = [
   { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard, color: 'text-green-600' },
   { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck, color: 'text-green-600' },
   { name: 'Customers', path: '/customers', icon: mdiAccountGroup, color: 'text-purple-600' },
+  { name: 'Messages', path: '/messages', icon: mdiMessage, color: 'text-blue-600' },
   // { name: 'Approver', path: '/approver', icon: mdiCheckCircle, color: 'text-blue-600' },
   { name: 'Facilities', path: '/facilities', icon: mdiSeat, color: 'text-orange-600' },
   { name: 'Products', path: '/products', icon: mdiBookOpen, color: 'text-indigo-600' },

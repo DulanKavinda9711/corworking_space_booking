@@ -9,7 +9,7 @@ const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicat
   const normalizedType = apiType.toLowerCase().trim()
   if (normalizedType.includes('meeting')) return 'Meeting Room'
   if (normalizedType.includes('hot')) return 'Hot Desk'
-  if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private') || normalizedType.includes('workspace')) return 'Dedicated Desk'
+  if (normalizedType.includes('dedicated')) return 'Dedicated Desk'
   return 'Meeting Room' // default
 }
 
@@ -154,9 +154,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     try {
       const response = await bookingApi.getAdminBookingTabTable(filters)
       if (response.success && response.data) {
-        console.log('DEBUG: Raw API booking data:', response.data)
         const mappedBookings = response.data.map((item: any) => {
-          console.log('DEBUG: Raw product_type:', item.product_type, 'Mapped to:', mapProductType(item.product_type))
           const booking = {
             id: item.booking_id,
             productName: item.product_type,
@@ -167,7 +165,7 @@ export const useBookingsStore = defineStore('bookings', () => {
             customerEmail: '',
             customerPhone: '',
             customerType: item.customer_type || 'Registered',
-            userType: item.customer_type || 'Registered',
+            userType: 'registered' as const,
             date: item.booking_date,
             startTime: item.start_time ? convertTo12Hour(item.start_time) : '',
             endTime: item.end_time ? convertTo12Hour(item.end_time) : '',

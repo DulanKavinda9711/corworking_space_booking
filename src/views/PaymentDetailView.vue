@@ -16,7 +16,7 @@
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900">Payment Details</h1>
-            <!-- <p class="text-gray-600 mt-1">Payment ID: {{ payment.paymentId }}</p> -->
+            <p class="text-gray-600 mt-1">Payment ID: {{ payment.paymentId }}</p>
           </div>
           <div class="flex items-center space-x-4">
             <span 
@@ -68,7 +68,7 @@
               <div>
                 <label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</label>
                 <p class="text-sm text-gray-900 mt-1">{{ formatDate(payment.date) }}</p>
-                <p class="text-sm text-gray-500">{{ formatTime(payment.time) }}</p>
+                <p class="text-sm text-gray-500">{{ payment.time }}</p>
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@
           >
             <div class="flex justify-between items-center">
               <span class="text-sm font-medium text-gray-900">{{ facility.name }}</span>
-              <span class="text-sm font-semibold text-gray-900">LKR {{ facility.price }}</span>
+              <span class="text-sm font-semibold text-gray-900">${{ facility.price }}</span>
             </div>
           </div>
         </div>
@@ -136,17 +136,13 @@
           Price Breakdown
         </h2>
         <div class="space-y-4">
-          <div class="flex justify-between">
-            <span class="text-gray-600">Product Price</span>
-            <span class="text-gray-900">LKR {{ payment.baseAmount }}</span>
-          </div>
           <div class="flex justify-between" v-if="additionalFacilitiesTotal > 0">
             <span class="text-gray-600">Additional Facilities</span>
-            <span class="text-gray-900">LKR {{ additionalFacilitiesTotal }}</span>
+            <span class="text-gray-900">${{ additionalFacilitiesTotal }}</span>
           </div>
-          <div class="flex justify-between border-t border-gray-200 pt-4">
-            <span class="text-lg font-semibold text-gray-900">Total Price</span>
-            <span class="text-lg font-bold text-gray-900">LKR {{ payment.totalAmount }}</span>
+          <div class="flex justify-between">
+            <span class="text-lg font-semibold text-gray-900">Total Amount</span>
+            <span class="text-lg font-bold text-gray-900">${{ payment.totalAmount }}</span>
           </div>
         </div>
 
@@ -156,11 +152,15 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- PayMedia Commission -->
             <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">SquareHub Commission</h4>
+              <h4 class="text-sm font-medium text-gray-900 mb-3">PayMedia Commission</h4>
               <div class="space-y-2">
                 <div class="flex justify-between">
+                  <span class="text-sm text-gray-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ payment.SquareHubRate }}%</span>
+                </div>
+                <div class="flex justify-between">
                   <span class="text-sm text-gray-700">Commission Amount</span>
-                  <span class="text-sm font-semibold text-gray-900">LKR {{ payment.SquareHubCommission }}</span>
+                  <span class="text-sm font-semibold text-gray-900">${{ payment.SquareHubCommission }}</span>
                 </div>
               </div>
             </div>
@@ -170,8 +170,12 @@
               <h4 class="text-sm font-medium text-gray-900 mb-3">Ceylinco Commission</h4>
               <div class="space-y-2">
                 <div class="flex justify-between">
+                  <span class="text-sm text-gray-700">Commission Rate</span>
+                  <span class="text-sm font-semibold text-gray-900">{{ payment.ceylincoRate }}%</span>
+                </div>
+                <div class="flex justify-between">
                   <span class="text-sm text-gray-700">Commission Amount</span>
-                  <span class="text-sm font-semibold text-gray-900">LKR {{ payment.ceylincoCommission }}</span>
+                  <span class="text-sm font-semibold text-gray-900">${{ payment.ceylincoCommission }}</span>
                 </div>
               </div>
             </div>
@@ -289,29 +293,21 @@ const fetchPaymentDetail = async (paymentId: string) => {
 // Methods
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}.${month}.${day}`
-}
-
-const formatTime = (timeString: string) => {
-  const [hours, minutes] = timeString.split(':')
-  const hour = parseInt(hours)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minutes} ${ampm}`
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 
 const getStatusClass = (status: string) => {
-  switch (status.toLowerCase()) {
+  switch (status) {
     case 'paid':
-    case 'success':
       return 'bg-green-100 text-green-800'
     case 'pending':
       return 'bg-yellow-100 text-yellow-800'
     default:
-      return 'bg-green-100 text-green-800'
+      return 'bg-gray-100 text-gray-800'
   }
 }
 

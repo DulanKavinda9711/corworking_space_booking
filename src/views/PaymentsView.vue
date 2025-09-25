@@ -197,8 +197,8 @@
                   <!-- <div class="text-sm text-gray-500">{{ payment.ceylincoRate }}%</div> -->
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-600">{{ formatDate(payment.date) }}</div>
-                  <div class="text-sm text-gray-500">{{ formatTime(payment.time) }}</div>
+                  <div class="text-sm text-gray-600">{{ payment.date }}</div>
+                  <div class="text-sm text-gray-500">{{ payment.time }}</div>
                 </td>
               </tr>
             </tbody>
@@ -254,11 +254,6 @@ interface Payment {
   status: string
   date: string
   time: string
-  SquareHubCommission?: number
-  SquareHubRate?: number
-  ceylincoCommission?: number
-  ceylincoRate?: number
-  totalCommission?: number
 }
 
 const router = useRouter()
@@ -394,14 +389,15 @@ const payments = ref<Payment[]>([])
 // Locations data (to be populated from API)
 const locations = ref<any[]>([])
 
-// Computed payments with commission rates (no recalculation needed since API provides values)
+// Computed payments with dynamic commission calculation
 const paymentsWithCommission = computed(() => {
   return payments.value.map(payment => ({
     ...payment,
-    // Commission values come directly from API, just add rates for display
+    SquareHubCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate),
     SquareHubRate: commissionSettings.value.SquareHubRate,
+    ceylincoCommission: calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate),
     ceylincoRate: commissionSettings.value.ceylincoRate,
-    totalCommission: (payment.SquareHubCommission || 0) + (payment.ceylincoCommission || 0)
+    totalCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate) + calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate)
   }))
 })
 
@@ -462,8 +458,8 @@ const sortedPayments = computed(() => {
         bVal = b.bookingId
         break
       case 'commission':
-        aVal = a.SquareHubCommission || 0
-        bVal = b.SquareHubCommission || 0
+        aVal = a.SquareHubCommission
+        bVal = b.SquareHubCommission
         break
       default:
         aVal = a.date
@@ -481,21 +477,14 @@ const sortedPayments = computed(() => {
 })
 
 // Methods
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}.${month}.${day}`
-}
-
-const formatTime = (timeString: string) => {
-  const [hours, minutes] = timeString.split(':')
-  const hour = parseInt(hours)
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  const displayHour = hour % 12 || 12
-  return `${displayHour}:${minutes} ${ampm}`
-}
+// const formatDate = (dateString: string) => {
+//   const date = new Date(dateString)
+//   return date.toLocaleDateString('en-US', {
+//     year: 'numeric',
+//     month: 'short',
+//     day: 'numeric'
+//   })
+// }
 
 const resetFilters = () => {
   filters.value = {

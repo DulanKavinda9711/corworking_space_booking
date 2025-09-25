@@ -1,6 +1,6 @@
 <template>
 	<AdminLayout>
-		<div class="space-y-6 max-w-6xl mx-auto" v-if="!isLoading && !error && subscription">
+		<div class="space-y-6 max-w-6xl mx-auto" v-if="subscription">
 			<!-- Back Button -->
 			<div class="flex items-center">
 				<router-link :to="getBackNavigationPath()" class="flex items-center text-gray-600 hover:text-gray-900">
@@ -44,8 +44,8 @@
 					</h2>
 					<div class="space-y-4">
 						<div class="flex items-center space-x-3">
-							<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-								<svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+							<div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+								<svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
 									<path :d="mdiAccount" />
 								</svg>
 							</div>
@@ -83,7 +83,7 @@
 							<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Message</label>
 							<p class="text-sm text-gray-900 mt-1 bg-gray-50 p-3 rounded-lg">{{ subscription.customerMessage }}</p>
 						</div>
-						<!-- <div v-if="subscription.userType === 'registered'" class="pt-4 border-t border-gray-200">
+						<div v-if="subscription.userType === 'registered'" class="pt-4 border-t border-gray-200">
 							<div class="flex items-center space-x-4">
 								<button v-if="getCustomerDetails(subscription).isRegistered" 
 												@click="viewCustomerProfile" 
@@ -103,7 +103,7 @@
 									Send Message
 								</button>
 							</div>
-						</div> -->
+						</div>
 					</div>
 				</div>
 
@@ -117,21 +117,14 @@
 					</h2>
 					<div class="space-y-4">
 						<div class="flex items-center space-x-4">
-							<div v-if="subscription.productImage" class="w-16 h-16 rounded-lg overflow-hidden">
-								<img class="w-full h-full object-cover" :src="subscription.productImage" :alt="subscription.productName">
-							</div>
-							<div v-else class="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center">
-								<svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-									<path :d="mdiOfficeBuilding" />
-								</svg>
-							</div>
+							<img class="w-16 h-16 rounded-lg object-cover" :src="subscription.productImage" :alt="subscription.productName">
 							<div>
 								<h3 class="text-sm font-medium text-gray-900">{{ subscription.productName }}</h3>
 								<p class="text-sm text-gray-500">{{ subscription.productType }}</p>
 								<p class="text-sm text-gray-500">{{ subscription.locationName }}</p>
 							</div>
 						</div>
-						<!-- <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+						<div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
 							<div>
 								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</label>
 								<p class="text-sm text-gray-900">{{ subscription.capacity }} {{ subscription.capacity === 1 ? 'person' : 'people' }}</p>
@@ -145,7 +138,7 @@
 									</span>
 								</div>
 							</div>
-						</div> -->
+						</div>
 					</div>
 				</div>
 			</div>
@@ -206,52 +199,24 @@
 				<div class="space-y-3">
 					<div class="flex justify-between">
 						<span class="text-gray-600">Base Price</span>
-						<span class="text-gray-900">LKR {{ subscription.basePrice }}</span>
+						<span class="text-gray-900">${{ subscription.basePrice }}</span>
 					</div>
 					<div class="flex justify-between">
 						<span class="text-gray-600">Additional Facilities</span>
-						<span class="text-gray-900">LKR {{ subscription.additionalFacilities }}</span>
+						<span class="text-gray-900">${{ subscription.additionalFacilities }}</span>
 					</div>
 					<div class="border-t border-gray-200 pt-3">
 						<div class="flex justify-between">
 							<span class="text-lg font-semibold text-gray-900">Total</span>
-							<span class="text-lg font-bold text-primary-600">LKR {{ subscription.totalPrice }}</span>
+							<span class="text-lg font-bold text-primary-600">${{ subscription.totalPrice }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Loading state -->
-		<div v-if="isLoading" class="flex items-center justify-center h-64">
-			<div class="text-center">
-				<svg class="w-16 h-16 text-gray-400 mx-auto mb-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-				</svg>
-				<h3 class="text-lg font-medium text-gray-900 mb-2">Loading Subscription Details</h3>
-				<p class="text-gray-600">Please wait while we fetch the subscription information...</p>
-			</div>
-		</div>
-
-		<!-- Error state -->
-		<div v-if="!isLoading && error" class="flex items-center justify-center h-64">
-			<div class="text-center">
-				<svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Subscription</h3>
-				<p class="text-gray-600 mb-4">{{ error }}</p>
-				<router-link :to="getBackNavigationPath()" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-					</svg>
-					{{ getBackNavigationLabel() }}
-				</router-link>
-			</div>
-		</div>
-
-		<!-- Not Found state -->
-		<div v-if="!isLoading && !error && !subscription" class="flex items-center justify-center h-64">
+		<!-- Loading/Not Found state -->
+		<div v-else class="flex items-center justify-center h-64">
 			<div class="text-center">
 				<svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -396,7 +361,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers, type Customer } from '@/composables/useCustomers'
-import { subscriptionApi, type SubscriptionDetailResponse } from '@/services'
 import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiEye, mdiMessage } from '@mdi/js'
 
 const route = useRoute()
@@ -447,46 +411,38 @@ interface Subscription {
 		cancelledDate?: string;
 }
 
-// Reactive subscription data
-const subscriptionDetail = ref<SubscriptionDetailResponse | null>(null)
-const isLoading = ref(true)
-const error = ref<string | null>(null)
+// Reactive subscriptions data
+const allSubscriptions = ref<Subscription[]>([])
 
-// Current subscription based on API response
+// Current subscription based on route parameter
 const subscription = computed<Subscription | null>(() => {
-	if (!subscriptionDetail.value) return null
-
-	const apiData = subscriptionDetail.value
-
-	// Map API response to Subscription interface
-	const mappedSubscription: Subscription = {
-		id: apiData.booking_id,
-		productName: `${apiData.product_type} Subscription`,
-		productType: 'Subscription',
-		productId: apiData.booking_id,
-		productImage: '', // API doesn't provide image, could be added later
-		customerName: `${apiData.first_name} ${apiData.last_name}`,
-		customerEmail: apiData.email,
-		customerPhone: apiData.phone,
-		userType: apiData.customer_type.toLowerCase() === 'registered' ? 'registered' : 'guest',
-		date: apiData.subscribed_date,
-		totalPrice: apiData.total_price,
-		basePrice: apiData.total_price, // Assuming total price is the base price
-		additionalFacilities: 0, // API doesn't provide breakdown
-		taxes: 0, // API doesn't provide taxes
-		status: apiData.status.toLowerCase() === 'unknown' ? 'confirmed' : apiData.status.toLowerCase(),
-		location: apiData.location_name,
-		locationName: apiData.location_name,
-		capacity: 1, // Default capacity
-		facilities: ['WiFi', 'Basic Amenities'], // Default facilities
-		subscriptionType: apiData.package_type,
-		subscribedDate: apiData.subscribed_date,
-		nextBillingDate: apiData.next_billing_date,
-		customerMessage: '', // API doesn't provide message
-		cancelledDate: apiData.status.toLowerCase() === 'cancelled' ? apiData.subscription_end_date : undefined
+	const subId = route.params.id as string
+	const foundSub = allSubscriptions.value.find((s: Subscription) => s.id === subId)
+	if (foundSub) {
+		// If cancelled and no cancelledDate, set to today
+		let cancelledDate = foundSub.cancelledDate
+		if (foundSub.status === 'cancelled' && !cancelledDate) {
+			const today = new Date()
+			cancelledDate = today.toISOString().split('T')[0]
+		}
+		return {
+			...foundSub,
+			customerEmail: foundSub.customerEmail || `${foundSub.customerName?.toLowerCase().replace(' ', '.')}@example.com`,
+			customerPhone: foundSub.customerPhone || '+1 (555) 000-0000',
+			customerMessage: foundSub.customerMessage || '',
+			basePrice: foundSub.basePrice ?? foundSub.totalPrice ?? 0,
+			additionalFacilities: foundSub.additionalFacilities ?? 0,
+			taxes: foundSub.taxes ?? 0,
+			capacity: foundSub.capacity ?? 1,
+			facilities: foundSub.facilities ?? ['WiFi', 'Basic Amenities'],
+			locationName: foundSub.locationName ?? 'Location Not Specified',
+			subscriptionType: foundSub.subscriptionType ?? 'monthly',
+			subscribedDate: foundSub.subscribedDate ?? foundSub.date,
+			nextBillingDate: foundSub.nextBillingDate ?? foundSub.date,
+			cancelledDate: cancelledDate
+		}
 	}
-
-	return mappedSubscription
+	return null
 })
 
 // Customer lookup function
@@ -551,12 +507,6 @@ const formatSubscriptionDate = (dateString: string) => {
 }
 
 const getSubscriptionEndDate = (subscription: any) => {
-	// If we have subscription_end_date from API, use it
-	if (subscriptionDetail.value?.subscription_end_date) {
-		return subscriptionDetail.value.subscription_end_date
-	}
-
-	// Fallback to calculation
 	if (!subscription.nextBillingDate) return 'N/A'
 
 	const nextBillingDate = new Date(subscription.nextBillingDate)
@@ -665,31 +615,27 @@ const getBackNavigationLabel = () => {
 	return 'Back to Subscriptions'
 }
 
-onMounted(async () => {
-	const orderId = route.params.id as string
-	if (!orderId) {
-		error.value = 'No subscription ID provided'
-		isLoading.value = false
-		return
-	}
-
-	try {
-		isLoading.value = true
-		error.value = null
-
-		const response = await subscriptionApi.getSubscriptionByOrderId(orderId)
-
-		if (response.success && response.data) {
-			subscriptionDetail.value = response.data
-		} else {
-			error.value = response.message || 'Failed to load subscription details'
+onMounted(() => {
+	// Sync subscriptions from localStorage if available
+	const savedSubs = localStorage.getItem('allBookings')
+	if (savedSubs) {
+		try {
+			const parsedSubs = JSON.parse(savedSubs)
+			const subscriptions = parsedSubs.filter((b: any) => b.productType === 'Subscription')
+			if (Array.isArray(subscriptions) && subscriptions.length > 0) {
+				allSubscriptions.value = subscriptions
+			}
+		} catch {
+			// fallback: keep default
 		}
-	} catch (err: any) {
-		console.error('Error loading subscription:', err)
-		error.value = 'Network error while loading subscription details'
-	} finally {
-		isLoading.value = false
 	}
+	// Update subscription statuses from localStorage
+	const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
+	allSubscriptions.value.forEach((sub: Subscription) => {
+		if (bookingStatuses[sub.id]) {
+			sub.status = bookingStatuses[sub.id]
+		}
+	})
 })
 </script>
 

@@ -518,13 +518,22 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { usePromotionsStore, type Promotion } from '@/stores/promotions'
-import { promotionApi } from '@/services/api'
+import { advertisingApi } from '@/services/api'
+import { usePromotionsStore } from '@/stores/promotions'
 import {
     mdiBullhorn,
   mdiPlus,
   mdiPencil
 } from '@mdi/js'
+
+// Types
+interface Promotion {
+  id: string
+  name: string
+  description?: string
+  image: string
+  createdAt: string
+}
 
 // Store
 const promotionsStore = usePromotionsStore()
@@ -542,14 +551,20 @@ const isEditing = ref(false)
 // View mode and pagination
 const viewMode = ref<'tile' | 'table'>('table')
 const searchQuery = ref('')
+// const currentPage = ref(1)
+// const itemsPerPage = ref(12)
+
+// Promotions data - now from store
+// const promotions = ref<Promotion[]>([])
 
 // Computed properties for filtering and pagination
 const filteredPromotions = computed(() => {
+  const promotions = promotionsStore.promotions
   if (!searchQuery.value.trim()) {
-    return promotionsStore.allPromotions
+    return promotions
   }
   const query = searchQuery.value.toLowerCase()
-  return promotionsStore.allPromotions.filter(promotion =>
+  return promotions.filter(promotion =>
     promotion.name.toLowerCase().includes(query) ||
     (promotion.description && promotion.description.toLowerCase().includes(query))
   )
@@ -711,22 +726,25 @@ const confirmCreate = async () => {
   }
 
   isCreating.value = true
-  promotionsStore.setLoading(true)
-  promotionsStore.clearError()
 
   try {
-    // Prepare API request data
-    const promotionData = {
-      PromotionName: newPromotion.value.name.trim(),
-      Images: [newPromotion.value.image], // API expects array of images
-      Description: newPromotion.value.description.trim()
+    // Create FormData for API request
+    const formData = new FormData()
+    formData.append('PromotionName', newPromotion.value.name.trim())
+    formData.append('Description', newPromotion.value.description.trim() || '')
+
+    // Convert base64 image to blob and append
+    if (newPromotion.value.image.startsWith('data:image/')) {
+      const response = await fetch(newPromotion.value.image)
+      const blob = await response.blob()
+      formData.append('Images', blob, 'promotion-image.jpg')
     }
 
-    // Call API
-    const response = await promotionApi.createPromotion(promotionData)
+    // Call the API
+    const result = await advertisingApi.createPromotion(formData)
 
-    if (response.success) {
-      // Create promotion object for store
+    if (result.success) {
+      // Create promotion locally for UI display
       const timestamp = Date.now()
       const randomSuffix = Math.random().toString(36).substr(2, 9)
       const promotion: Promotion = {
@@ -737,10 +755,10 @@ const confirmCreate = async () => {
         createdAt: new Date().toISOString()
       }
 
-      // Add to Pinia store
+      // Add to promotions store
       promotionsStore.addPromotion(promotion)
 
-      // Reset form immediately after successful creation
+      // Reset form
       newPromotion.value = { name: '', description: '', image: '' }
       isImageLoading.value = false
       if (imageInput.value) {
@@ -751,17 +769,15 @@ const confirmCreate = async () => {
       showCreateModal.value = false
       showSuccessModal.value = true
 
-      console.log('Promotion created successfully:', promotion)
+      console.log('Promotion created successfully:', result.message)
     } else {
-      throw new Error(response.message || 'Failed to create promotion')
+      alert(result.message || 'Failed to create promotion')
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating promotion:', error)
-    promotionsStore.setError(error.message || 'Failed to create promotion')
-    alert(error.message || 'Failed to create promotion. Please try again.')
+    alert('Failed to create promotion. Please try again.')
   } finally {
     isCreating.value = false
-    promotionsStore.setLoading(false)
   }
 }
 
@@ -827,33 +843,47 @@ const confirmEdit = async () => {
   }
 
   isEditing.value = true
-  promotionsStore.setLoading(true)
-  promotionsStore.clearError()
 
   try {
-    // For now, just update locally since there's no update API endpoint
-    // In a real implementation, you would call an update API here
-    const updatedPromotion: Promotion = {
-      ...promotionToEdit.value,
-      name: editPromotionForm.value.name.trim(),
-      description: editPromotionForm.value.description.trim(),
-      image: editPromotionForm.value.image,
-      createdAt: promotionToEdit.value.createdAt // Keep original creation date
+    // Create FormData for API request
+    const formData = new FormData()
+    formData.append('PromotionName', editPromotionForm.value.name.trim())
+    formData.append('Description', editPromotionForm.value.description.trim() || '')
+
+    // Convert base64 image to blob and append
+    if (editPromotionForm.value.image.startsWith('data:image/')) {
+      const response = await fetch(editPromotionForm.value.image)
+      const blob = await response.blob()
+      formData.append('Images', blob, 'promotion-image.jpg')
     }
 
-    // Update in Pinia store
-    promotionsStore.updatePromotion(updatedPromotion)
+    // Call the API
+    const result = await advertisingApi.updatePromotion(promotionToEdit.value.id, formData)
 
-    // Close modal
-    closeEditModal()
-    alert('Promotion updated successfully!')
-  } catch (error: any) {
+    if (result.success) {
+      // Update promotion locally for UI display
+      const updatedPromotion: Promotion = {
+        ...promotionToEdit.value,
+        name: editPromotionForm.value.name.trim(),
+        description: editPromotionForm.value.description.trim(),
+        image: editPromotionForm.value.image,
+        createdAt: promotionToEdit.value.createdAt // Keep original creation date
+      }
+
+      // Update promotion in store
+      promotionsStore.updatePromotion(promotionToEdit.value.id, updatedPromotion)
+      alert('Promotion updated successfully!')
+
+      // Close modal
+      closeEditModal()
+    } else {
+      alert(result.message || 'Failed to update promotion')
+    }
+  } catch (error) {
     console.error('Error updating promotion:', error)
-    promotionsStore.setError(error.message || 'Failed to update promotion')
-    alert(error.message || 'Failed to update promotion. Please try again.')
+    alert('Failed to update promotion. Please try again.')
   } finally {
     isEditing.value = false
-    promotionsStore.setLoading(false)
   }
 }
 
