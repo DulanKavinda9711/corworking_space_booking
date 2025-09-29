@@ -61,4 +61,6 @@ export const usePromotionsStore = defineStore('promotions', () => {
     setPromotions,
     clearPromotions
   }
+}, {
+  persist: true
 })

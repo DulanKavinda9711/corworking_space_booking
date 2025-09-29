@@ -452,7 +452,7 @@
             <button
               type="submit"
               :disabled="!editPromotionForm.name.trim() || !editPromotionForm.image || isEditing || isImageLoading"
-              class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+              class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
             >
               <svg v-if="isEditing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -527,7 +527,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { advertisingApi } from '@/services/api'
+import { advertisingApi, buildBaseUrl } from '@/services/api'
 import { usePromotionsStore } from '@/stores/promotions'
 import {
     mdiBullhorn,
@@ -740,7 +740,7 @@ const confirmCreate = async () => {
     // Create FormData for API request
     const formData = new FormData()
     formData.append('PromotionName', newPromotion.value.name.trim())
-    formData.append('Link', newPromotion.value.link.trim())
+    formData.append('URL', newPromotion.value.link.trim())
 
     // Convert base64 image to blob and append
     if (newPromotion.value.image.startsWith('data:image/')) {
@@ -856,8 +856,9 @@ const confirmEdit = async () => {
   try {
     // Create FormData for API request
     const formData = new FormData()
+    formData.append('Id', promotionToEdit.value.id)
     formData.append('PromotionName', editPromotionForm.value.name.trim())
-    formData.append('Link', editPromotionForm.value.link.trim() || '')
+    formData.append('URL', editPromotionForm.value.link.trim() || '')
 
     // Convert base64 image to blob and append
     if (editPromotionForm.value.image.startsWith('data:image/')) {
@@ -867,7 +868,7 @@ const confirmEdit = async () => {
     }
 
     // Call the API
-    const result = await advertisingApi.updatePromotion(promotionToEdit.value.id, formData)
+  const result = await advertisingApi.updatePromotion(formData)
 
     if (result.success) {
       // Update promotion locally for UI display
@@ -949,4 +950,40 @@ const resetFilters = () => {
 // watch(searchQuery, () => {
 //   currentPage.value = 1
 // })
+
+// Load promotions from API on component mount
+const loadPromotions = async () => {
+  try {
+    const result = await advertisingApi.getAllPromotions()
+    if (result.success && result.data) {
+      // Transform API data to match store format
+      const transformedPromotions: Promotion[] = result.data.map((item, index) => {
+        // Use first image from comma-separated string, or construct full URL
+        const imageUrls = item.images.split(',')
+        const firstImage = imageUrls[0]?.trim()
+        const fullImageUrl = firstImage ? buildBaseUrl(firstImage) : ''
+
+        return {
+          id: item.id.toString(), // Use real ID from API
+          name: item.name,
+          link: item.url || '',
+          image: fullImageUrl,
+          createdAt: new Date().toISOString() // API doesn't provide creation date
+        }
+      })
+
+      // Set promotions in store
+      promotionsStore.setPromotions(transformedPromotions)
+    } else {
+      console.error('Failed to load promotions:', result.message)
+    }
+  } catch (error) {
+    console.error('Error loading promotions:', error)
+  }
+}
+
+// Load promotions on component mount
+onMounted(() => {
+  loadPromotions()
+})
 </script>

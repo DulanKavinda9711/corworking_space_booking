@@ -2753,10 +2753,10 @@ export const productApi = {
       const formData = new FormData()
       
       // Add product ID for the update
-      formData.append('id', Number(id).toString())
+      formData.append('Id', Number(id).toString())
       
       // Basic product information
-      formData.append('LocationId', productData.LocationId)
+      formData.append('LocationId', Number(productData.LocationId).toString())
       formData.append('Type', productData.ProductType)
       formData.append('Name', productData.ProductName)
       formData.append('Description', productData.Description)
@@ -3264,11 +3264,13 @@ export const advertisingApi = {
 
   /**
    * Update an existing promotion/advertisement
+   * @param formData - FormData with Id, PromotionName, Images, URL
+   * @returns ApiResponse<string>
    */
-  async updatePromotion(promotionId: string, formData: FormData): Promise<ApiResponse<string>> {
+  async updatePromotion(formData: FormData): Promise<ApiResponse<string>> {
     try {
-      const response = await fetch(buildApiUrl(`/advertising/promotions/${promotionId}`), {
-        method: 'PUT',
+      const response = await fetch(buildApiUrl('/advertising/update-promotion'), {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
         },
@@ -3285,6 +3287,32 @@ export const advertisingApi = {
     } catch (error: any) {
       console.error('Update promotion error:', error)
       return errorResponse('Network error while updating promotion', [error.message])
+    }
+  },
+
+  /**
+   * Get all promotions/advertisements
+   */
+  async getAllPromotions(): Promise<ApiResponse<Array<{id: number, images: string, name: string, url: string | null}>>> {
+    try {
+      const response = await fetch(buildApiUrl('/advertising/admin-get-all-promotion'), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data || [], data.message || 'Advertising retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve promotions')
+      }
+    } catch (error: any) {
+      console.error('Get all promotions error:', error)
+      return errorResponse('Network error while retrieving promotions', [error.message])
     }
   }
 }

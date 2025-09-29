@@ -40,7 +40,7 @@
       <div v-else class="max-w-6xl mx-auto">
         <form @submit.prevent="updateProduct" class="space-y-6">
           <!-- Single Card with All Sections -->
-          <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="bg-white rounded-xl shadow-card overflow-visible">
             <div class="p-8 space-y-8">
               
               <!-- Location Selection -->
@@ -57,36 +57,48 @@
                     Select Location <span class="text-red-500">*</span>
                   </label>
                   
+                  <!-- Loading state for locations -->
+                  <div v-if="isLoadingLocations" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-500">
+                    <svg class="animate-spin w-4 h-4 inline mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading locations...
+                  </div>
+                  
+                  <!-- Error state for locations -->
+                  <div v-else-if="locationError" class="w-full border border-red-300 rounded-lg px-4 py-3 text-red-600 bg-red-50">
+                    {{ locationError }}
+                    <button @click="fetchLocations" class="ml-2 text-red-700 underline hover:no-underline">
+                      Retry
+                    </button>
+                  </div>
+                  
                   <!-- Location dropdown -->
-                  <div class="relative">
-                    <select 
-                      v-model="form.locationId"
-                      @focus="toggleDropdown('location')"
-                      @blur="closeDropdown('location')"
-                      :class="[
-                        'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors appearance-none cursor-pointer',
-                        showValidation && !form.locationId ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                      ]"
-                    >
-                      <option value="">Choose a location</option>
-                      <option v-for="location in allLocations" :key="location.id" :value="location.id">
-                        {{ location.name }}
-                      </option>
-                    </select>
-                    <!-- Debug info -->
-                    <!-- <div class="mt-1 text-xs text-gray-500">
-                      Current locationId: {{ form.locationId }} | Available locations: {{ allLocations.length }}
-                    </div> -->
+                  <div v-else class="relative dropdown-container" v-click-outside="() => dropdownStates.location = false">
+                    <div @click="toggleDropdown('location')" :class="[
+                      'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                      dropdownStates.location ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                      showValidation && !form.locationId ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
+                    ]">
+                      <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(form.locationId) || 'Select Location' }}</span>
+                    </div>
+
+                    <!-- Dropdown Options -->
+                    <div v-if="dropdownStates.location" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div class="p-2">
+                        <div v-for="location in allLocations" :key="location.id" @click="selectLocation(location.id)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                          {{ location.name }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dropdown Arrow -->
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <svg 
-                        :class="[
-                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                          dropdownStates.location ? 'transform rotate-180' : ''
-                        ]"
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
+                      <svg :class="[
+                        'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                        dropdownStates.location ? 'transform rotate-180' : ''
+                      ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -112,32 +124,36 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Product Type <span class="text-red-500">*</span>
                     </label>
-                    <div class="relative">
-                      <select 
-                        v-model="form.type"
-                        @change="onProductTypeChange"
-                        @focus="toggleDropdown('productType')"
-                        @blur="closeDropdown('productType')"
-                        :class="[
-                          'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors appearance-none cursor-pointer',
-                          showValidation && !form.type ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                        ]"
-                      >
-                        <option value="">Select product type</option>
-                        <option value="Meeting Room">Meeting Room</option>
-                        <option value="Hot Desk">Hot Desk</option>
-                        <option value="Dedicated Desk">Dedicated Desk</option>
-                      </select>
+                    <div class="relative dropdown-container" v-click-outside="() => dropdownStates.productType = false">
+                      <div @click="toggleDropdown('productType')" :class="[
+                        'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                        dropdownStates.productType ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                        showValidation && !form.type ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
+                      ]">
+                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getProductTypeLabel(form.type) || 'Select Product Type' }}</span>
+                      </div>
+
+                      <!-- Dropdown Options -->
+                      <div v-if="dropdownStates.productType" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div class="p-2">
+                          <div @click="selectProductType('Meeting Room')" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            Meeting Room
+                          </div>
+                          <div @click="selectProductType('Hot Desk')" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            Hot Desk
+                          </div>
+                          <div @click="selectProductType('Dedicated Desk')" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            Dedicated Desk
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Dropdown Arrow -->
                       <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg 
-                          :class="[
-                            'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
-                            dropdownStates.productType ? 'transform rotate-180' : ''
-                          ]"
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
+                        <svg :class="[
+                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                          dropdownStates.productType ? 'transform rotate-180' : ''
+                        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
@@ -153,21 +169,21 @@
                       Product Images
                       <span class="text-xs text-gray-500 font-normal ml-1">(Optional - Add up to 8 images)</span>
                     </label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-400 hover:bg-green-50/30 transition-all duration-200 group">
-                      <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors">
-                        <svg class="w-8 h-8 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </div>
-                      <div class="mt-4">
-                        <label for="file-upload" class="cursor-pointer">
+                    <label for="file-upload" class="block cursor-pointer">
+                      <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-green-400 hover:bg-green-50/30 transition-all duration-200 group">
+                        <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors">
+                          <svg class="w-8 h-8 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                        <div class="mt-4">
                           <span class="block text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Click to upload images</span>
                           <span class="block text-sm text-gray-500 mt-1">or drag and drop files here</span>
                           <span class="block text-xs text-gray-400 mt-2">PNG, JPG, JPEG • Max 10MB each • Up to 8 images</span>
-                        </label>
-                        <input id="file-upload" name="file-upload" type="file" multiple accept="image/*,image/jpeg,image/png,image/gif" class="sr-only" @change="handleImageUpload" />
+                        </div>
                       </div>
-                    </div>
+                    </label>
+                    <input id="file-upload" name="file-upload" type="file" multiple accept="image/*,image/jpeg,image/png,image/gif" class="sr-only" @change="handleImageUpload" />
                     <div v-if="form.images.length > 0" class="mt-6">
                       <div class="flex items-center justify-between mb-3">
                         <span class="text-sm font-medium text-gray-700">
@@ -205,7 +221,7 @@
                       </label>
                       <input type="text" v-model="form.name"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                           showValidation && !form.name.trim() ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                         ]"
                         placeholder="Enter product name" />
@@ -219,7 +235,7 @@
                       </label>
                       <input type="number" v-model.number="form.maxSeatingCapacity" min="1"
                         :class="[
-                          'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
+                          'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                           showValidation && (!form.maxSeatingCapacity || form.maxSeatingCapacity < 1) ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                         ]"
                         placeholder="Enter capacity" />
@@ -235,7 +251,7 @@
                     </label>
                     <textarea v-model="form.description" rows="3"
                       :class="[
-                        'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
+                        'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                         showValidation && !form.description.trim() ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
                       ]"
                       placeholder="Enter product description"></textarea>
@@ -257,18 +273,18 @@
                 
                 <!-- Meeting Room Pricing - Hourly only -->
                 <div v-if="form.type === 'Meeting Room'" class="space-y-4">
-                  <div class="rounded-lg p-4">
+                  <div class="rounded-lg p-3">
                     <h3 class="text-md font-semibold text-gray-800 mb-4">Hourly Booking</h3>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         Price per Hour <span class="text-red-500">*</span>
                       </label>
                       <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                         <input type="number" v-model.number="form.pricePerHour" step="0.01" min="0"
                           :class="[
-                            'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
-                            showValidation && form.pricePerHour <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                            'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            showValidation && form.pricePerHour <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="0.00" />
                         <div v-if="showValidation && form.pricePerHour <= 0" class="mt-1 text-sm text-red-600">
@@ -279,39 +295,21 @@
                   </div>
                 </div>
 
-                <!-- Hot Desk Pricing - Hourly and Daily -->
+                <!-- Hot Desk Pricing - Daily only -->
                 <div v-if="form.type === 'Hot Desk'" class="space-y-4">
-                  <div class="bg-green-50 rounded-lg p-4">
-                    <h3 class="text-md font-semibold text-gray-800 mb-4">Flexible Booking Options</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                          Price per Hour <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                          <input type="number" v-model.number="form.pricePerHour" step="0.01" min="0"
-                            :class="[
-                              'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                              showValidation && form.pricePerHour <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
-                            ]"
-                            placeholder="0.00" />
-                          <div v-if="showValidation && form.pricePerHour <= 0" class="mt-1 text-sm text-red-600">
-                            Price per hour is required
-                          </div>
-                        </div>
-                      </div>
-                      
+                  <div class="rounded-lg p-4">
+                    <h3 class="text-md font-semibold text-gray-800 mb-4">Daily Booking</h3>
+                    <div class="grid grid-cols-1 gap-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                           Price per Day <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                           <input type="number" v-model.number="form.pricePerDay" step="0.01" min="0"
                             :class="[
-                              'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                              showValidation && form.pricePerDay <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                              'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                              showValidation && form.pricePerDay <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                             ]"
                             placeholder="0.00" />
                           <div v-if="showValidation && form.pricePerDay <= 0" class="mt-1 text-sm text-red-600">
@@ -325,7 +323,7 @@
 
                 <!-- Dedicated Desk Pricing - Monthly and Yearly -->
                 <div v-if="form.type === 'Dedicated Desk'" class="space-y-4">
-                  <div class="bg-purple-50 rounded-lg p-4">
+                  <div class=" rounded-lg p-4">
                     <h3 class="text-md font-semibold text-gray-800 mb-4">Long-term Commitment</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -333,11 +331,11 @@
                           Price per Month <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                           <input type="number" v-model.number="form.pricePerMonth" step="0.01" min="0"
                             :class="[
-                              'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                              showValidation && form.pricePerMonth <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                              'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                              showValidation && form.pricePerMonth <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                             ]"
                             placeholder="0.00" />
                           <div v-if="showValidation && form.pricePerMonth <= 0" class="mt-1 text-sm text-red-600">
@@ -351,11 +349,11 @@
                           Price per Year <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                           <input type="number" v-model.number="form.pricePerYear" step="0.01" min="0"
                             :class="[
-                              'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                              showValidation && form.pricePerYear <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                              'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                              showValidation && form.pricePerYear <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                             ]"
                             placeholder="0.00" />
                           <div v-if="showValidation && form.pricePerYear <= 0" class="mt-1 text-sm text-red-600">
@@ -668,7 +666,7 @@
               </div>
 
               <!-- Facilities -->
-              <div v-if="form.type">
+              <div v-if="form.type" class="mt-8">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                   <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
                     <path :d="mdiCog" />
@@ -705,7 +703,7 @@
                     <div v-else class="mb-4 relative" v-click-outside="closeDefaultDropdown">
                       <div class="relative">
                         <button type="button" @click="toggleDefaultDropdown()"
-                          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
                         >
                           <span v-if="form.defaultFacilities.length === 0" class="text-gray-500">
                             Select free facilities to add
@@ -821,7 +819,7 @@
                     <div v-else class="mb-4 relative" v-click-outside="closeAdditionalDropdown">
                       <div class="relative">
                         <button type="button" @click="toggleAdditionalDropdown()"
-                          class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-green-500 text-gray-900 transition-colors text-left flex items-center justify-between bg-white"
                         >
                           <span v-if="form.additionalFacilities.length === 0" class="text-gray-500">
                             Select premium facilities to add
@@ -945,7 +943,7 @@
               </div>
 
               <!-- Product Status -->
-              <div v-if="form.type">
+              <div v-if="form.type" class="mt-8">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                   <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
                     <path :d="mdiCog" />
@@ -953,27 +951,42 @@
                   Product Status
                 </h2>
 
-                <div class="space-y-4">
+                <div class="space-y-4 ">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Status <span class="text-red-500">*</span>
                     </label>
                     
-                    <div class="relative">
-                      <select 
-                        v-model="form.status"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900 bg-white appearance-none">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+                    <div class="relative dropdown-container" v-click-outside="() => dropdownStates.status = false">
+                      <div @click="toggleDropdown('status')" :class="[
+                        'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                        dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300'
+                      ]">
+                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(form.status) || 'Select Status' }}</span>
+                      </div>
+
+                      <!-- Dropdown Options -->
+                      <div v-if="dropdownStates.status" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div class="p-2">
+                          <div @click="selectStatus('active')" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            Active
+                          </div>
+                          <div @click="selectStatus('inactive')" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            Inactive
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Dropdown Arrow -->
                       <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg :class="[
+                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                          dropdownStates.status ? 'transform rotate-180' : ''
+                        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
                     </div>
-                    
-                    
                   </div>
                 </div>
               </div>
@@ -1236,7 +1249,8 @@ const weekendTime = ref({ start: '09:00', end: '17:00' })
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
   location: false,
-  productType: false
+  productType: false,
+  status: false
 })
 
 // Available facilities
@@ -1244,6 +1258,8 @@ const availableFacilities = ref<any[]>([])
 
 // Available locations
 const allLocations = ref<any[]>([])
+const isLoadingLocations = ref(false)
+const locationError = ref('')
 
 // Form data
 const form = ref({
@@ -1299,7 +1315,7 @@ const isFormValid = computed(() => {
     case 'Meeting Room':
       return form.value.pricePerHour > 0
     case 'Hot Desk':
-      return form.value.pricePerHour > 0 && form.value.pricePerDay > 0
+      return form.value.pricePerDay > 0
     case 'Dedicated Desk':
       return form.value.pricePerMonth > 0 && form.value.pricePerYear > 0
     default:
@@ -1308,18 +1324,16 @@ const isFormValid = computed(() => {
 })
 
 const availableDefaultFacilities = computed(() => {
-  return availableFacilities.value.filter(facility => 
-    !form.value.defaultFacilities.includes(facility.id)
-  )
-})
-
-const availableAdditionalFacilities = computed(() => {
-  return availableFacilities.value.filter(facility => 
+  return availableFacilities.value.filter(facility =>
     !form.value.additionalFacilities.some(f => f.id === facility.id)
   )
 })
 
-
+const availableAdditionalFacilities = computed(() => {
+  return availableFacilities.value.filter(facility =>
+    !form.value.defaultFacilities.includes(facility.id)
+  )
+})
 
 // Methods
 const loadProduct = async () => {
@@ -1548,6 +1562,8 @@ const toggleDropdown = (dropdownType: string) => {
     dropdownStates.value.location = !dropdownStates.value.location
   } else if (dropdownType === 'productType') {
     dropdownStates.value.productType = !dropdownStates.value.productType
+  } else if (dropdownType === 'status') {
+    dropdownStates.value.status = !dropdownStates.value.status
   }
 }
 
@@ -1557,8 +1573,53 @@ const closeDropdown = (dropdownType: string) => {
       dropdownStates.value.location = false
     } else if (dropdownType === 'productType') {
       dropdownStates.value.productType = false
+    } else if (dropdownType === 'status') {
+      dropdownStates.value.status = false
     }
   }, 150)
+}
+
+// Dropdown label functions
+const getLocationLabel = (value: string) => {
+  if (!value) return 'Choose a location'
+  const location = allLocations.value.find(loc => loc.id === value)
+  return location ? location.name : 'Choose a location'
+}
+
+const getProductTypeLabel = (value: string) => {
+  if (!value) return 'Select product type'
+  const options: { [key: string]: string } = {
+    'Meeting Room': 'Meeting Room',
+    'Hot Desk': 'Hot Desk',
+    'Dedicated Desk': 'Dedicated Desk'
+  }
+  return options[value] || 'Select product type'
+}
+
+const getStatusLabel = (value: string) => {
+  if (!value) return 'Select status'
+  const options: { [key: string]: string } = {
+    'active': 'Active',
+    'inactive': 'Inactive'
+  }
+  return options[value] || 'Select status'
+}
+
+// Dropdown select functions
+const selectLocation = (value: string) => {
+  form.value.locationId = value
+  dropdownStates.value.location = false
+}
+
+const selectProductType = (value: string) => {
+  form.value.type = value
+  onProductTypeChange()
+  dropdownStates.value.productType = false
+}
+
+const selectStatus = (value: string) => {
+  form.value.status = value as 'active' | 'inactive'
+  dropdownStates.value.status = false
 }
 
 // Fetch methods (placeholder for future API integration)
@@ -1959,7 +2020,7 @@ const updateProduct = async () => {
       MaxSeatingCapacity: form.value.maxSeatingCapacity,
       OpeningTime: earliestStart,
       ClosingTime: latestEnd,
-      DefaultFacilities: [], // TODO: Convert facility names to IDs when facility API is ready
+      DefaultFacilities: form.value.defaultFacilities,
       AdditionalFacilities: form.value.additionalFacilities.map((facility, index) => ({
         id: index + 1, // TODO: Use real facility IDs when API is ready
         name: facility.name,
@@ -2029,6 +2090,8 @@ const updateProduct = async () => {
 // Fetch locations
 const fetchLocations = async () => {
   try {
+    isLoadingLocations.value = true
+    locationError.value = ''
     console.log('Fetching locations...')
     const response = await locationApi.getAllLocations()
     if (response.success && response.data) {
@@ -2041,11 +2104,15 @@ const fetchLocations = async () => {
       return response.data
     } else {
       console.error('Failed to fetch locations:', response.message)
+      locationError.value = response.message || 'Failed to load locations'
       return []
     }
   } catch (error) {
     console.error('Error fetching locations:', error)
+    locationError.value = 'Failed to load locations'
     return []
+  } finally {
+    isLoadingLocations.value = false
   }
 }
 
@@ -2114,13 +2181,16 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Form input focus improvements */
 input:focus,
 select:focus,
 textarea:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  transform: translateY(-1px);
+  outline: none;
+  border-color: #22c55e; /* Tailwind green-500 */
+  box-shadow: 0 0 0 1px #16a34a; /* Tailwind green-200 */
+  /* Or use Tailwind's ring utilities in your classes */
 }
+
+ 
 input[type="checkbox"] {
   transition: all 0.2s ease;
   accent-color: #16a34a; /* Green-600 for fill color */

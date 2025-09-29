@@ -22,13 +22,6 @@
             </svg>
             <span>Edit Product</span>
           </router-link>
-          <button v-if="product" @click="confirmDeleteProduct" 
-            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiDelete" />
-            </svg>
-            <span>Delete</span>
-          </button>
         </div>
       </div>
 
@@ -449,36 +442,6 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeDeleteModal">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4" @click.stop>
-        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-          <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiDelete" />
-          </svg>
-        </div>
-        
-        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Delete Product</h3>
-        <p class="text-sm text-gray-500 text-center mb-6">
-          Are you sure you want to delete "{{ product?.name }}"? This action cannot be undone.
-        </p>
-        
-        <div class="flex space-x-3">
-          <button @click="closeDeleteModal" :disabled="isDeleting"
-            class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 disabled:opacity-50">
-            Cancel
-          </button>
-          <button @click="deleteProduct" :disabled="isDeleting"
-            class="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center justify-center">
-            <svg v-if="isDeleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ isDeleting ? 'Deleting...' : 'Delete' }}
-          </button>
-        </div>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 
@@ -489,7 +452,6 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { productApi, type Product, type OperationSchedule } from '@/services/api'
 import { 
   mdiPencil, 
-  mdiDelete, 
   mdiAccountGroup, 
   mdiDeskLamp, 
   mdiChairRolling, 
@@ -505,8 +467,6 @@ const route = useRoute()
 // State
 const product = ref<Product | null>(null)
 const isLoading = ref(true)
-const showDeleteModal = ref(false)
-const isDeleting = ref(false)
 const selectedImage = ref<string | null>(null)
 const selectedImageIndex = ref(0)
 const imageLoading = ref(false)
@@ -699,47 +659,6 @@ const onImageLoad = () => {
 
 const onImageError = () => {
   imageLoading.value = false
-}
-
-const confirmDeleteProduct = () => {
-  showDeleteModal.value = true
-}
-
-const closeDeleteModal = () => {
-  if (!isDeleting.value) {
-    showDeleteModal.value = false
-  }
-}
-
-const deleteProduct = async () => {
-  if (!product.value) return
-  
-  isDeleting.value = true
-  
-  try {
-    // API method not implemented yet
-    console.warn('Delete functionality is not yet implemented in the API')
-    alert(`Delete functionality is not yet implemented in the API. This would delete product: "${product.value.name}"`)
-    
-    // For now, just close the modal
-    showDeleteModal.value = false
-    
-    // TODO: Implement when API is ready
-    // const response = await productApi.deleteProduct(product.value.id)
-    // if (response.success) {
-    //   router.push('/products')
-    // } else {
-    //   error.value = response.message || 'Failed to delete product'
-    //   alert(`Failed to delete product: ${response.message}`)
-    // }
-  } catch (err) {
-    console.error('Error deleting product:', err)
-    const errorMessage = err instanceof Error ? err.message : 'An error occurred while deleting the product'
-    error.value = errorMessage
-    alert(errorMessage)
-  } finally {
-    isDeleting.value = false
-  }
 }
 
 // Methods for handling daily schedule

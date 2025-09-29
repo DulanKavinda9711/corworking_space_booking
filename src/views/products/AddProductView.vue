@@ -210,7 +210,7 @@
                         </label>
                         <input type="text" v-model="product.name"
                           :class="[
-                            'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                             showValidation[idx] && !product.name.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="Enter product name" />
@@ -224,7 +224,7 @@
                         </label>
                         <input type="number" v-model.number="product.maxSeatingCapacity" min="1"
                           :class="[
-                            'appearance-none relative block w-full px-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md',
                             showValidation[idx] && (!product.maxSeatingCapacity || product.maxSeatingCapacity < 1) ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="Enter capacity" />
@@ -1548,11 +1548,11 @@ const canAddAnotherProduct = computed(() => {
   // Product-specific pricing validation
   switch (currentProduct.type) {
     case 'Meeting Room':
-      return currentProduct.pricePerHour > 0
+      return currentProduct.additionalFacilities.length > 0
     case 'Hot Desk':
-      return currentProduct.pricePerHour > 0 && currentProduct.pricePerDay > 0
+      return currentProduct.additionalFacilities.length > 0
     case 'Dedicated Desk':
-      return currentProduct.pricePerMonth > 0 && currentProduct.pricePerYear > 0
+      return currentProduct.additionalFacilities.length > 0
     default:
       return false
   }
@@ -1938,19 +1938,46 @@ const toggleDropdown = (dropdown: string) => {
 
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
-  
-  // Only process if any dropdown is open
+
+  // --- Handle single dropdowns (location, productType, status) ---
   const hasOpenDropdown = Object.values(dropdownStates.value).some(state => state)
-  if (!hasOpenDropdown) return
-  
-  // Check if click is inside any dropdown container
-  const clickedInsideDropdown = target.closest('.dropdown-container') !== null
-  
-  // If click is outside all dropdown containers, close all dropdowns
-  if (!clickedInsideDropdown) {
-    dropdownStates.value.location = false
-    dropdownStates.value.productType = false
-    dropdownStates.value.status = false
+  if (hasOpenDropdown) {
+    const clickedInsideDropdown = target.closest('.dropdown-container') !== null
+    if (!clickedInsideDropdown) {
+      dropdownStates.value.location = false
+      dropdownStates.value.productType = false
+      dropdownStates.value.status = false
+    }
+  }
+
+  // --- Handle facilities dropdowns (default & additional, per product) ---
+  // Default Facilities
+  const defaultDropdowns = document.querySelectorAll('.facility-dropdown')
+  let clickedInsideAnyDefault = false
+  defaultDropdowns.forEach((dropdown, idx) => {
+    if (dropdown.contains(target)) {
+      clickedInsideAnyDefault = true
+    }
+  })
+  if (!clickedInsideAnyDefault) {
+    // Close all open default facilities dropdowns
+    showDefaultDropdown.value.forEach((open, idx) => {
+      if (open) showDefaultDropdown.value[idx] = false
+    })
+  }
+
+  // Additional Facilities
+  let clickedInsideAnyAdditional = false
+  defaultDropdowns.forEach((dropdown, idx) => {
+    // The additional dropdown is rendered in the same .facility-dropdown container, so same check
+    if (dropdown.contains(target)) {
+      clickedInsideAnyAdditional = true
+    }
+  })
+  if (!clickedInsideAnyAdditional) {
+    showAdditionalDropdown.value.forEach((open, idx) => {
+      if (open) showAdditionalDropdown.value[idx] = false
+    })
   }
 }
 
@@ -2571,6 +2598,15 @@ input[type="checkbox"] {
   accent-color: #16a34a; /* Green-600 for fill color */
 }
 
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #22c55e; /* Tailwind green-500 */
+  box-shadow: 0 0 0 1px #16a34a; /* Tailwind green-200 */
+  /* Or use Tailwind's ring utilities in your classes */
+}
+
 input[type="checkbox"]:checked {
   background-color: currentColor;
   border-color: currentColor;
@@ -2580,15 +2616,6 @@ input[type="checkbox"]:checked {
 .dropdown-content {
   z-index: 50;
 
-}
-
-/* Improved focus states */
-.focus\:ring-2:focus {
-  box-shadow: 0 0 0 2px var(--tw-ring-color);
-}
-
-.focus\:ring-offset-2:focus {
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tw-ring-color);
 }
 
 /* Time picker specific styles */

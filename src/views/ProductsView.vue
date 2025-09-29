@@ -497,12 +497,30 @@ const locationOptions = computed(() => {
 
 const productTypeOptions = computed(() => {
   const options = [{ value: '', label: 'All Types' }]
-  availableProductTypes.value.forEach(type => {
-    options.push({
-      value: type,
-      label: type
-    })
+  
+  // Always include the main product types
+  const defaultTypes = ['Meeting Room', 'Hot Desk', 'Dedicated Desk']
+  
+  // Add default types that aren't already in the data
+  defaultTypes.forEach(type => {
+    if (!availableProductTypes.value.includes(type)) {
+      options.push({
+        value: type,
+        label: type
+      })
+    }
   })
+  
+  // Add any additional types from the data
+  availableProductTypes.value.forEach(type => {
+    if (!options.some(opt => opt.value === type)) {
+      options.push({
+        value: type,
+        label: type
+      })
+    }
+  })
+  
   return options
 })
 
