@@ -264,7 +264,7 @@
                         Price per Hour <span class="text-red-500">*</span>
                       </label>
                       <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
                         <input type="number" v-model.number="form.pricePerHour" step="0.01" min="0"
                           :class="[
                             'w-full rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
@@ -382,11 +382,186 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-4">
                       Operating Days & Hours <span class="text-red-500">*</span>
-                      <span class="block text-xs text-gray-500 mt-1">Select days and set individual operating hours for each day</span>
+                      <span class="block text-xs text-gray-500 mt-1">Select day groups and set operating hours</span>
                     </label>
                     
-                    <div class="space-y-3">
+                    <!-- Group Checkboxes -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <!-- All Days -->
+                      <div class="relative">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                               :class="{ 'border-green-300 bg-green-50': showAllDays }">
+                          <input type="checkbox"
+                                 v-model="showAllDays"
+                                 @change="toggleAllDays(($event.target as HTMLInputElement).checked)"
+                                 class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
+                          <div class="flex-1">
+                            <div class="font-medium text-gray-900">All Days</div>
+                            <div class="text-xs text-gray-500">Mon - Sun</div>
+                          </div>
+                          <svg v-if="showAllDays" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </label>
+
+                        <!-- Bulk Time Setting for All Days -->
+                        <div v-if="showAllDays" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div class="text-xs font-medium text-green-800 mb-2">Set same hours for all days:</div>
+                          <div class="grid grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Opening Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('all', 'start')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ allDaysTime.start ? convertTo12Hour(allDaysTime.start).hour.toString().padStart(2, '0') + ':' + 
+                                           convertTo12Hour(allDaysTime.start).minute.toString().padStart(2, '0') + ' ' + 
+                                           convertTo12Hour(allDaysTime.start).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Closing Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('all', 'end')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ allDaysTime.end ? convertTo12Hour(allDaysTime.end).hour.toString().padStart(2, '0') + ':' + 
+                                         convertTo12Hour(allDaysTime.end).minute.toString().padStart(2, '0') + ' ' + 
+                                         convertTo12Hour(allDaysTime.end).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <button type="button"
+                                  @click="setAllDaysTime(allDaysTime.start, allDaysTime.end)"
+                                  class="mt-2 w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
+                            Apply to All Days
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Weekdays -->
+                      <div class="relative">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                               :class="{ 'border-green-300 bg-green-50': showWeekday }">
+                          <input type="checkbox"
+                                 v-model="showWeekday"
+                                 @change="toggleWeekday(($event.target as HTMLInputElement).checked)"
+                                 class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
+                          <div class="flex-1">
+                            <div class="font-medium text-gray-900">Weekday</div>
+                            <div class="text-xs text-gray-500">Mon - Fri</div>
+                          </div>
+                          <svg v-if="showWeekday" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </label>
+
+                        <!-- Bulk Time Setting for Weekdays -->
+                        <div v-if="showWeekday" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div class="text-xs font-medium text-green-800 mb-2">Set same hours for weekdays:</div>
+                          <div class="grid grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Opening Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('weekday', 'start')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ weekdayTime.start ? convertTo12Hour(weekdayTime.start).hour.toString().padStart(2, '0') + ':' + 
+                                           convertTo12Hour(weekdayTime.start).minute.toString().padStart(2, '0') + ' ' + 
+                                           convertTo12Hour(weekdayTime.start).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Closing Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('weekday', 'end')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ weekdayTime.end ? convertTo12Hour(weekdayTime.end).hour.toString().padStart(2, '0') + ':' + 
+                                         convertTo12Hour(weekdayTime.end).minute.toString().padStart(2, '0') + ' ' + 
+                                         convertTo12Hour(weekdayTime.end).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <button type="button"
+                                  @click="setWeekdayTime(weekdayTime.start, weekdayTime.end)"
+                                  class="mt-2 w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
+                            Apply to Weekdays
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Weekend -->
+                      <div class="relative">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                               :class="{ 'border-green-300 bg-green-50': showWeekend }">
+                          <input type="checkbox"
+                                 v-model="showWeekend"
+                                 @change="toggleWeekend(($event.target as HTMLInputElement).checked)"
+                                 class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
+                          <div class="flex-1">
+                            <div class="font-medium text-gray-900">Weekend</div>
+                            <div class="text-xs text-gray-500">Sat - Sun</div>
+                          </div>
+                          <svg v-if="showWeekend" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </label>
+
+                        <!-- Bulk Time Setting for Weekend -->
+                        <div v-if="showWeekend" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div class="text-xs font-medium text-green-800 mb-2">Set same hours for weekend:</div>
+                          <div class="grid grid-cols-2 gap-3">
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Opening Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('weekend', 'start')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ weekendTime.start ? convertTo12Hour(weekendTime.start).hour.toString().padStart(2, '0') + ':' + 
+                                           convertTo12Hour(weekendTime.start).minute.toString().padStart(2, '0') + ' ' + 
+                                           convertTo12Hour(weekendTime.start).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div>
+                              <label class="block text-xs text-green-700 mb-1">Closing Time</label>
+                              <button type="button"
+                                      @click="openGroupTimePicker('weekend', 'end')"
+                                      class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
+                                <span>{{ weekendTime.end ? convertTo12Hour(weekendTime.end).hour.toString().padStart(2, '0') + ':' + 
+                                         convertTo12Hour(weekendTime.end).minute.toString().padStart(2, '0') + ' ' + 
+                                         convertTo12Hour(weekendTime.end).period : 'Select time' }}</span>
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <button type="button"
+                                  @click="setWeekendTime(weekendTime.start, weekendTime.end)"
+                                  class="mt-2 w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
+                            Apply to Weekend
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Individual Day Customization (shown when any group is selected) -->
+                    <div v-if="showAllDays || showWeekday || showWeekend" class="mt-6">
+                      <h4 class="text-sm font-medium text-gray-900 mb-3">Customize Individual Days</h4>
+                      <div class="space-y-3">
                       <div v-for="day in daysOfWeek" :key="day" 
+                           v-show="(showAllDays) || (showWeekday && ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)) || (showWeekend && ['Saturday', 'Sunday'].includes(day))"
                            class="border border-gray-200 rounded-lg p-4 transition-all duration-200"
                            :class="{ 'border-green-300 ': form.openDays.includes(day) }">
                         
@@ -466,7 +641,12 @@
                           <div v-if="form.dayHours[day].start && form.dayHours[day].end" 
                                class="col-span-2 mt-2">
                             <div class="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                              {{ form.dayHours[day].start }} - {{ form.dayHours[day].end }}
+                              {{ convertTo12Hour(form.dayHours[day].start).hour.toString().padStart(2, '0') + ':' + 
+                                 convertTo12Hour(form.dayHours[day].start).minute.toString().padStart(2, '0') + ' ' + 
+                                 convertTo12Hour(form.dayHours[day].start).period }} - 
+                              {{ convertTo12Hour(form.dayHours[day].end).hour.toString().padStart(2, '0') + ':' + 
+                                 convertTo12Hour(form.dayHours[day].end).minute.toString().padStart(2, '0') + ' ' + 
+                                 convertTo12Hour(form.dayHours[day].end).period }}
                             </div>
                           </div>
                         </div>
@@ -799,6 +979,7 @@
               </div>
             </div>
           </div>
+          </div>
 
           <!-- Action Buttons -->
           <div class="flex justify-between items-center pt-8 border-t border-gray-200">
@@ -1034,13 +1215,23 @@ const selectedHour = ref(7)
 const selectedMinute = ref(0)
 const selectedPeriod = ref('AM')
 const timePickerMode = ref<'hour' | 'minute'>('hour')
-const currentTimeField = ref<{day: DayOfWeek, type: 'start' | 'end'} | null>(null)
+const currentTimeField = ref<{day?: DayOfWeek, group?: 'all' | 'weekday' | 'weekend', type: 'start' | 'end'} | null>(null)
 
 // Modal state for success and error
 const showSuccessModal = ref(false)
 const showErrorModal = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
+
+// Group day selection checkboxes
+const showAllDays = ref(false)
+const showWeekday = ref(false)
+const showWeekend = ref(false)
+
+// Group time storage for time pickers
+const allDaysTime = ref({ start: '09:00', end: '17:00' })
+const weekdayTime = ref({ start: '09:00', end: '17:00' })
+const weekendTime = ref({ start: '09:00', end: '17:00' })
 
 // Dropdown states for rotating arrows
 const dropdownStates = ref({
@@ -1250,6 +1441,64 @@ const loadProduct = async () => {
       console.log('Form populated with locationId:', form.value.locationId)
       console.log('Form data:', form.value)
       
+      // Set group checkboxes based on loaded openDays - exact matches only
+      const loadedOpenDays = form.value.openDays
+      const allDays: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      const weekdays: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+      const weekends: DayOfWeek[] = ['Saturday', 'Sunday']
+      
+      // Reset all checkboxes first
+      showAllDays.value = false
+      showWeekday.value = false
+      showWeekend.value = false
+      
+      // Check for exact matches in priority order: All Days > Weekdays > Weekends
+      const loadedDaysSet = new Set(loadedOpenDays)
+      
+      // 1. Check if exactly all days are selected (Monday to Sunday)
+      if (loadedOpenDays.length === 7 && allDays.every(day => loadedDaysSet.has(day))) {
+        showAllDays.value = true
+        // Set all days time if all days have the same time
+        const firstDayTime = form.value.dayHours['Monday']
+        if (allDays.every((day: DayOfWeek) => 
+          form.value.dayHours[day].start === firstDayTime.start && 
+          form.value.dayHours[day].end === firstDayTime.end
+        )) {
+          allDaysTime.value = { ...firstDayTime }
+        }
+      }
+      // 2. Check if exactly weekdays are selected (Monday to Friday)
+      else if (loadedOpenDays.length === 5 && weekdays.every(day => loadedDaysSet.has(day))) {
+        showWeekday.value = true
+        // Set weekday time if all weekdays have the same time
+        const firstWeekdayTime = form.value.dayHours['Monday']
+        if (weekdays.every((day: DayOfWeek) => 
+          form.value.dayHours[day].start === firstWeekdayTime.start && 
+          form.value.dayHours[day].end === firstWeekdayTime.end
+        )) {
+          weekdayTime.value = { ...firstWeekdayTime }
+        }
+      }
+      // 3. Check if exactly weekends are selected (Saturday to Sunday)
+      else if (loadedOpenDays.length === 2 && weekends.every(day => loadedDaysSet.has(day))) {
+        showWeekend.value = true
+        // Set weekend time if both weekend days have the same time
+        const saturdayTime = form.value.dayHours['Saturday']
+        if (form.value.dayHours['Sunday'].start === saturdayTime.start && 
+            form.value.dayHours['Sunday'].end === saturdayTime.end) {
+          weekendTime.value = { ...saturdayTime }
+        }
+      }
+      
+      console.log('Group checkboxes and times set:', { 
+        showAllDays: showAllDays.value, 
+        showWeekday: showWeekday.value, 
+        showWeekend: showWeekend.value,
+        allDaysTime: allDaysTime.value,
+        weekdayTime: weekdayTime.value,
+        weekendTime: weekendTime.value
+      })
+      
       // Ensure the DOM updates with the new form data
       await nextTick()
       console.log('Form updated in DOM')
@@ -1425,6 +1674,92 @@ const getFacilityName = (facilityId: number) => {
   return facility ? facility.name : `Facility ${facilityId}`
 }
 
+// Group day selection methods
+const toggleAllDays = (isChecked: boolean) => {
+  showAllDays.value = isChecked
+  if (isChecked) {
+    // When "All" is checked, uncheck others and show all days
+    showWeekday.value = false
+    showWeekend.value = false
+    // Add all days to openDays if not already present
+    const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as DayOfWeek[]
+    form.value.openDays = [...new Set([...form.value.openDays, ...allDays])]
+  } else {
+    // When "All" is unchecked, remove all days from openDays (they can still be individually selected)
+    // Don't remove them here - let users individually manage
+  }
+}
+
+const toggleWeekday = (isChecked: boolean) => {
+  showWeekday.value = isChecked
+  if (isChecked) {
+    // When "Weekday" is checked, uncheck "All" and "Weekend"
+    showAllDays.value = false
+    showWeekend.value = false
+    // Add weekdays to openDays if not already present
+    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as DayOfWeek[]
+    form.value.openDays = [...new Set([...form.value.openDays, ...weekdays])]
+  } else {
+    // When "Weekday" is unchecked, don't remove days - let users individually manage
+  }
+}
+
+const toggleWeekend = (isChecked: boolean) => {
+  showWeekend.value = isChecked
+  if (isChecked) {
+    // When "Weekend" is checked, uncheck "All" and "Weekday"
+    showAllDays.value = false
+    showWeekday.value = false
+    // Add weekends to openDays if not already present
+    const weekends = ['Saturday', 'Sunday'] as DayOfWeek[]
+    form.value.openDays = [...new Set([...form.value.openDays, ...weekends])]
+  } else {
+    // When "Weekend" is unchecked, don't remove days - let users individually manage
+  }
+}
+
+// Bulk time setting methods
+const setAllDaysTime = (startTime: string, endTime: string) => {
+  const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as DayOfWeek[]
+  allDays.forEach(day => {
+    if (form.value.dayHours && form.value.dayHours[day]) {
+      form.value.dayHours[day] = { start: startTime, end: endTime }
+    }
+  })
+}
+
+const setWeekdayTime = (startTime: string, endTime: string) => {
+  const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as DayOfWeek[]
+  weekdays.forEach(day => {
+    if (form.value.dayHours && form.value.dayHours[day]) {
+      form.value.dayHours[day] = { start: startTime, end: endTime }
+    }
+  })
+}
+
+const setWeekendTime = (startTime: string, endTime: string) => {
+  const weekends = ['Saturday', 'Sunday'] as DayOfWeek[]
+  weekends.forEach(day => {
+    if (form.value.dayHours && form.value.dayHours[day]) {
+      form.value.dayHours[day] = { start: startTime, end: endTime }
+    }
+  })
+}
+
+// Group time picker methods
+const openGroupTimePicker = (group: 'all' | 'weekday' | 'weekend', type: 'start' | 'end') => {
+  const timeRef = group === 'all' ? allDaysTime : group === 'weekday' ? weekdayTime : weekendTime
+  const currentTime = timeRef.value[type]
+  const timeComponents = convertTo12Hour(currentTime)
+  
+  selectedHour.value = timeComponents.hour
+  selectedMinute.value = timeComponents.minute
+  selectedPeriod.value = timeComponents.period
+  timePickerMode.value = 'hour'
+  currentTimeField.value = { group, type }
+  showTimePicker.value = true
+}
+
 // Time picker helper functions
 
 
@@ -1499,8 +1834,16 @@ const togglePeriod = () => {
 const confirmTimeSelection = () => {
   if (currentTimeField.value) {
     const time24 = convertTo24Hour(selectedHour.value, selectedMinute.value, selectedPeriod.value)
-    const { day, type } = currentTimeField.value
-    form.value.dayHours[day][type] = time24
+    
+    // Check if this is a group time picker or individual day picker
+    if (currentTimeField.value.group) {
+      const { group, type } = currentTimeField.value
+      const timeRef = group === 'all' ? allDaysTime : group === 'weekday' ? weekdayTime : weekendTime
+      timeRef.value[type as 'start' | 'end'] = time24
+    } else if (currentTimeField.value.day) {
+      const { day, type } = currentTimeField.value
+      form.value.dayHours[day][type] = time24
+    }
   }
   closeTimePicker()
 }

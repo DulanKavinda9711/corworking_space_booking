@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 export interface Promotion {
   id: string
   name: string
-  description?: string
+  link: string
   image: string
   createdAt: string
 }

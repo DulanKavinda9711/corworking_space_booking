@@ -19,7 +19,7 @@
       <div class="max-w-6xl mx-auto">
         <form @submit.prevent="updateFacility" class="space-y-6">
           <!-- Single Card with All Information -->
-          <div class="bg-white rounded-xl shadow-card overflow-hidden">
+          <div class="bg-white rounded-xl shadow-card overflow-visible">
             <div class="p-8 space-y-16">
               <!-- Facility Details Section -->
               <div>
@@ -31,60 +31,44 @@
                 </h2>
                 
                 <!-- Form Fields -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Facility Name <span class="text-red-500">*</span>
                     </label>
                     <input type="text" v-model="form.name" required
-                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900"
+                      class="appearance-none relative block w-full px-3 py-1.5 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
                       placeholder="Enter facility name" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select v-model="form.status"
-                      class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900">
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                  <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Facility Icon <span class="text-red-500">*</span>
                     </label>
                     <!-- Custom Icon Dropdown -->
-                    <div class="relative">
-                      <button
-                        type="button"
-                        @click="showIconDropdown = !showIconDropdown"
-                        :class="[
-                          'w-full rounded-lg px-4 py-3 text-left focus:ring-2 transition-colors flex items-center justify-between',
-                          showValidation && !form.selectedIcon ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : 'border-gray-300 border'
-                        ]"
-                      >
+                    <div class="relative" ref="iconDropdownRef">
+                      <div @click="toggleDropdown('icon')" :class="[
+                        'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                        dropdownStates.icon ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                        showValidation && !form.selectedIcon ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
+                      ]">
                         <div class="flex items-center">
-                          <svg v-if="form.selectedIcon" class="w-6 h-6 mr-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                          <svg v-if="form.selectedIcon" class="w-5 h-5 mr-3 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                             <path :d="getSelectedIconSVG()" />
                           </svg>
-                          <span :class="form.selectedIcon ? 'text-gray-900' : 'text-gray-500'">
-                            {{ form.selectedIcon ? getSelectedIconName() : 'Select facility icon' }}
-                          </span>
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ form.selectedIcon ? getSelectedIconName() : 'Select facility icon' }}</span>
                         </div>
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
+                      </div>
 
                       <!-- Dropdown Options -->
                       <div
-                        v-if="showIconDropdown"
-                        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        v-if="dropdownStates.icon"
+                        class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                       >
                         <div class="p-2">
                           <div class="grid grid-cols-6 gap-2">
                             <div
                               @click="selectIcon('')"
-                              class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 cursor-pointer border-2 border-dashed border-gray-300"
+                              class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900 flex items-center justify-center w-10 h-10 rounded-lg border-2 border-dashed border-gray-300"
                               title="Clear selection"
                             >
                               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,8 +79,8 @@
                               v-for="icon in availableIcons"
                               :key="icon.value"
                               @click="selectIcon(icon.value)"
-                              class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer border border-gray-200 transition-colors"
-                              :class="form.selectedIcon === icon.value ? 'bg-blue-100 border-blue-400' : ''"
+                              class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900 flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 transition-colors"
+                              :class="form.selectedIcon === icon.value ? 'bg-green-100 border-green-400' : ''"
                               :title="icon.name"
                             >
                               <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -106,10 +90,60 @@
                           </div>
                         </div>
                       </div>
+
+                      <!-- Dropdown Arrow -->
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg :class="[
+                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                          dropdownStates.icon ? 'transform rotate-180' : ''
+                        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
-                    <p v-if="showValidation && !form.selectedIcon" class="mt-1 text-sm text-red-600">
+                    <div v-if="showValidation && !form.selectedIcon" class="mt-1 text-sm text-red-600">
                       Facility icon is required
-                    </p>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Status <span class="text-red-500">*</span>
+                    </label>
+                    <!-- Custom Status Dropdown -->
+                    <div class="relative" ref="statusDropdownRef">
+                      <div @click="toggleDropdown('status')" :class="[
+                        'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                        dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                        showValidation && !form.status ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
+                      ]">
+                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(form.status) || 'Select Status' }}</span>
+                      </div>
+
+                      <!-- Dropdown Options -->
+                      <div
+                        v-if="dropdownStates.status"
+                        class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                      >
+                        <div class="p-2">
+                          <div v-for="option in statusOptions" :key="option.value" @click="selectStatus(option.value)" class="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-900">
+                            {{ option.label }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Dropdown Arrow -->
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg :class="[
+                          'w-4 h-4 text-gray-400 transition-transform duration-200 ease-in-out',
+                          dropdownStates.status ? 'transform rotate-180' : ''
+                        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div v-if="showValidation && !form.status" class="mt-1 text-sm text-red-600">
+                      Status is required
+                    </div>
                   </div>
                 </div>
               </div>
@@ -196,6 +230,16 @@ const form = ref({
   selectedIcon: ''
 })
 
+// Dropdown states
+const dropdownStates = ref<Record<string, boolean>>({
+  status: false,
+  icon: false
+})
+
+// Dropdown refs
+const statusDropdownRef = ref<HTMLElement>()
+const iconDropdownRef = ref<HTMLElement>()
+
 // Icon dropdown state
 const showIconDropdown = ref(false)
 const showValidation = ref(false)
@@ -248,6 +292,12 @@ const availableIcons = ref([
   { name: 'Tea', value: 'tea', svg: 'M4 19h16v2H4v-2zm0-4h16v2H4v-2zm0-4h16v2H4v-2zm0-4h16v2H4v-2zM3 3v2h18V3H3z' },
 ])
 
+// Status Options
+const statusOptions = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+]
+
 // Form validation
 const isFormValid = computed(() => {
   return form.value.name.trim() !== '' && form.value.selectedIcon !== ''
@@ -274,15 +324,36 @@ const getIconValueFromSVG = (svgString: string) => {
 // Select icon from dropdown
 const selectIcon = (iconValue: string) => {
   form.value.selectedIcon = iconValue
-  showIconDropdown.value = false
+  dropdownStates.value.icon = false
   showValidation.value = false
+}
+
+// Toggle dropdown visibility
+const toggleDropdown = (dropdown: string) => {
+  const wasOpen = dropdownStates.value[dropdown as keyof typeof dropdownStates.value]
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = !wasOpen
+}
+
+// Dropdown label functions
+const getStatusLabel = (value: string) => {
+  const option = statusOptions.find(opt => opt.value === value)
+  return option ? option.label : 'Active'
+}
+
+// Dropdown select functions
+const selectStatus = (value: string) => {
+  form.value.status = value as 'active' | 'inactive'
+  dropdownStates.value.status = false
 }
 
 // Close dropdown when clicking outside
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
-  if (!target.closest('.relative')) {
-    showIconDropdown.value = false
+  if (statusDropdownRef.value && !statusDropdownRef.value.contains(target)) {
+    dropdownStates.value.status = false
+  }
+  if (iconDropdownRef.value && !iconDropdownRef.value.contains(target)) {
+    dropdownStates.value.icon = false
   }
 }
 

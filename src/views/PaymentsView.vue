@@ -315,7 +315,32 @@ const fetchPayments = async () => {
   try {
     const response = await paymentApi.getAllPayments()
     if (response.success && response.data) {
-      payments.value = response.data
+      payments.value = response.data.map((item: any) => {
+        // Split payment_date into date and time
+        let date = '', time = ''
+        if (item.payment_date) {
+          const [d, t] = item.payment_date.split(' ')
+          date = d
+          time = t || ''
+        }
+        return {
+          id: item.booking_id,
+          bookingId: item.booking_id,
+          customerName: `${item.first_name} ${item.last_name}`,
+          customerEmail: item.email || '',
+          productName: item.product_name || '',
+          productType: item.product_type || '',
+          locationName: item.location_name || '',
+          baseAmount: item.base_amount || 0,
+          additionalFacilities: item.additional_facilities || [],
+          totalAmount: item.total_price || 0,
+          status: item.status || '',
+          date,
+          time,
+          SquareHubCommission: item.squarehub_commission || 0,
+          ceylincoCommission: item.celynco_commission || 0
+        }
+      })
     } else {
       console.error('Failed to fetch payments:', response.message)
     }

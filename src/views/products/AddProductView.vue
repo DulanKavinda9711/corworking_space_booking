@@ -70,12 +70,13 @@
                     </div>
                     
                     <!-- Location dropdown -->
-                    <div v-else class="relative dropdown-container">
+                    <div class="relative dropdown-container" ref="locationDropdownRef">
                       <div @click="toggleDropdown('location')" :class="[
-                        'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center',
-                        showValidation[idx] && !product.locationId ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                        'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                        dropdownStates.location ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                        showValidation[idx] && !product.locationId ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                       ]">
-                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(product.locationId) }}</span>
+                        <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getLocationLabel(product.locationId) || 'Select Location' }}</span>
                       </div>
 
                       <!-- Dropdown Options -->
@@ -118,12 +119,13 @@
                       <label class="block text-sm font-medium text-gray-700 mb-2">
                         Product Type <span class="text-red-500">*</span>
                       </label>
-                      <div class="relative dropdown-container">
+                      <div class="relative dropdown-container" ref="productTypeDropdownRef">
                         <div @click="toggleDropdown('productType')" :class="[
-                          'w-full border rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center',
-                          showValidation[idx] && !product.type ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                          'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                          dropdownStates.productType ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                          showValidation[idx] && !product.type ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
                         ]">
-                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getProductTypeLabel(product.type) }}</span>
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getProductTypeLabel(product.type) || 'Select Product Type' }}</span>
                         </div>
 
                         <!-- Dropdown Options -->
@@ -208,8 +210,8 @@
                         </label>
                         <input type="text" v-model="product.name"
                           :class="[
-                            'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
-                            showValidation[idx] && !product.name.trim() ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                            'appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            showValidation[idx] && !product.name.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="Enter product name" />
                         <div v-if="showValidation[idx] && !product.name.trim()" class="mt-1 text-sm text-red-600">
@@ -222,8 +224,8 @@
                         </label>
                         <input type="number" v-model.number="product.maxSeatingCapacity" min="1"
                           :class="[
-                            'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
-                            showValidation[idx] && (!product.maxSeatingCapacity || product.maxSeatingCapacity < 1) ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                            'appearance-none relative block w-full px-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            showValidation[idx] && (!product.maxSeatingCapacity || product.maxSeatingCapacity < 1) ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="Enter capacity" />
                         <div v-if="showValidation[idx] && (!product.maxSeatingCapacity || product.maxSeatingCapacity < 1)" class="mt-1 text-sm text-red-600">
@@ -237,8 +239,8 @@
                         </label>
                         <textarea v-model="product.description" rows="3"
                           :class="[
-                            'w-full rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
-                            showValidation[idx] && !product.description.trim() ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                            'appearance-none relative block w-full px-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                            showValidation[idx] && !product.description.trim() ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                           ]"
                           placeholder="Enter product description"></textarea>
                         <div v-if="showValidation[idx] && !product.description.trim()" class="mt-1 text-sm text-red-600">
@@ -267,11 +269,11 @@
                           Price per Hour <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">LKR </span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                           <input type="number" v-model.number="product.pricePerHour" step="0.01" min="0"
                             :class="[
-                              'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-green-500 text-gray-900 transition-colors',
-                              showValidation[idx] && product.pricePerHour <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                              'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                              showValidation[idx] && product.pricePerHour <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                             ]"
                             placeholder="0.00" />
                           <div v-if="showValidation[idx] && product.pricePerHour <= 0" class="mt-1 text-sm text-red-600">
@@ -292,11 +294,11 @@
                             Price per Day <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                             <input type="number" v-model.number="product.pricePerDay" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                                showValidation[idx] && product.pricePerDay <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                                'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                                showValidation[idx] && product.pricePerDay <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                               ]"
                               placeholder="0.00" />
                             <div v-if="showValidation[idx] && product.pricePerDay <= 0" class="mt-1 text-sm text-red-600">
@@ -318,11 +320,11 @@
                             Price per Month <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                             <input type="number" v-model.number="product.pricePerMonth" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                                showValidation[idx] && product.pricePerMonth <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                                'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                                showValidation[idx] && product.pricePerMonth <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                               ]"
                               placeholder="0.00" />
                             <div v-if="showValidation[idx] && product.pricePerMonth <= 0" class="mt-1 text-sm text-red-600">
@@ -336,11 +338,11 @@
                             Price per Year <span class="text-red-500">*</span>
                           </label>
                           <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">LKR</span>
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10">LKR</span>
                             <input type="number" v-model.number="product.pricePerYear" step="0.01" min="0"
                               :class="[
-                                'w-full rounded-lg pl-12 pr-4 py-3 focus:ring-2 text-gray-900 transition-colors',
-                                showValidation[idx] && product.pricePerYear <= 0 ? 'border-2 border-red-500 ring-red-500 focus:ring-red-500' : 'border border-gray-300'
+                                'appearance-none relative block w-full pl-12 pr-2 py-2 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:border-green-500 focus:z-10 sm:text-md',
+                                showValidation[idx] && product.pricePerYear <= 0 ? 'border-red-500 ring-red-500 focus:ring-red-500' : 'border-gray-300'
                               ]"
                               placeholder="0.00" />
                             <div v-if="showValidation[idx] && product.pricePerYear <= 0" class="mt-1 text-sm text-red-600">
@@ -431,29 +433,29 @@
                         <!-- Weekdays -->
                         <div class="relative">
                           <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                                 :class="{ 'border-blue-300 bg-blue-50': showWeekday }">
+                                 :class="{ 'border-green-300 bg-green-50': showWeekday }">
                             <input type="checkbox"
                                    v-model="showWeekday"
                                    @change="toggleWeekday(($event.target as HTMLInputElement).checked)"
-                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
+                                   class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
                             <div class="flex-1">
                               <div class="font-medium text-gray-900">Weekday</div>
                               <div class="text-xs text-gray-500">Mon - Fri</div>
                             </div>
-                            <svg v-if="showWeekday" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg v-if="showWeekday" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                           </label>
 
                           <!-- Bulk Time Setting for Weekdays -->
-                          <div v-if="showWeekday" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div class="text-xs font-medium text-blue-800 mb-2">Set same hours for weekdays:</div>
+                          <div v-if="showWeekday" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="text-xs font-medium text-green-800 mb-2">Set same hours for weekdays:</div>
                             <div class="grid grid-cols-2 gap-3">
                               <div>
-                                <label class="block text-xs text-blue-700 mb-1">Opening Time</label>
+                                <label class="block text-xs text-green-700 mb-1">Opening Time</label>
                                 <button type="button"
                                         @click="openGroupTimePicker('weekday', 'start')"
-                                        class="w-full rounded px-2 py-1 text-xs border border-blue-300 focus:ring-1 focus:ring-blue-500 transition-colors bg-white text-left flex items-center justify-between text-blue-800">
+                                        class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
                                   <span>{{ weekdayTime.start ? convertTo12Hour(weekdayTime.start).hour.toString().padStart(2, '0') + ':' + 
                                              convertTo12Hour(weekdayTime.start).minute.toString().padStart(2, '0') + ' ' + 
                                              convertTo12Hour(weekdayTime.start).period : 'Select time' }}</span>
@@ -463,10 +465,10 @@
                                 </button>
                               </div>
                               <div>
-                                <label class="block text-xs text-blue-700 mb-1">Closing Time</label>
+                                <label class="block text-xs text-green-700 mb-1">Closing Time</label>
                                 <button type="button"
                                         @click="openGroupTimePicker('weekday', 'end')"
-                                        class="w-full rounded px-2 py-1 text-xs border border-blue-300 focus:ring-1 focus:ring-blue-500 transition-colors bg-white text-left flex items-center justify-between text-blue-800">
+                                        class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
                                   <span>{{ weekdayTime.end ? convertTo12Hour(weekdayTime.end).hour.toString().padStart(2, '0') + ':' + 
                                            convertTo12Hour(weekdayTime.end).minute.toString().padStart(2, '0') + ' ' + 
                                            convertTo12Hour(weekdayTime.end).period : 'Select time' }}</span>
@@ -478,7 +480,7 @@
                             </div>
                             <button type="button"
                                     @click="setWeekdayTime(weekdayTime.start, weekdayTime.end, idx)"
-                                    class="mt-2 w-full px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors">
+                                    class="mt-2 w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
                               Apply to Weekdays
                             </button>
                           </div>
@@ -487,29 +489,29 @@
                         <!-- Weekend -->
                         <div class="relative">
                           <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                                 :class="{ 'border-purple-300 bg-purple-50': showWeekend }">
+                                 :class="{ 'border-green-300 bg-green-50': showWeekend }">
                             <input type="checkbox"
                                    v-model="showWeekend"
                                    @change="toggleWeekend(($event.target as HTMLInputElement).checked)"
-                                   class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3">
+                                   class="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-3">
                             <div class="flex-1">
                               <div class="font-medium text-gray-900">Weekend</div>
                               <div class="text-xs text-gray-500">Sat - Sun</div>
                             </div>
-                            <svg v-if="showWeekend" class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg v-if="showWeekend" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                           </label>
 
                           <!-- Bulk Time Setting for Weekend -->
-                          <div v-if="showWeekend" class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                            <div class="text-xs font-medium text-purple-800 mb-2">Set same hours for weekend:</div>
+                          <div v-if="showWeekend" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="text-xs font-medium text-green-800 mb-2">Set same hours for weekend:</div>
                             <div class="grid grid-cols-2 gap-3">
                               <div>
-                                <label class="block text-xs text-purple-700 mb-1">Opening Time</label>
+                                <label class="block text-xs text-green-700 mb-1">Opening Time</label>
                                 <button type="button"
                                         @click="openGroupTimePicker('weekend', 'start')"
-                                        class="w-full rounded px-2 py-1 text-xs border border-purple-300 focus:ring-1 focus:ring-purple-500 transition-colors bg-white text-left flex items-center justify-between text-purple-800">
+                                        class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
                                   <span>{{ weekendTime.start ? convertTo12Hour(weekendTime.start).hour.toString().padStart(2, '0') + ':' + 
                                              convertTo12Hour(weekendTime.start).minute.toString().padStart(2, '0') + ' ' + 
                                              convertTo12Hour(weekendTime.start).period : 'Select time' }}</span>
@@ -519,10 +521,10 @@
                                 </button>
                               </div>
                               <div>
-                                <label class="block text-xs text-purple-700 mb-1">Closing Time</label>
+                                <label class="block text-xs text-green-700 mb-1">Closing Time</label>
                                 <button type="button"
                                         @click="openGroupTimePicker('weekend', 'end')"
-                                        class="w-full rounded px-2 py-1 text-xs border border-purple-300 focus:ring-1 focus:ring-purple-500 transition-colors bg-white text-left flex items-center justify-between text-purple-800">
+                                        class="w-full rounded px-2 py-1 text-xs border border-green-300 focus:ring-1 focus:ring-green-500 transition-colors bg-white text-left flex items-center justify-between text-green-800">
                                   <span>{{ weekendTime.end ? convertTo12Hour(weekendTime.end).hour.toString().padStart(2, '0') + ':' + 
                                            convertTo12Hour(weekendTime.end).minute.toString().padStart(2, '0') + ' ' + 
                                            convertTo12Hour(weekendTime.end).period : 'Select time' }}</span>
@@ -534,7 +536,7 @@
                             </div>
                             <button type="button"
                                     @click="setWeekendTime(weekendTime.start, weekendTime.end, idx)"
-                                    class="mt-2 w-full px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 transition-colors">
+                                    class="mt-2 w-full px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors">
                               Apply to Weekend
                             </button>
                           </div>
@@ -1125,9 +1127,13 @@
                         Status <span class="text-red-500">*</span>
                       </label>
                       
-                      <div class="relative dropdown-container">
-                        <div @click="toggleDropdown('status')" class="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 cursor-pointer bg-white flex items-center">
-                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(product.status) }}</span>
+                      <div class="relative dropdown-container" ref="statusDropdownRef">
+                        <div @click="toggleDropdown('status')" :class="[
+                          'w-full rounded-lg px-3 py-2 pr-10 text-sm text-gray-900 cursor-pointer bg-white min-h-[2.5rem] flex items-center',
+                          dropdownStates.status ? 'border-2 border-green-500 focus:ring-2 focus:ring-green-500 focus:border-green-500' : 'border border-gray-300',
+                          showValidation[idx] && !product.status ? 'border-red-500 ring-red-500 focus:ring-red-500 border-2' : ''
+                        ]">
+                          <span class="text-gray-900 leading-5 h-5 flex items-center truncate">{{ getStatusLabel(product.status) || 'Select Status' }}</span>
                         </div>
 
                         <!-- Dropdown Options -->
@@ -1215,6 +1221,12 @@
         <!-- Header -->
         <div class="text-center mb-6">
           <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">SELECT TIME</h3>
+          
+          <!-- Error Message -->
+          <div v-if="timePickerError" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p class="text-sm text-red-600">{{ timePickerError }}</p>
+          </div>
+          
           <div class="flex items-center justify-center space-x-3">
             <!-- Time Display -->
             <div class="flex items-center space-x-1 text-3xl font-light">
@@ -1383,7 +1395,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { locationApi, facilityApi, productApi } from '@/services/api'
@@ -1432,6 +1444,11 @@ const dropdownStates = ref({
   status: false
 })
 
+// Dropdown refs for click outside handling
+const locationDropdownRef = ref<HTMLElement | null>(null)
+const productTypeDropdownRef = ref<HTMLElement | null>(null)
+const statusDropdownRef = ref<HTMLElement | null>(null)
+
 // Time picker state
 const showTimePicker = ref(false)
 const selectedHour = ref(7)
@@ -1439,6 +1456,7 @@ const selectedMinute = ref(0)
 const selectedPeriod = ref('AM')
 const timePickerMode = ref<'hour' | 'minute'>('hour')
 const currentTimeField = ref<{day?: DayOfWeek, group?: 'all' | 'weekday' | 'weekend', type: 'start' | 'end'} | null>(null)
+const timePickerError = ref('')
 
 // Modal state for success and error
 const showSuccessModal = ref(false)
@@ -1704,23 +1722,54 @@ const openGroupTimePicker = (group: 'all' | 'weekday' | 'weekend', type: 'start'
 
 const selectHour = (hour: number) => {
   selectedHour.value = hour
+  timePickerError.value = '' // Clear error when user makes a selection
   // Don't automatically switch to minute mode - let user click on minute display
 }
 
 const selectMinute = (minute: number) => {
   selectedMinute.value = minute
+  timePickerError.value = '' // Clear error when user makes a selection
   // Don't automatically confirm - let user decide when to confirm
 }
 
 const togglePeriod = () => {
   selectedPeriod.value = selectedPeriod.value === 'AM' ? 'PM' : 'AM'
+  timePickerError.value = '' // Clear error when user makes a selection
 }
 
 const confirmTimeSelection = () => {
   if (currentTimeField.value) {
     const time24 = convertTo24Hour(selectedHour.value, selectedMinute.value, selectedPeriod.value)
     const { day, group, type } = currentTimeField.value
-    
+
+    // Validation: Close time must be after open time
+    if (type === 'end') {
+      let openTime = ''
+      if (group) {
+        // For group selections, get the corresponding start time
+        if (group === 'all') {
+          openTime = allDaysTime.value.start
+        } else if (group === 'weekday') {
+          openTime = weekdayTime.value.start
+        } else if (group === 'weekend') {
+          openTime = weekendTime.value.start
+        }
+      } else if (day) {
+        // For individual day selections, get the start time for that day
+        openTime = products.value[0].dayHours[day].start
+      }
+
+      // Compare times - close time must be after open time
+      if (openTime && time24 <= openTime) {
+        // Show error message and don't close the picker
+        timePickerError.value = 'Close time must be after the open time. Please select a later time.'
+        return
+      }
+    }
+
+    // Clear any previous error
+    timePickerError.value = ''
+
     if (group) {
       // Update group time storage
       if (group === 'all') {
@@ -1742,6 +1791,7 @@ const closeTimePicker = () => {
   showTimePicker.value = false
   currentTimeField.value = null
   timePickerMode.value = 'hour'
+  timePickerError.value = ''
 }
 
 const handleKeyDown = (event: KeyboardEvent) => {
@@ -1882,13 +1932,26 @@ const syncLocationToAllProducts = () => {
 
 // Dropdown control functions
 const toggleDropdown = (dropdown: string) => {
-  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = true
+  const wasOpen = dropdownStates.value[dropdown as keyof typeof dropdownStates.value]
+  dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = !wasOpen
 }
 
-const closeDropdown = (dropdown: string) => {
-  setTimeout(() => {
-    dropdownStates.value[dropdown as keyof typeof dropdownStates.value] = false
-  }, 150)
+const handleClickOutside = (event: Event) => {
+  const target = event.target as HTMLElement
+  
+  // Only process if any dropdown is open
+  const hasOpenDropdown = Object.values(dropdownStates.value).some(state => state)
+  if (!hasOpenDropdown) return
+  
+  // Check if click is inside any dropdown container
+  const clickedInsideDropdown = target.closest('.dropdown-container') !== null
+  
+  // If click is outside all dropdown containers, close all dropdowns
+  if (!clickedInsideDropdown) {
+    dropdownStates.value.location = false
+    dropdownStates.value.productType = false
+    dropdownStates.value.status = false
+  }
 }
 
 // Status Options
@@ -1925,19 +1988,19 @@ const getProductTypeLabel = (value: string) => {
 // Dropdown select functions
 const selectStatus = (value: string, productIndex: number) => {
   products.value[productIndex].status = value
-  closeDropdown('status')
+  dropdownStates.value.status = false
 }
 
 const selectLocation = (value: string, productIndex: number) => {
   products.value[productIndex].locationId = value
   syncLocationToAllProducts()
-  closeDropdown('location')
+  dropdownStates.value.location = false
 }
 
 const selectProductType = (value: string, productIndex: number) => {
   products.value[productIndex].type = value
   onProductTypeChange(productIndex)
-  closeDropdown('productType')
+  dropdownStates.value.productType = false
 }
 
 // Fetch locations from API
@@ -2374,22 +2437,13 @@ onMounted(() => {
   showDefaultDropdown.value = [false]
   showAdditionalDropdown.value = [false]
   
-  // Close dropdowns when clicking outside
-  document.addEventListener('click', (event) => {
-    const target = event.target as HTMLElement
-    // Don't close facility dropdowns if clicking within them or their triggers
-    if (!target.closest('.facility-dropdown') && !target.closest('.facility-dropdown-trigger')) {
-      showDefaultDropdown.value.fill(false)
-      showAdditionalDropdown.value.fill(false)
-    }
-    
-    // Close regular dropdowns when clicking outside
-    if (!target.closest('.dropdown-container')) {
-      dropdownStates.value.location = false
-      dropdownStates.value.productType = false
-      dropdownStates.value.status = false
-    }
-  })
+  // Add persistent click outside listener
+  document.addEventListener('click', handleClickOutside)
+})
+
+// Cleanup event listener on component unmount
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 

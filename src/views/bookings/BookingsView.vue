@@ -563,10 +563,11 @@ const filteredBookings = computed(() => {
     // Show all bookings and subscriptions combined
     bookings = [...allBookings.value, ...subscriptions.value]
   } else if (activeTab.value === 'bookings') {
-    // Show only Meeting Room and Hot Desk bookings that are not cancelled
+    // Show only Meeting Room and Hot Desk bookings that are not cancelled and not completed
     bookings = allBookings.value.filter(b => 
       (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
-      b.status !== 'cancelled'
+      b.status !== 'cancelled' &&
+      getDynamicStatus(b) !== 'complete'
     )
   } else if (activeTab.value === 'subscriptions') {
     // Use subscription data from API
@@ -793,10 +794,11 @@ const getTabCount = (tabId: string) => {
     // Count all bookings and subscriptions combined
     return allBookings.value.length + subscriptions.value.length
   } else if (tabId === 'bookings') {
-    // Count Meeting Room and Hot Desk bookings that are not cancelled
+    // Count Meeting Room and Hot Desk bookings that are not cancelled and not completed
     return allBookings.value.filter(b => 
       (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
-      b.status !== 'cancelled'
+      b.status !== 'cancelled' &&
+      getDynamicStatus(b) !== 'complete'
     ).length
   } else if (tabId === 'subscriptions') {
     // Count subscriptions from API data

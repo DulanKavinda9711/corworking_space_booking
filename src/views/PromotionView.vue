@@ -49,7 +49,7 @@
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search promotions by name or description..."
+                  placeholder="Search promotions by name or link..."
                   v-model="searchQuery"
                   class="pl-10 pr-6 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900 w-96"
                 />
@@ -74,7 +74,7 @@
                     Promotion
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
+                    Link
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Created Date
@@ -101,9 +101,10 @@
                     </div>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="text-sm text-gray-600 max-w-xs truncate">
-                      {{ promotion.description || 'No description' }}
-                    </div>
+                    <a :href="promotion.link" target="_blank" rel="noopener noreferrer" 
+                       class="text-blue-600 hover:text-blue-800 underline text-sm truncate block max-w-xs">
+                      {{ promotion.link }}
+                    </a>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-500">{{ formatDate(promotion.createdAt) }}</div>
@@ -128,7 +129,7 @@
               <!-- Empty State Row -->
               <tbody v-if="filteredPromotions.length === 0" class="bg-white">
                 <tr>
-                  <td colspan="4" class="px-6 py-12 text-center">
+                  <td colspan="3" class="px-6 py-12 text-center">
                     <div>
                       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -170,8 +171,11 @@
                   <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors duration-300 mb-2">
                     {{ promotion.name }}
                   </h3>
-                  <p v-if="promotion.description" class="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {{ promotion.description }}
+                  <p class="text-sm text-gray-600 mb-3">
+                    <a :href="promotion.link" target="_blank" rel="noopener noreferrer" 
+                       class="text-blue-600 hover:text-blue-800 underline break-all">
+                      {{ promotion.link }}
+                    </a>
                   </p>
                   <p class="text-xs text-gray-500 mb-4">{{ formatDate(promotion.createdAt) }}</p>
 
@@ -286,13 +290,14 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea
-              v-model="newPromotion.description"
+            <label class="block text-sm font-medium text-gray-700 mb-2">Promotion Link</label>
+            <input
+              type="url"
+              v-model="newPromotion.link"
               class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md"
-              placeholder="Enter promotion description"
-              rows="3"
-            ></textarea>
+              placeholder="https://example.com"
+              required
+            />
           </div>
 
           <div>
@@ -386,13 +391,14 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <textarea
-              v-model="editPromotionForm.description"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900 resize-vertical"
-              placeholder="Enter promotion description"
-              rows="3"
-            ></textarea>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Promotion Link</label>
+            <input
+              type="url"
+              v-model="editPromotionForm.link"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-gray-900"
+              placeholder="https://example.com"
+              required
+            />
           </div>
 
           <div>
@@ -481,9 +487,12 @@
               class="w-full max-h-96 object-contain rounded-lg"
             />
           </div>
-          <div v-if="selectedPromotion.description" class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-            <p class="text-gray-700">{{ selectedPromotion.description }}</p>
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Promotion Link</h3>
+            <a :href="selectedPromotion.link" target="_blank" rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 underline break-all">
+              {{ selectedPromotion.link }}
+            </a>
           </div>
           <div class="text-sm text-gray-500">
             Created on {{ formatDate(selectedPromotion.createdAt) }}
@@ -530,7 +539,7 @@ import {
 interface Promotion {
   id: string
   name: string
-  description?: string
+  link: string
   image: string
   createdAt: string
 }
@@ -566,7 +575,7 @@ const filteredPromotions = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return promotions.filter(promotion =>
     promotion.name.toLowerCase().includes(query) ||
-    (promotion.description && promotion.description.toLowerCase().includes(query))
+    (promotion.link && promotion.link.toLowerCase().includes(query))
   )
 })
 
@@ -629,14 +638,14 @@ const visiblePages = computed(() => {
 // New promotion form
 const newPromotion = ref({
   name: '',
-  description: '',
+  link: '',
   image: ''
 })
 
 // Edit promotion form
 const editPromotionForm = ref({
   name: '',
-  description: '',
+  link: '',
   image: ''
 })
 
@@ -731,7 +740,7 @@ const confirmCreate = async () => {
     // Create FormData for API request
     const formData = new FormData()
     formData.append('PromotionName', newPromotion.value.name.trim())
-    formData.append('Description', newPromotion.value.description.trim() || '')
+    formData.append('Link', newPromotion.value.link.trim())
 
     // Convert base64 image to blob and append
     if (newPromotion.value.image.startsWith('data:image/')) {
@@ -750,7 +759,7 @@ const confirmCreate = async () => {
       const promotion: Promotion = {
         id: `PROMO-${timestamp}-${randomSuffix}`,
         name: newPromotion.value.name.trim(),
-        description: newPromotion.value.description.trim(),
+        link: newPromotion.value.link.trim(),
         image: newPromotion.value.image,
         createdAt: new Date().toISOString()
       }
@@ -759,7 +768,7 @@ const confirmCreate = async () => {
       promotionsStore.addPromotion(promotion)
 
       // Reset form
-      newPromotion.value = { name: '', description: '', image: '' }
+      newPromotion.value = { name: '', link: '', image: '' }
       isImageLoading.value = false
       if (imageInput.value) {
         imageInput.value.value = ''
@@ -792,7 +801,7 @@ const closeCreateModal = () => {
 const closeSuccessModal = () => {
   showSuccessModal.value = false
   // Ensure form is completely reset when success modal closes
-  newPromotion.value = { name: '', description: '', image: '' }
+  newPromotion.value = { name: '', link: '', image: '' }
   isImageLoading.value = false
   if (imageInput.value) {
     imageInput.value.value = ''
@@ -803,7 +812,7 @@ const editPromotion = (promotion: Promotion) => {
   promotionToEdit.value = promotion
   editPromotionForm.value = {
     name: promotion.name,
-    description: promotion.description || '',
+    link: promotion.link || '',
     image: promotion.image
   }
   showEditModal.value = true
@@ -811,7 +820,7 @@ const editPromotion = (promotion: Promotion) => {
 const closeEditModal = () => {
   showEditModal.value = false
   promotionToEdit.value = null
-  editPromotionForm.value = { name: '', description: '', image:''}
+  editPromotionForm.value = { name: '', link: '', image:''}
   isImageLoading.value = false
   if (imageInput.value) {
     imageInput.value.value = ''
@@ -848,7 +857,7 @@ const confirmEdit = async () => {
     // Create FormData for API request
     const formData = new FormData()
     formData.append('PromotionName', editPromotionForm.value.name.trim())
-    formData.append('Description', editPromotionForm.value.description.trim() || '')
+    formData.append('Link', editPromotionForm.value.link.trim() || '')
 
     // Convert base64 image to blob and append
     if (editPromotionForm.value.image.startsWith('data:image/')) {
@@ -865,7 +874,7 @@ const confirmEdit = async () => {
       const updatedPromotion: Promotion = {
         ...promotionToEdit.value,
         name: editPromotionForm.value.name.trim(),
-        description: editPromotionForm.value.description.trim(),
+        link: editPromotionForm.value.link.trim(),
         image: editPromotionForm.value.image,
         createdAt: promotionToEdit.value.createdAt // Keep original creation date
       }

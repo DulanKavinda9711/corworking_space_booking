@@ -79,7 +79,7 @@
           <div>
             <button type="submit" :disabled="loading"
               class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-              <span v-if="loading" class="absolute left-0 inset-y-0 flex items-center pl-3">
+              <span v-if="loading" class="absolute inset-0 flex items-center justify-center">
                 <svg class="h-5 w-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor"
@@ -87,7 +87,9 @@
                   </path>
                 </svg>
               </span>
-              {{ loading ? 'Signing in...' : 'Sign in' }}
+              <span :class="{ 'opacity-0': loading }">
+                {{ loading ? 'Signing in...' : 'Sign in' }}
+              </span>
             </button>
           </div>
         </form>
@@ -242,7 +244,7 @@
               </svg>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">{{ errorTitle }}</h3>
-            <br></br>
+            <br />
             <button
               @click="closeErrorModal"
               class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
@@ -301,11 +303,16 @@ const errorTitle = ref('')
 
 // Handle login
 const handleLogin = async () => {
+  loading.value = true
+  error.value = ''
 
   try
   {
     // get data of the username and password
     const { username, password } = form.value
+
+    // Add 5 second delay before making API call
+    await new Promise(resolve => setTimeout(resolve, 5000))
 
     const response = await authApi.adminLogin({
       username: username,

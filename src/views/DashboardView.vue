@@ -178,22 +178,45 @@
       <!-- Main content: charts + lists -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Chart area -->
-        <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div class="lg:col-span-2 max-h-85 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h2 class="text-lg font-semibold text-gray-900">Bookings — Last 30 days</h2>
-          
+              <h2 class="text-lg font-semibold text-gray-900">Bookings</h2>
+              <p class="text-xs text-gray-500">Showing last {{ rangeDays }} days</p>
             </div>
-            <div class="flex items-center space-x-2">
-              <div class="flex items-center space-x-1">
-                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span class="text-sm text-gray-600">Bookings</span>
+
+            <!-- Advanced chart controls -->
+            <div class="flex items-center space-x-3">
+              <!-- Range buttons -->
+              <div class="inline-flex items-center space-x-1 bg-gray-50 rounded-lg p-1">
+                <button
+                  v-for="d in [7,30]"
+                  :key="d"
+                  @click="changeRange(d)"
+                  :class="['px-3 py-1 text-sm rounded-md font-medium', rangeDays === d ? 'bg-green-600 text-white' : 'text-gray-700 hover:bg-gray-100']"
+                >
+                  {{ d }}d
+                </button>
               </div>
-              <div class="text-right text-green-600">
-                <div v-if="chartLoading" class="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
-                <div v-else class="text-2xl font-bold text-gray-900">{{ chartSeries[0].data.slice(-1)[0] || 0 }}</div>
-                
-              </div>
+
+              <!-- Chart type toggle -->
+              <!-- <div class="inline-flex items-center bg-gray-50 rounded-lg p-1">
+                <button @click="toggleChartType" class="px-3 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded-md">{{ chartType === 'area' ? 'Area' : 'Line' }}</button>
+              </div> -->
+
+              <!-- Export & Refresh -->
+              <button @click="exportCSV" :disabled="isExporting" class="px-3 py-1 bg-white border rounded-md text-sm text-gray-700 hover:shadow-sm">
+                <svg v-if="!isExporting" class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>
+                <svg v-else class="animate-spin w-4 h-4 inline mr-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.3" fill="none"/><path d="M22 12A10 10 0 0012 2" stroke="currentColor" stroke-width="4"/></svg>
+                Export
+              </button>
+
+              <button @click="refreshChart" class="px-3 py-1 bg-white border rounded-md text-sm text-gray-700 hover:shadow-sm">
+                <svg class="w-4 h-4 inline mr-1" viewBox="0 0 122.88 118.66" fill="currentColor">
+                  <path d="M16.68,22.2c-1.78,2.21-3.43,4.55-5.06,7.46C5.63,40.31,3.1,52.39,4.13,64.2c1.01,11.54,5.43,22.83,13.37,32.27 c2.85,3.39,5.91,6.38,9.13,8.97c11.11,8.93,24.28,13.34,37.41,13.22c13.13-0.13,26.21-4.78,37.14-13.98 c3.19-2.68,6.18-5.73,8.91-9.13c6.4-7.96,10.51-17.29,12.07-27.14c1.53-9.67,0.59-19.83-3.07-29.66 c-3.49-9.35-8.82-17.68-15.78-24.21C96.7,8.33,88.59,3.76,79.2,1.48c-2.94-0.71-5.94-1.18-8.99-1.37c-3.06-0.2-6.19-0.13-9.4,0.22 c-2.01,0.22-3.46,2.03-3.24,4.04c0.22,2.01,2.03,3.46,4.04,3.24c2.78-0.31,5.49-0.37,8.14-0.2c2.65,0.17,5.23,0.57,7.73,1.17 c8.11,1.96,15.1,5.91,20.84,11.29c6.14,5.75,10.85,13.12,13.94,21.43c3.21,8.61,4.04,17.51,2.7,25.96 C113.59,75.85,110,84,104.4,90.96c-2.47,3.07-5.12,5.78-7.91,8.13c-9.59,8.07-21.03,12.15-32.5,12.26 c-11.47,0.11-23-3.76-32.76-11.61c-2.9-2.33-5.62-4.98-8.13-7.97c-6.92-8.22-10.77-18.09-11.66-28.2 c-0.91-10.37,1.32-20.99,6.57-30.33c1.59-2.82,3.21-5.07,5.01-7.24l0.53,14.7c0.07,2.02,1.76,3.6,3.78,3.52 c2.02-0.07,3.6-1.76,3.52-3.78l-0.85-23.42c-0.07-2.02-1.76-3.6-3.78-3.52c-0.13,0-0.25,0.02-0.37,0.03l0,0l-22.7,3.19 c-2,0.28-3.4,2.12-3.12,4.13c0.28,2,2.12,3.4,4.13,3.12L16.68,22.2L16.68,22.2z"/>
+                </svg>
+                Refresh
+              </button>
             </div>
           </div>
           <div class="relative">
@@ -205,7 +228,7 @@
               type="area"
               :options="chartOptions"
               :series="chartSeries"
-              height="280"
+              height="270"
               class="apex-chart"
             />
           </div>
@@ -213,12 +236,12 @@
 
         <!-- Right column: Recent & Actions -->
         <div class="space-y-6">
-          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 max-h-85">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-md font-medium text-gray-900">Recent Bookings</h3>
               <router-link to="/bookings" class="text-sm text-green-600">View all</router-link>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-3 max-h-80 overflow-y-auto">
               <div v-if="recentBookings.length === 0" class="text-center py-8 text-gray-500">
                 <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -226,7 +249,7 @@
                 <p class="text-sm">No recent bookings</p>
                 <p class="text-xs text-gray-400 mt-1">Recent bookings will appear here</p>
               </div>
-              <div v-for="booking in recentBookings" :key="booking.id" 
+              <div v-for="booking in recentBookings.slice(0, 5)" :key="booking.id" 
                    @click="viewBookingDetails(booking.id)"
                    class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
                 <div class="flex items-center gap-3">
@@ -381,7 +404,9 @@ const chartOptions = ref({
         colors: '#64748b',
         fontSize: '12px'
       }
-    }
+    },
+    forceNiceScale: false,
+    max: 10
   },
   tooltip: {
     style: {
@@ -419,6 +444,12 @@ const chartSeries = ref([{
   name: 'Bookings',
   data: [] as number[]
 }])
+
+// Advanced chart controls state
+const rangeDays = ref<number>(7)
+const chartType = ref<'area' | 'line'>('area')
+const isExporting = ref(false)
+
 
 // Search state
 const searchQuery = ref('')
@@ -481,18 +512,21 @@ const loadBookingSummary = async () => {
   }
 }
 
-const loadLast30DaysBookings = async () => {
+const loadLast30DaysBookings = async (days = 30) => {
   try {
     chartLoading.value = true
     const response = await dashboardApi.getLast30DaysBookings()
     
     if (response.success && response.data) {
       // Extract dates and booking counts
-      const dates = response.data.last30_days_summary.map(item => {
+      // API returns full 30+ days; slice the last `days` entries
+      const raw = response.data.last30_days_summary
+      const sliced = raw.slice(-days)
+      const dates = sliced.map(item => {
         const date = new Date(item.date)
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       })
-      const bookings = response.data.last30_days_summary.map(item => item.total_bookings)
+      const bookings = sliced.map(item => item.total_bookings)
       
       // Update chart data
       chartOptions.value.xaxis.categories = dates
@@ -507,6 +541,45 @@ const loadLast30DaysBookings = async () => {
   } finally {
     chartLoading.value = false
   }
+}
+
+// Change displayed range (7/30/90)
+const changeRange = (d: number) => {
+  rangeDays.value = d
+  loadLast30DaysBookings(d)
+}
+
+// Toggle chart type between area and line
+const toggleChartType = () => {
+  chartType.value = chartType.value === 'area' ? 'line' : 'area'
+  // Update chart options so ApexChart re-renders
+  chartOptions.value.chart.type = chartType.value
+}
+
+// Export current series to CSV
+const exportCSV = async () => {
+  isExporting.value = true
+  try {
+    const labels = chartOptions.value.xaxis.categories || []
+    const data = chartSeries.value[0].data || []
+    const rows = [['date','bookings'], ...labels.map((l:any, i:number) => [l, data[i] ?? 0])]
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bookings_last_${rangeDays.value}d.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('Export failed', e)
+  } finally {
+    isExporting.value = false
+  }
+}
+
+const refreshChart = async () => {
+  await loadLast30DaysBookings(rangeDays.value)
 }
 
 const loadUpcomingBookings = async () => {
@@ -609,8 +682,8 @@ onMounted(() => {
   // Load booking summary data
   loadBookingSummary()
 
-  // Load chart data
-  loadLast30DaysBookings()
+  // Load chart data (respect selected range)
+  loadLast30DaysBookings(rangeDays.value)
 
   // Load upcoming bookings for recent bookings section
   loadUpcomingBookings()
