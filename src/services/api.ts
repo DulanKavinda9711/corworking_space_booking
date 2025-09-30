@@ -2447,8 +2447,8 @@ export const productApi = {
             pricePerYear: product.pricing?.[0]?.yearly || 0,
             
             // Images - convert relative paths to full URLs
-            images: (product.images || []).map((img: string) =>
-              img.startsWith('/') ? `${API_CONFIG.API_BASE_URL}${img}` : img
+            images: (product.images || []).map((img: string) => 
+              img.startsWith('/') ? `${API_CONFIG.BASE_URL}${img}` : img
             ),
             
             // Operating hours
@@ -3603,6 +3603,7 @@ export const createHttpClient = (baseURL: string) => {
  * API configuration (from .env)
  */
 export const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_BASE_URL,
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
   TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
   RETRY_ATTEMPTS: Number(import.meta.env.VITE_API_RETRY_ATTEMPTS) || 3
@@ -3624,8 +3625,16 @@ export const buildApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.API_BASE_URL}${cleanEndpoint}`
 }
 
-
-// No buildBaseUrl needed; use API_BASE_URL for all URLs
+/**
+ * Utility function to build base URLs
+ * @param path - The path (e.g., '/uploads/image.jpg')
+ * @returns Full base URL
+ */
+export const buildBaseUrl = (path: string): string => {
+  // Ensure path starts with /
+  const cleanPath = path.startsWith('/') ? path : `/${path}`
+  return `${API_CONFIG.BASE_URL}${cleanPath}`
+}
 
 // ============================================================================
 // PERMISSIONS API
