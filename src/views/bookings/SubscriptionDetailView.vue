@@ -34,7 +34,11 @@
 			</div>
 
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<!-- Customer Information -->
+								<!-- <span v-if="getCustomerDetails(subscription).isRegistered"
+					  :class="getCustomerStatusClass(getCustomerDetails(subscription).customerStatus || 'inactive')"
+					  class="inline-block px-2 py-1 text-xs font-medium rounded-full">
+				  {{ getCustomerDetails(subscription).customerStatus || 'inactive' }}
+				</span> -->
 				<div class="bg-white rounded-xl shadow-card p-6">
 					<h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
 						<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -44,8 +48,8 @@
 					</h2>
 					<div class="space-y-4">
 						<div class="flex items-center space-x-3">
-							<div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-								<svg class="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+							<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+								<svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
 									<path :d="mdiAccount" />
 								</svg>
 							</div>
@@ -64,7 +68,7 @@
 								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</label>
 								<p class="text-sm text-gray-900">{{ subscription.customerPhone }}</p>
 							</div>
-							<!-- <div>
+							<div>
 								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">User Type</label>
 								<div class="flex items-center space-x-2 mt-1">
 									<span :class="subscription.userType === 'registered' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'" 
@@ -77,7 +81,7 @@
 										{{ getCustomerDetails(subscription).customerStatus || 'inactive' }}
 									</span>
 								</div>
-							</div> -->
+							</div>
 						</div>
 						<div v-if="subscription.customerMessage" class="pt-4 border-t border-gray-200">
 							<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Message</label>
@@ -117,7 +121,12 @@
 					</h2>
 					<div class="space-y-4">
 						<div class="flex items-center space-x-4">
-							<img class="w-16 h-16 rounded-lg object-cover" :src="subscription.productImage" :alt="subscription.productName">
+							<div class="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center">
+								<svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 122.88 107.29">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M28,18.22a1,1,0,0,0-.36.42,1.54,1.54,0,0,0-.12.67,5.83,5.83,0,0,0,1.2,2.91h0l2.51,4a21.61,21.61,0,0,0,3.37,4.45,6.91,6.91,0,0,0,4.82,1.94,7.12,7.12,0,0,0,5.1-2A22.16,22.16,0,0,0,48,25.85l2.83-4.66a10.13,10.13,0,0,0,.53-1.48c.45-1.8-.72-1.4-2.08-1.43a4.23,4.23,0,0,1-.5-.05l1-3.69c-7.2,1.14-12.58-4.21-20.18-1.07l.55,4.46c-.77,0-1.41-.21-2.13.29ZM74.68,10H114.3a3.25,3.25,0,0,1,3.23,3.23V39.48a3.25,3.25,0,0,1-3.23,3.23H99.54l2.52,6.35H118a4.89,4.89,0,0,1,4.88,4.88V65.08A4.91,4.91,0,0,1,118,70h-2.47V103.6a3.69,3.69,0,0,1-3.69,3.69H11.59a3.73,3.73,0,0,1-3.71-3.72V70h-3A4.9,4.9,0,0,1,0,65.07V53.93a4.88,4.88,0,0,1,4.88-4.87h7.59c0-1.35,0-2.11,0-3.46,0-8.5,14.26-7.89,19.18-11.1a27.65,27.65,0,0,0,1.29-3.38L33,31A26.54,26.54,0,0,1,30,27l-2.51-4a7.27,7.27,0,0,1-1.43-3.64,3,3,0,0,1,.25-1.32,2.42,2.42,0,0,1,.86-1,3.07,3.07,0,0,1,.6-.31,55.24,55.24,0,0,1-.12-6.59A10.62,10.62,0,0,1,28,8.52a10.53,10.53,0,0,1,7-6.76c1.57-.54,1-1.83,2.56-1.76,3.74.21,9.53,2.63,11.76,5.18C52.4,8.78,51.6,12.6,51.49,17h0a1.78,1.78,0,0,1,1.32,1.36,5.73,5.73,0,0,1-.68,3.43h0a.14.14,0,0,1-.05.08l-2.86,4.71a23,23,0,0,1-3.73,5l-.06.09.46.67c.5.73,1.06,1.56,1.59,2.21,3.94,2.45,17.81,3,18.05,9.13l.21,5.35H87l3-6.35H74.68a3.25,3.25,0,0,1-3.23-3.23V13.2A3.24,3.24,0,0,1,74.68,10Zm-70,43.76a.3.3,0,0,0-.08.2V65.07a.27.27,0,0,0,.27.29H118a.27.27,0,0,0,.28-.29V53.93a.27.27,0,0,0-.09-.2.29.29,0,0,0-.2-.09c-10.48,0-113-.14-113.28.09ZM12.47,70v32.73H111V70ZM34.92,39a3.1,3.1,0,0,1,0-4.55,10.66,10.66,0,0,1,3.78,2,2.21,2.21,0,0,1,1-.16,24.37,24.37,0,0,1,4.13-2.12c1.85,1.8,1.66,3.47-.16,5a8.27,8.27,0,0,1-2.32-1.07,3.27,3.27,0,0,1-.2.79l2,7.81c1.54-3.24,3.14-6.6,3.54-10.79a30.66,30.66,0,0,1-2-2.71c-.15-.21-.28-.4-.4-.59A8.33,8.33,0,0,1,39.44,34a8.08,8.08,0,0,1-5.29-1.9,16.7,16.7,0,0,1-1.53,3.59,1.07,1.07,0,0,1-.14.16A38.16,38.16,0,0,0,36.26,46.7l2-7.81a2.4,2.4,0,0,1-.4-1.29,8.88,8.88,0,0,1-3,1.36Z" />
+								</svg>
+							</div>
 							<div>
 								<h3 class="text-sm font-medium text-gray-900">{{ subscription.productName }}</h3>
 								<p class="text-sm text-gray-500">{{ subscription.productType }}</p>
@@ -199,16 +208,16 @@
 				<div class="space-y-3">
 					<div class="flex justify-between">
 						<span class="text-gray-600">Base Price</span>
-						<span class="text-gray-900">${{ subscription.basePrice }}</span>
+						<span class="text-gray-900">LKR {{ subscription.basePrice }}</span>
 					</div>
 					<div class="flex justify-between">
 						<span class="text-gray-600">Additional Facilities</span>
-						<span class="text-gray-900">${{ subscription.additionalFacilities }}</span>
+						<span class="text-gray-900">LKR {{ subscription.additionalFacilities }}</span>
 					</div>
 					<div class="border-t border-gray-200 pt-3">
 						<div class="flex justify-between">
 							<span class="text-lg font-semibold text-gray-900">Total</span>
-							<span class="text-lg font-bold text-primary-600">${{ subscription.totalPrice }}</span>
+							<span class="text-lg font-bold text-primary-600">LKR {{ subscription.totalPrice }}</span>
 						</div>
 					</div>
 				</div>
@@ -362,6 +371,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { useCustomers, type Customer } from '@/composables/useCustomers'
 import { mdiAccount, mdiOfficeBuilding, mdiCalendarClock, mdiCurrencyUsd, mdiEye, mdiMessage } from '@mdi/js'
+import { bookingApi } from '@/services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -478,11 +488,24 @@ const getCustomerDetails = (subscription: any) => {
 // Methods
 const getStatusClass = (status: string) => {
 	switch (status) {
-		case 'confirmed':
-			return 'bg-green-100 text-green-800'
+		case 'upcoming':
+			return 'bg-yellow-100 text-yellow-800'
+		case 'ongoing':
+			return 'bg-blue-100 text-blue-800'
 		case 'completed':
 			return 'bg-gray-100 text-gray-800'
 		case 'cancelled':
+			return 'bg-red-100 text-red-800'
+		default:
+			return 'bg-gray-100 text-gray-800'
+	}
+}
+
+const getCustomerStatusClass = (status: string) => {
+	switch (status?.toLowerCase()) {
+		case 'active':
+			return 'bg-green-100 text-green-800'
+		case 'inactive':
 			return 'bg-red-100 text-red-800'
 		default:
 			return 'bg-gray-100 text-gray-800'
@@ -615,20 +638,36 @@ const getBackNavigationLabel = () => {
 	return 'Back to Subscriptions'
 }
 
-onMounted(() => {
-	// Sync subscriptions from localStorage if available
-	const savedSubs = localStorage.getItem('allBookings')
-	if (savedSubs) {
-		try {
-			const parsedSubs = JSON.parse(savedSubs)
-			const subscriptions = parsedSubs.filter((b: any) => b.productType === 'Subscription')
-			if (Array.isArray(subscriptions) && subscriptions.length > 0) {
-				allSubscriptions.value = subscriptions
-			}
-		} catch {
-			// fallback: keep default
+onMounted(async () => {
+	// Fetch subscription data from API
+	try {
+		const response = await bookingApi.getAdminSubscriptionTable()
+		
+		if (response.success && response.data) {
+			// Map API response to expected format
+			const subscriptions = response.data.map((item: any) => ({
+				id: item.booking_id,
+				bookingId: item.booking_id,
+				customerName: `${item.first_name} ${item.last_name}`,
+				customerEmail: item.email,
+				productName: item.product_type,
+				productType: 'Subscription',
+				locationName: item.location_name,
+				subscribedDate: item.subscribed_date,
+				nextBillingDate: item.next_billing_date,
+				subscriptionEndDate: item.subscription_end_date,
+				totalPrice: item.total_price,
+				status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
+				subscriptionType: item.package_type,
+				userType: item.customer_type ? String(item.customer_type).charAt(0).toUpperCase() + String(item.customer_type).slice(1).toLowerCase() : 'Registered'
+			}))
+			
+			allSubscriptions.value = subscriptions
 		}
+	} catch (error) {
+		console.error('Failed to fetch subscriptions:', error)
 	}
+	
 	// Update subscription statuses from localStorage
 	const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
 	allSubscriptions.value.forEach((sub: Subscription) => {

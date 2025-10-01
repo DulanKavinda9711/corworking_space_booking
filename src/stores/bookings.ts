@@ -7,9 +7,20 @@ const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicat
   if (!apiType) return 'Meeting Room'
   
   const normalizedType = apiType.toLowerCase().trim()
-  if (normalizedType.includes('meeting')) return 'Meeting Room'
-  if (normalizedType.includes('hot')) return 'Hot Desk'
-  if (normalizedType.includes('dedicated')) return 'Dedicated Desk'
+  
+  // Check for dedicated desk first (most specific)
+  if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+    return 'Dedicated Desk'
+  }
+  // Then check for hot desk
+  if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk') || normalizedType.includes('shared desk')) {
+    return 'Hot Desk'
+  }
+  // Then check for meeting room
+  if (normalizedType.includes('meeting') || normalizedType.includes('conference') || normalizedType.includes('room')) {
+    return 'Meeting Room'
+  }
+  
   return 'Meeting Room' // default
 }
 
@@ -155,17 +166,28 @@ export const useBookingsStore = defineStore('bookings', () => {
       const response = await bookingApi.getAdminBookingTabTable(filters)
       if (response.success && response.data) {
         const mappedBookings = response.data.map((item: any) => {
+          const mappedProductType = mapProductType(item.product_type)
+          
+          // Debug logging for product type mapping
+          if (item.product_type && item.product_type.toLowerCase().includes('dedicated')) {
+            console.log('Dedicated product type mapping:', {
+              original: item.product_type,
+              mapped: mappedProductType,
+              bookingId: item.booking_id
+            })
+          }
+          
           const booking = {
             id: item.booking_id,
             productName: item.product_type,
-            productType: mapProductType(item.product_type),
+            productType: mappedProductType,
             productId: '',
             productImage: '',
             customerName: `${item.first_name} ${item.last_name}`,
             customerEmail: '',
             customerPhone: '',
             customerType: item.customer_type || 'Registered',
-            userType: 'registered' as const,
+            userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
             date: item.booking_date,
             startTime: item.start_time ? convertTo12Hour(item.start_time) : '',
             endTime: item.end_time ? convertTo12Hour(item.end_time) : '',

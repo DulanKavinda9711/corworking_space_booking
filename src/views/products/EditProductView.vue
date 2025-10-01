@@ -1742,9 +1742,9 @@ const toggleAllDays = (isChecked: boolean) => {
     // When "All" is checked, uncheck others and show all days
     showWeekday.value = false
     showWeekend.value = false
-    // Add all days to openDays if not already present
+    // Set openDays to all days (clear existing and add all days)
     const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as DayOfWeek[]
-    form.value.openDays = [...new Set([...form.value.openDays, ...allDays])]
+    form.value.openDays = [...allDays]
   } else {
     // When "All" is unchecked, remove all days from openDays (they can still be individually selected)
     // Don't remove them here - let users individually manage
@@ -1757,9 +1757,9 @@ const toggleWeekday = (isChecked: boolean) => {
     // When "Weekday" is checked, uncheck "All" and "Weekend"
     showAllDays.value = false
     showWeekend.value = false
-    // Add weekdays to openDays if not already present
+    // Set openDays to only weekdays (clear existing and add weekdays)
     const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as DayOfWeek[]
-    form.value.openDays = [...new Set([...form.value.openDays, ...weekdays])]
+    form.value.openDays = [...weekdays]
   } else {
     // When "Weekday" is unchecked, don't remove days - let users individually manage
   }
@@ -1771,9 +1771,9 @@ const toggleWeekend = (isChecked: boolean) => {
     // When "Weekend" is checked, uncheck "All" and "Weekday"
     showAllDays.value = false
     showWeekday.value = false
-    // Add weekends to openDays if not already present
+    // Set openDays to only weekends (clear existing and add weekends)
     const weekends = ['Saturday', 'Sunday'] as DayOfWeek[]
-    form.value.openDays = [...new Set([...form.value.openDays, ...weekends])]
+    form.value.openDays = [...weekends]
   } else {
     // When "Weekend" is unchecked, don't remove days - let users individually manage
   }

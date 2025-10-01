@@ -179,19 +179,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div v-if="product.pricePerHour && product.pricePerHour > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-green-600 mb-1">Per Hour</div>
-                <div class="text-2xl font-bold text-green-800">${{ product.pricePerHour }}</div>
+                <div class="text-2xl font-bold text-green-800">LKR {{ product.pricePerHour }}</div>
               </div>
               <div v-if="product.pricePerDay && product.pricePerDay > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-blue-600 mb-1">Per Day</div>
-                <div class="text-2xl font-bold text-blue-800">${{ product.pricePerDay }}</div>
+                <div class="text-2xl font-bold text-blue-800">LKR {{ product.pricePerDay }}</div>
               </div>
               <div v-if="product.pricePerMonth && product.pricePerMonth > 0" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-purple-600 mb-1">Per Month</div>
-                <div class="text-2xl font-bold text-purple-800">${{ product.pricePerMonth }}</div>
+                <div class="text-2xl font-bold text-purple-800">LKR {{ product.pricePerMonth }}</div>
               </div>
               <div v-if="product.pricePerYear && product.pricePerYear > 0" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div class="text-sm font-medium text-orange-600 mb-1">Per Year</div>
-                <div class="text-2xl font-bold text-orange-800">${{ product.pricePerYear }}</div>
+                <div class="text-2xl font-bold text-orange-800">LKR {{ product.pricePerYear }}</div>
               </div>
               <!-- Show no pricing message if no pricing is available -->
               <div v-if="!product.pricePerHour && !product.pricePerDay && !product.pricePerMonth && !product.pricePerYear" 
@@ -335,23 +335,21 @@
                 <div v-for="facility in product.additionalFacilities" :key="facility.id" 
                      class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div class="flex items-center space-x-3 mb-2">
-                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiCurrencyUsd" />
-                    </svg>
+                    
                     <span class="text-blue-800 font-medium">{{ facility.name || facility }}</span>
                   </div>
                   <div class="grid grid-cols-2 gap-2 text-xs">
                     <div v-if="facility.pricePerHour && facility.pricePerHour > 0" class="text-blue-900">
-                      <span class="font-medium">${{ facility.pricePerHour }}</span> /hour
+                      <span class="font-medium">LKR {{ facility.pricePerHour }}</span> /hour
                     </div>
                     <div v-if="facility.pricePerDay && facility.pricePerDay > 0" class="text-blue-900">
-                      <span class="font-medium">${{ facility.pricePerDay }}</span> /day
+                      <span class="font-medium">LKR {{ facility.pricePerDay }}</span> /day
                     </div>
                     <div v-if="facility.pricePerMonth && facility.pricePerMonth > 0" class="text-blue-900">
-                      <span class="font-medium">${{ facility.pricePerMonth }}</span> /month
+                      <span class="font-medium">LKR {{ facility.pricePerMonth }}</span> /month
                     </div>
                     <div v-if="facility.pricePerYear && facility.pricePerYear > 0" class="text-blue-900">
-                      <span class="font-medium">${{ facility.pricePerYear }}</span> /year
+                      <span class="font-medium">LKR {{ facility.pricePerYear }}</span> /year
                     </div>
                   </div>
                 </div>

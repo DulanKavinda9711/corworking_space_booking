@@ -2314,12 +2314,17 @@ const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicat
   
   const normalizedType = apiType.toLowerCase().trim()
   
+  // Check for dedicated desk first (most specific)
+  if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+    return 'Dedicated Desk'
+  }
+  // Then check for hot desk
+  if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk') || normalizedType.includes('shared desk')) {
+    return 'Hot Desk'
+  }
+  // Then check for meeting room
   if (normalizedType.includes('meeting') || normalizedType.includes('conference') || normalizedType.includes('room')) {
     return 'Meeting Room'
-  } else if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk')) {
-    return 'Hot Desk'
-  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
-    return 'Dedicated Desk'
   }
   
   // Default fallback

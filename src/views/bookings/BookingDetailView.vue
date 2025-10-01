@@ -443,6 +443,33 @@ const route = useRoute()
 const router = useRouter()
 const { customers } = useCustomers()
 
+// Helper function to map API product types to our valid types
+const mapProductType = (apiType: string): 'Meeting Room' | 'Hot Desk' | 'Dedicated Desk' => {
+  if (!apiType) return 'Meeting Room'
+  
+  const normalizedType = apiType.toLowerCase().trim()
+  
+  if (normalizedType.includes('meeting') || normalizedType.includes('conference') || normalizedType.includes('room')) {
+    return 'Meeting Room'
+  } else if (normalizedType.includes('hot') || normalizedType.includes('hotdesk') || normalizedType.includes('hot desk')) {
+    return 'Hot Desk'
+  } else if (normalizedType.includes('dedicated') || normalizedType.includes('fixed') || normalizedType.includes('private desk')) {
+    return 'Dedicated Desk'
+  }
+  
+  // Default fallback
+  return 'Meeting Room'
+}
+
+// Helper function to convert 24-hour time to 12-hour format
+const convertTo12Hour = (time24: string): string => {
+  if (!time24) return ''
+  const [hours, minutes] = time24.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const hour12 = hours % 12 || 12
+  return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`
+}
+
 // Modal state
 
 // Send message modal state
@@ -748,7 +775,7 @@ onMounted(async () => {
       booking.value = {
         id: bookingData.order_id || bookingId,
         productName: product.product_type || 'Unknown Product',
-        productType: product.product_type === 'MeetingRoom' ? 'Meeting Room' : (product.product_type || 'Unknown Type'),
+        productType: mapProductType(product.product_type || ''),
         productId: product.product_id || '',
         productImage: product.product_image || '/assets/meeting-room.png',
         customerName: `${bookingData.first_name || ''} ${bookingData.last_name || ''}`.trim() || 'Unknown Customer',
@@ -756,8 +783,8 @@ onMounted(async () => {
         customerPhone: bookingData.phone || '',
         userType: bookingData.customer_type?.toLowerCase() === 'guest' ? 'guest' : 'registered',
         date: product.booking_date || '',
-        startTime: product.start_time || '',
-        endTime: product.end_time || '',
+        startTime: product.start_time ? convertTo12Hour(product.start_time) : '',
+        endTime: product.end_time ? convertTo12Hour(product.end_time) : '',
         duration: product.duration || '',
         totalPrice: product.total_price || 0,
         basePrice: product.product_price || 0,

@@ -325,7 +325,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ booking.customerName }}</div>
-                  <div class="text-xs text-gray-500">{{ booking.customerType }}</div>
+                  <div class="text-xs text-gray-500">{{ booking.userType || booking.customerType }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div v-if="activeTab === 'subscriptions' || (activeTab === 'all' && booking.productType === 'Subscription')" class="text-sm text-gray-900">{{ booking.subscribedDate }}
@@ -365,13 +365,13 @@
                   <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription' && booking.status === 'ongoing'" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
+                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming')" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
                   </div>
                   <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
                   <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription' && booking.status === 'ongoing'" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
+                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming')" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
                   </div>
                   <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
                   <div v-else class="text-sm text-gray-500">-</div>
@@ -563,9 +563,9 @@ const filteredBookings = computed(() => {
     // Show all bookings and subscriptions combined
     bookings = [...allBookings.value, ...subscriptions.value]
   } else if (activeTab.value === 'bookings') {
-    // Show only Meeting Room and Hot Desk bookings that are not cancelled and not completed
+    // Show only Meeting Room, Hot Desk, and Dedicated Desk bookings that are not cancelled and not completed
     bookings = allBookings.value.filter(b => 
-      (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
+      (b.productType === 'Meeting Room' || b.productType === 'Hot Desk' || b.productType === 'Dedicated Desk') && 
       b.status !== 'cancelled' &&
       getDynamicStatus(b) !== 'complete'
     )
@@ -614,7 +614,17 @@ const filteredBookings = computed(() => {
 
   // Apply other filters
   if (filters.value.location) {
-    bookings = bookings.filter(b => b.locationName === filters.value.location)
+    bookings = bookings.filter(b => {
+      const isMatch = b.locationName === filters.value.location
+      if (!isMatch) {
+        console.log('Location filter mismatch:', {
+          bookingLocationName: b.locationName,
+          filterLocation: filters.value.location,
+          bookingId: b.id
+        })
+      }
+      return isMatch
+    })
   }
   if (filters.value.productType && filters.value.productType.length > 0) {
     bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
@@ -794,9 +804,9 @@ const getTabCount = (tabId: string) => {
     // Count all bookings and subscriptions combined
     return allBookings.value.length + subscriptions.value.length
   } else if (tabId === 'bookings') {
-    // Count Meeting Room and Hot Desk bookings that are not cancelled and not completed
+    // Count Meeting Room, Hot Desk, and Dedicated Desk bookings that are not cancelled and not completed
     return allBookings.value.filter(b => 
-      (b.productType === 'Meeting Room' || b.productType === 'Hot Desk') && 
+      (b.productType === 'Meeting Room' || b.productType === 'Hot Desk' || b.productType === 'Dedicated Desk') && 
       b.status !== 'cancelled' &&
       getDynamicStatus(b) !== 'complete'
     ).length
@@ -1253,7 +1263,7 @@ const locationOptions = computed(() => {
   const options = [{ value: '', label: 'All Locations' }]
   locations.value.forEach(location => {
     options.push({
-      value: location.id,
+      value: location.name, // Use location name instead of ID to match booking.locationName
       label: location.name
     })
   })
@@ -1380,20 +1390,20 @@ const fetchSubscriptions = async () => {
     if (response.success && response.data) {
       // Map API response to expected format
       subscriptions.value = response.data.map((item: any) => ({
-        id: item.booking_id,
-        bookingId: item.booking_id,
-        customerName: `${item.first_name} ${item.last_name}`,
-        customerEmail: item.email,
-        productName: item.product_type,
-        productType: 'Subscription',
-        locationName: item.location_name,
-        subscribedDate: item.subscribed_date,
-        nextBillingDate: item.next_billing_date,
-        subscriptionEndDate: item.subscription_end_date,
-        totalPrice: item.total_price,
-        status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
-        subscriptionType: item.package_type,
-        userType: 'registered' // Default assumption
+  id: item.booking_id,
+  bookingId: item.booking_id,
+  customerName: `${item.first_name} ${item.last_name}`,
+  customerEmail: item.email,
+  productName: item.product_type,
+  productType: 'Subscription',
+  locationName: item.location_name,
+  subscribedDate: item.subscribed_date,
+  nextBillingDate: item.next_billing_date,
+  subscriptionEndDate: item.subscription_end_date,
+  totalPrice: item.total_price,
+  status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
+  subscriptionType: item.package_type,
+  userType: item.customer_type ? String(item.customer_type).charAt(0).toUpperCase() + String(item.customer_type).slice(1).toLowerCase() : 'Registered'
       }))
     } else {
       subscriptionsError.value = response.message || 'Failed to load subscriptions'
@@ -1417,6 +1427,14 @@ onMounted(async () => {
 
   // Fetch bookings from API
   await bookingsStore.fetchBookings()
+
+  // Debug: Log locations and bookings for troubleshooting
+  console.log('Loaded locations:', locations.value)
+  console.log('Location options:', locationOptions.value)
+  console.log('Sample booking locations:', allBookings.value.slice(0, 3).map(b => ({
+    id: b.id,
+    locationName: b.locationName
+  })))
 
   // Check for tab query parameter and set active tab
   const tabParam = route.query.tab as string
