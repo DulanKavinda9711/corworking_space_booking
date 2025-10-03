@@ -1000,6 +1000,71 @@ export const bookingApi = {
   },
 
   /**
+   * Admin cancel booking with detailed form data
+   */
+  async adminCancelBooking(cancellationData: {
+    OrderId: string
+    ProductId: string
+    CancellationReason: string
+    Email: string
+    Phone: string
+    SmsContent: string
+    RefundProof?: File
+  }): Promise<ApiResponse<{ cancellationId: string; message: string }>> {
+    try {
+      const formData = new FormData()
+      formData.append('OrderId', cancellationData.OrderId)
+      formData.append('ProductId', cancellationData.ProductId)
+      formData.append('CancellationReason', cancellationData.CancellationReason)
+      formData.append('Email', cancellationData.Email)
+      formData.append('Phone', cancellationData.Phone)
+      formData.append('SmsContent', cancellationData.SmsContent)
+      
+      if (cancellationData.RefundProof) {
+        formData.append('RefundProof', cancellationData.RefundProof)
+      }
+
+      console.log('Admin cancel booking request:', {
+        OrderId: cancellationData.OrderId,
+        ProductId: cancellationData.ProductId,
+        CancellationReason: cancellationData.CancellationReason,
+        Email: cancellationData.Email,
+        Phone: cancellationData.Phone,
+        SmsContent: cancellationData.SmsContent,
+        RefundProof: cancellationData.RefundProof?.name || 'No file'
+      })
+
+      const response = await fetch(buildApiUrl('/booking/admin-cancel-booking'), {
+        method: 'POST',
+        body: formData
+      })
+
+      console.log('Admin cancel booking response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Admin cancel booking error response:', errorText)
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('Admin cancel booking response data:', data)
+
+      if (data.success || data.status_code === 200) {
+        return successResponse({
+          cancellationId: data.data?.cancellationId || `CANCEL-${Date.now()}`,
+          message: data.message || 'Booking cancelled successfully'
+        }, data.message || 'Booking cancelled successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to cancel booking', data.errors)
+      }
+    } catch (error: any) {
+      console.error('Admin cancel booking error:', error)
+      return errorResponse('Network error while cancelling booking', [error.message || 'Unknown error'])
+    }
+  },
+
+  /**
    * Delete booking (admin only)
    */
   async deleteBooking(_id: string): Promise<ApiResponse> {
@@ -1094,6 +1159,44 @@ export const bookingApi = {
   },
 
   /**
+   * Get all bookings and subscriptions for admin all tab
+   */
+  async getAdminAllBookingsTable(filters?: any): Promise<ApiResponse<any[]>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/admin-all-bookings-table'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(filters || {})
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'All bookings and subscriptions retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve all bookings')
+      }
+    } catch (error: any) {
+      console.error('Get admin all bookings table error:', error)
+      return errorResponse('Network error while retrieving all bookings', [error.message])
+    }
+  },
+
+  /**
    * Get admin subscription table data
    */
   async getAdminSubscriptionTable(filters?: any): Promise<ApiResponse<any[]>> {
@@ -1128,6 +1231,44 @@ export const bookingApi = {
     } catch (error: any) {
       console.error('Get admin subscription table error:', error)
       return errorResponse('Network error while retrieving subscription data', [error.message])
+    }
+  },
+
+  /**
+   * Get admin booking history table data
+   */
+  async getAdminBookingHistoryTable(filters?: any): Promise<ApiResponse<any[]>> {
+    try {
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      const response = await fetch(buildApiUrl('booking/admin-booking-history-table'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(filters || {})
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200) {
+        return successResponse(data.data, data.message || 'Booking history retrieved successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to retrieve booking history')
+      }
+    } catch (error: any) {
+      console.error('Get admin booking history table error:', error)
+      return errorResponse('Network error while retrieving booking history', [error.message])
     }
   },
 
@@ -3170,7 +3311,8 @@ export const messageApi = {
    */
   async sendSMS(contactNumber: string, message: string): Promise<ApiResponse<{ success: boolean; messageId?: string }>> {
     try {
-      const response = await fetch(buildApiUrl('/sms-service/send'), {
+      console.log('Sending SMS via API:', { contactNumber, message })
+      const response = await fetch(buildApiUrl('/sms-service/send-sms'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3182,7 +3324,15 @@ export const messageApi = {
         })
       })
 
+      console.log('SMS API response status:', response.status)
+      console.log('SMS API response ok:', response.ok)
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
+      console.log('SMS API response data:', data)
 
       if (data.status_code === 200) {
         return successResponse({ success: true, messageId: data.data?.messageId }, data.message || 'SMS sent successfully')
@@ -3196,22 +3346,36 @@ export const messageApi = {
   },
 
   /**
-   * Get all sent messages
+   * Get all user messages from admin API
    */
   async getAllMessages(): Promise<ApiResponse<Message[]>> {
     try {
-      const response = await fetch(`${API_CONFIG.API_BASE_URL}/contact/admin/get-user-messages`, {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      if (!token) {
+        return errorResponse('No authentication token found')
+      }
+
+      console.log('Calling admin get-user-messages API...')
+      
+      const response = await fetch(buildApiUrl('contact/admin/get-user-messages'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({}) // Empty body as per API requirements
       })
+
+      console.log('API response status:', response.status)
 
       if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`
         try {
           const errorData = await response.text()
+          console.error('Error response:', errorData)
           errorMessage += ` - ${errorData}`
         } catch {
           // Ignore error reading response body
@@ -3220,11 +3384,25 @@ export const messageApi = {
       }
 
       const data = await response.json()
+      console.log('API response data:', data)
 
       if (data.status_code === 200) {
-        // Assuming the API returns messages in data field
-        // If the API structure is different, adjust accordingly
-        const messages = Array.isArray(data.data) ? data.data : []
+        // Handle the API response data structure
+        // Since the response shows "data": {}, we need to check if it contains messages
+        let messages: Message[] = []
+        
+        if (data.data) {
+          if (Array.isArray(data.data)) {
+            messages = data.data
+          } else if (typeof data.data === 'object' && data.data.messages) {
+            messages = Array.isArray(data.data.messages) ? data.data.messages : []
+          } else if (typeof data.data === 'object') {
+            // If data is an object with message properties, convert it to an array
+            messages = Object.keys(data.data).length > 0 ? [data.data] : []
+          }
+        }
+        
+        console.log('Parsed messages:', messages)
         return successResponse(messages, data.message || 'Messages retrieved successfully')
       } else {
         return errorResponse(data.message || 'Failed to retrieve messages')
@@ -3679,6 +3857,8 @@ export const permissionApi = {
       return errorResponse('Network error while fetching permissions', [error.message])
     }
   },
+
+
 
   /**
    * Create a new permission

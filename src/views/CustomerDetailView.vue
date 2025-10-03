@@ -165,7 +165,7 @@
           </div>
           
           <div class="flex flex-col items-start space-y-3">
-            <button 
+            <!-- <button 
               @click="toggleCustomerStatus"
               :class="customer.status === 'active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
               class="w-full px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center"
@@ -174,11 +174,11 @@
                 <path :d="customer.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
               </svg>
               <span>{{ customer.status === 'active' ? 'Make Inactive' : 'Make Active' }}</span>
-            </button>
+            </button> -->
             
             <button 
               @click="openSendMessageModal" 
-              class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+              class="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
             >
               <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="mdiMessage" />
@@ -683,6 +683,31 @@
       </div>
     </div>
 
+    <!-- Send Message Success Modal -->
+    <div v-if="showMessageSuccessModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeMessageSuccessModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-green-100">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Message Sent Successfully!</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">{{ messageSuccessText }}</p>
+          </div>
+          <div class="flex items-center justify-center pt-4">
+            <button
+              @click="closeMessageSuccessModal"
+              class="px-6 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading state -->
     <!-- <div v-else class="flex items-center justify-center h-64">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -740,6 +765,10 @@ const isTogglingStatus = ref(false)
 const showStatusSuccessModal = ref(false)
 const showStatusErrorModal = ref(false)
 const statusModalMessage = ref('')
+
+// Send message modal state
+const showMessageSuccessModal = ref(false)
+const messageSuccessText = ref('')
 
 // Add rewards modal state
 const showAddRewardsModal = ref(false)
@@ -900,6 +929,11 @@ const closeStatusErrorModal = () => {
   statusModalMessage.value = ''
 }
 
+const closeMessageSuccessModal = () => {
+  showMessageSuccessModal.value = false
+  messageSuccessText.value = ''
+}
+
 const sendMessage = async () => {
   if (!customer.value) return
   
@@ -914,7 +948,8 @@ const sendMessage = async () => {
       )
       
       if (result.success) {
-        alert(`SMS sent successfully to ${customer.value.name}`)
+        messageSuccessText.value = `SMS sent successfully to ${customer.value.name} at ${messageForm.value.recipientPhone}`
+        showMessageSuccessModal.value = true
       } else {
         alert(`Failed to send SMS: ${result.message}`)
         return
@@ -934,7 +969,8 @@ const sendMessage = async () => {
       })
       
       if (result.success) {
-        alert(`Email sent successfully to ${customer.value.name}`)
+        messageSuccessText.value = `Email sent successfully to ${customer.value.name} at ${messageForm.value.recipientEmail}`
+        showMessageSuccessModal.value = true
       } else {
         alert(`Failed to send email: ${result.message}`)
         return

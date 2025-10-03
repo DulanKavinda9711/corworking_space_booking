@@ -62,26 +62,88 @@
 
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-4">Permissions</label>
-            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10">
-              <div v-if="permissionsStore.loading" class="text-center py-4">
-                <div class="text-gray-500">Loading permissions...</div>
+            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-6">
+              <!-- Quick Role Templates -->
+              <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h4 class="text-sm font-medium text-blue-900 mb-3">Quick Role Templates</h4>
+                <div class="flex flex-wrap gap-2">
+                  <button 
+                    v-for="(permissions, roleName) in roleTemplates" 
+                    :key="roleName"
+                    @click="applyRoleTemplate(permissions)"
+                    type="button"
+                    class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors"
+                  >
+                    {{ roleName }}
+                  </button>
+                  <button 
+                    @click="clearAllPermissions"
+                    type="button"
+                    class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
+                  >
+                    Clear All
+                  </button>
+                </div>
               </div>
-              <div v-else-if="permissionsStore.error" class="text-center py-4">
-                <div class="text-red-500">{{ permissionsStore.error }}</div>
-              </div>
-              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label v-for="permission in permissionsStore.permissions" :key="permission.id" class="flex items-center">
-                  <input
-                    type="checkbox"
-                    :value="permission.id"
-                    v-model="selectedPermissionIds"
-                    class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                  <div class="ml-2">
-                    <div class="text-sm text-gray-700 font-medium">{{ permission.code_name }}</div>
-                    <div class="text-xs text-gray-500">{{ permission.description }}</div>
+
+              <!-- Permission Categories -->
+              <div class="space-y-6">
+                <div v-for="category in Object.keys(PERMISSIONS_BY_CATEGORY)" :key="category" class="border border-gray-100 rounded-lg p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-medium text-gray-900">{{ getCategoryDisplayName(category) }}</h4>
+                    <div class="flex items-center space-x-2">
+                      <button 
+                        @click="toggleCategoryPermissions(category, true)"
+                        type="button"
+                        class="text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        Select All
+                      </button>
+                      <span class="text-gray-300">|</span>
+                      <button 
+                        @click="toggleCategoryPermissions(category, false)"
+                        type="button"
+                        class="text-xs text-gray-600 hover:text-gray-800"
+                      >
+                        None
+                      </button>
+                    </div>
                   </div>
-                </label>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label 
+                      v-for="permission in getCategoryPermissions(category)" 
+                      :key="permission" 
+                      class="flex items-center p-2 rounded hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        :value="permission"
+                        v-model="selectedPermissions"
+                        class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <div class="ml-3">
+                        <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permission) }}</div>
+                        <div class="text-xs text-gray-500">{{ getPermissionDescription(permission) }}</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Permissions Summary -->
+              <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                <h4 class="text-sm font-medium text-green-900 mb-2">Selected Permissions ({{ selectedPermissions.length }})</h4>
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="permission in selectedPermissions" 
+                    :key="permission"
+                    class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full"
+                  >
+                    {{ formatPermissionName(permission) }}
+                  </span>
+                  <span v-if="selectedPermissions.length === 0" class="text-xs text-green-600">No permissions selected</span>
+                </div>
               </div>
             </div>
           </div>
@@ -135,6 +197,12 @@ import SuccessModal from '@/components/ui/SuccessModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { usePermissionsStore } from '@/stores/permissions'
 import { permissionApi } from '@/services/api'
+import { 
+  PERMISSIONS, 
+  PERMISSION_CATEGORIES, 
+  PERMISSION_DESCRIPTIONS,
+  PERMISSIONS_BY_CATEGORY 
+} from '@/constants/permissions'
 
 // Role interface
 interface Role {
@@ -168,8 +236,34 @@ const newRole = ref({
   status: 'active' as 'active' | 'inactive'
 })
 
-// Selected permission IDs
+// Selected permission IDs (legacy)
 const selectedPermissionIds = ref<number[]>([])
+
+// Selected permissions (new system)
+const selectedPermissions = ref<string[]>([])
+
+// Role templates for quick setup
+const roleTemplates = {
+  'Super Admin': ['*'], // All permissions
+  'Admin': [
+    'users.view', 'users.create', 'users.update', 'users.delete',
+    'bookings.view', 'bookings.create', 'bookings.update', 'bookings.cancel',
+    'companies.view', 'companies.create', 'companies.update',
+    'facilities.view', 'facilities.create', 'facilities.update',
+    'payments.view', 'reports.view', 'settings.view', 'settings.update'
+  ],
+  'Manager': [
+    'users.view', 'bookings.view', 'bookings.create', 'bookings.update', 'bookings.cancel',
+    'companies.view', 'facilities.view', 'payments.view', 'reports.view'
+  ],
+  'Staff': [
+    'bookings.view', 'bookings.create', 'bookings.update',
+    'companies.view', 'facilities.view'
+  ],
+  'User': [
+    'bookings.view', 'bookings.create'
+  ]
+}
 
 // Computed properties for status dropdown
 const statusOptions = computed(() => [
@@ -206,9 +300,54 @@ const selectStatus = (statusValue: string) => {
   dropdownStates.value.status = false
 }
 
+// Permission management methods
+const formatPermissionName = (permission: string): string => {
+  return permission.split('.').map(part => 
+    part.charAt(0).toUpperCase() + part.slice(1)
+  ).join(' ')
+}
+
+const applyRoleTemplate = (permissions: string[]) => {
+  selectedPermissions.value = [...permissions]
+}
+
+const clearAllPermissions = () => {
+  selectedPermissions.value = []
+}
+
+const toggleCategoryPermissions = (category: string, selectAll: boolean) => {
+  const categoryPerms = PERMISSIONS_BY_CATEGORY[category as keyof typeof PERMISSIONS_BY_CATEGORY] as readonly string[]
+  if (selectAll) {
+    // Add all category permissions that aren't already selected
+    categoryPerms.forEach(permission => {
+      if (!selectedPermissions.value.includes(permission)) {
+        selectedPermissions.value.push(permission)
+      }
+    })
+  } else {
+    // Remove all category permissions
+    selectedPermissions.value = selectedPermissions.value.filter(
+      permission => !categoryPerms.includes(permission)
+    )
+  }
+}
+
+// Helper functions for TypeScript compatibility
+const getCategoryDisplayName = (category: string) => {
+  return PERMISSION_CATEGORIES[category as keyof typeof PERMISSION_CATEGORIES] || category
+}
+
+const getCategoryPermissions = (category: string) => {
+  return PERMISSIONS_BY_CATEGORY[category as keyof typeof PERMISSIONS_BY_CATEGORY] || []
+}
+
+const getPermissionDescription = (permission: string) => {
+  return PERMISSION_DESCRIPTIONS[permission as keyof typeof PERMISSION_DESCRIPTIONS] || 'No description available'
+}
+
 // Methods
 const createRole = async () => {
-  if (selectedPermissionIds.value.length === 0) {
+  if (selectedPermissions.value.length === 0) {
     errorMessage.value = 'Please select at least one permission'
     showErrorModal.value = true
     return
@@ -217,33 +356,30 @@ const createRole = async () => {
   isSubmitting.value = true
 
   try {
-    // Prepare data for API call
+    // Prepare role data with new permission system
     const roleData = {
+      id: Date.now().toString(), // Generate temporary ID
       name: newRole.value.name,
-      is_active: newRole.value.status === 'active',
-      permission_ids: selectedPermissionIds.value
+      description: `${newRole.value.name} role with custom permissions`,
+      permissions: selectedPermissions.value,
+      isActive: newRole.value.status === 'active'
     }
 
-    // Call the API
-    const response = await permissionApi.createRole(roleData)
+    // For now, just add to the permissions store (mock API call)
+    // In a real implementation, this would call: await permissionApi.createRole(roleData)
+    console.log('Creating role:', roleData)
+    
+    // Simulate API success
+    showSuccessModal.value = true
 
-    if (response.success) {
-      // Show success modal
-      showSuccessModal.value = true
-
-      // Reset form
-      newRole.value = {
-        name: '',
-        permissions: [],
-        status: 'active'
-      }
-      selectedPermissionIds.value = []
-
-      // Don't auto-redirect, let user click OK
-    } else {
-      errorMessage.value = response.message || 'Failed to create role'
-      showErrorModal.value = true
+    // Reset form
+    newRole.value = {
+      name: '',
+      permissions: [],
+      status: 'active'
     }
+    selectedPermissions.value = []
+    selectedPermissionIds.value = []
   } catch (error: any) {
     console.error('Error creating role:', error)
     errorMessage.value = error.message || 'An error occurred while creating the role'

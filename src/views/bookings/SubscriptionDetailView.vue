@@ -22,13 +22,13 @@
 						<span :class="getStatusClass(subscription.status)" class="px-3 py-1 text-sm font-medium rounded-full">
 							{{ subscription.status }}
 						</span>
-						<button 
+						<!-- <button 
 							v-if="subscription.status !== 'cancelled'"
 							@click="confirmCancelSubscription"
 							class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
 						>
 							Cancel Subscription
-						</button>
+						</button> -->
 					</div>
 				</div>
 			</div>
@@ -87,7 +87,7 @@
 							<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Message</label>
 							<p class="text-sm text-gray-900 mt-1 bg-gray-50 p-3 rounded-lg">{{ subscription.customerMessage }}</p>
 						</div>
-						<div v-if="subscription.userType === 'registered'" class="pt-4 border-t border-gray-200">
+						<!-- <div v-if="subscription.userType === 'registered'" class="pt-4 border-t border-gray-200">
 							<div class="flex items-center space-x-4">
 								<button v-if="getCustomerDetails(subscription).isRegistered" 
 												@click="viewCustomerProfile" 
@@ -107,7 +107,7 @@
 									Send Message
 								</button>
 							</div>
-						</div>
+						</div> -->
 					</div>
 				</div>
 
@@ -131,21 +131,6 @@
 								<h3 class="text-sm font-medium text-gray-900">{{ subscription.productName }}</h3>
 								<p class="text-sm text-gray-500">{{ subscription.productType }}</p>
 								<p class="text-sm text-gray-500">{{ subscription.locationName }}</p>
-							</div>
-						</div>
-						<div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-							<div>
-								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</label>
-								<p class="text-sm text-gray-900">{{ subscription.capacity }} {{ subscription.capacity === 1 ? 'person' : 'people' }}</p>
-							</div>
-							<div>
-								<label class="text-xs font-medium text-gray-500 uppercase tracking-wider">Facilities</label>
-								<div class="flex flex-wrap gap-1 mt-1">
-									<span v-for="facility in subscription.facilities" :key="facility" 
-												class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-										{{ facility }}
-									</span>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -225,7 +210,7 @@
 		</div>
 
 		<!-- Loading/Not Found state -->
-		<div v-else class="flex items-center justify-center h-64">
+		<!-- <div v-else class="flex items-center justify-center h-64">
 			<div class="text-center">
 				<svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -239,10 +224,10 @@
 					{{ getBackNavigationLabel() }}
 				</router-link>
 			</div>
-		</div>
+		</div> -->
 
 		<!-- Send Message Modal -->
-		<div v-if="showSendMessageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSendMessageModal">
+		<!-- <div v-if="showSendMessageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeSendMessageModal">
 			<div class="relative top-10 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white" @click.stop>
 				<div class="mt-3">
 					<div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-blue-100">
@@ -361,7 +346,7 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</div> -->
 	</AdminLayout>
 </template>
 

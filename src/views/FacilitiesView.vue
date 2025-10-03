@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2">
           <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiSeat" />
+            <path :d="mdiWifi" />
           </svg>
           <span class="text-sm font-medium text-green-700">
             Total Facilities:
@@ -24,13 +24,15 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </button>
-          <router-link to="/facilities/add"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add New Facility</span>
-          </router-link>
+          <PermissionGuard permission="create_facilities">
+            <router-link to="/facilities/add"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Add New Facility</span>
+            </router-link>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -127,18 +129,29 @@
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-sm font-medium w-48" @click.stop>
                     <div class="flex items-center justify-end space-x-2">
+                      <!-- Edit Button - Hidden if no edit permission -->
+                      <PermissionGuard permission="edit_facilities">
+                        <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
+                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center space-x-1"
+                          title="Edit Facility">
+                          <span>Edit</span>
+                        </button>
+                      </PermissionGuard>
                       
-                      <button @click.stop="$router.push(`/facilities/${facility.id}/edit`)"
-                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 flex items-center justify-center space-x-1"
-                        title="Edit Facility">
-                        <span>Edit</span>
-                      </button>
-                      <button @click.stop="toggleFacilityStatus(facility)"
-                        :class="facility.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
-                        class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center"
-                        :title="facility.status === 'active' ? 'Make Facility Inactive' : 'Activate Facility'">
-                        <span>{{ facility.status === 'active' ? 'Inactive' : 'Activate' }}</span>
-                      </button>
+                      <!-- Toggle Status Button - Hidden if no edit permission -->
+                      <PermissionGuard permission="edit_facilities">
+                        <button @click.stop="toggleFacilityStatus(facility)"
+                          :class="facility.status === 'active' ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
+                          class="w-20 px-2 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center"
+                          :title="facility.status === 'active' ? 'Make Facility Inactive' : 'Activate Facility'">
+                          <span>{{ facility.status === 'active' ? 'Inactive' : 'Activate' }}</span>
+                        </button>
+                      </PermissionGuard>
+                      
+                      <!-- Show message if no actions available -->
+                      <div v-if="!hasAnyFacilityPermissions" class="text-sm text-gray-500 italic">
+                        No actions available
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -150,11 +163,11 @@
                   <td colspan="3" class="px-6 py-12 text-center">
                     <div>
                       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8V5a2 2 0 00-2-2H9a2 2 0 00-2-2v2h10z" />
                       </svg>
                       <h3 class="mt-2 text-sm font-medium text-gray-900">No facilities found</h3>
                       <p class="mt-1 text-sm text-gray-500">
-                        {{ facilities.length === 0 ? 'No facilities have been created yet.' : 'No facilities match the current search and filters.' }}
+                        {{ facilities.length === 0 ? 'Get started by creating a new facility.' : 'Try adjusting your search or filters.' }}
                       </p>
                     </div>
                   </td>
@@ -205,13 +218,21 @@
                 <!-- Action buttons with modern styling -->
                 <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div class="flex items-center space-x-1">
-                    <router-link :to="`/facilities/${facility.id}/edit`"
-                      class="group/btn flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-all duration-200 hover:scale-105"
-                      title="Edit Facility">
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiPencil" />
-                      </svg>
-                    </router-link>
+                    <!-- Edit Button - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_facilities">
+                      <router-link :to="`/facilities/${facility.id}/edit`"
+                        class="group/btn flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-all duration-200 hover:scale-105"
+                        title="Edit Facility">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiPencil" />
+                        </svg>
+                      </router-link>
+                    </PermissionGuard>
+                    
+                    <!-- Show message if no actions available -->
+                    <div v-if="!hasAnyFacilityPermissions" class="text-xs text-gray-500 italic ml-2">
+                      No actions available
+                    </div>
                   </div>
 
                   <!-- Modern indicator -->
@@ -485,14 +506,26 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import { facilityApi } from '@/services/api'
+import { usePermissions } from '@/composables/usePermissions'
 import {
   mdiPencil,
   mdiDelete,
   mdiSeat,
   mdiAccountCancel,
-  mdiAccountCheck
+  mdiAccountCheck,
+  mdiWifi
 } from '@mdi/js'
+
+// Permissions
+const permissionsStore = usePermissions()
+
+// Check if user has any facility permissions
+const hasAnyFacilityPermissions = computed(() => {
+  return permissionsStore.hasPermission('create_facilities') || 
+         permissionsStore.hasPermission('edit_facilities')
+})
 
 // State
 const searchQuery = ref('')

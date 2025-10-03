@@ -311,9 +311,6 @@ const handleLogin = async () => {
     // get data of the username and password
     const { username, password } = form.value
 
-    // Add 5 second delay before making API call
-    await new Promise(resolve => setTimeout(resolve, 5000))
-
     const response = await authApi.adminLogin({
       username: username,
       password: password
@@ -330,26 +327,54 @@ const handleLogin = async () => {
       const decodedToken: any = jwtDecode(token)
       console.log('Decoded token:', decodedToken)
 
-      // Extract user info from token claims
-      const user_id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '1'
-      const username_from_token = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || username
-      const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Admin'
-      const permissions = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/permissions'] 
+      // Extract user info from token claims - .NET Identity claims with simple claims fallback
+      const user_id = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || decodedToken['sub']
+      const username_from_token = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || decodedToken['name']
+      const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decodedToken['role']
+      const permissions = decodedToken['permissions'] // Permissions are in simple 'permissions' claim
 
-      console.log('Extracted user data:', { user_id, username_from_token, role })
-      console.log('Extracted permissions:', permissions)
+      console.log('🔍 JWT Claims extracted:')
+      console.log('- User ID:', user_id)
+      console.log('- Username:', username_from_token)
+      console.log('- Role:', role)
+      console.log('- Permissions:', permissions)
+      console.log('- Permissions type:', typeof permissions)
+      console.log('- Permissions length:', permissions ? permissions.length : 'N/A')
 
-      // Save token and user data in auth store
+      // Validate required claims
+      if (!user_id || !username_from_token || !role) {
+        throw new Error('Invalid JWT token: Missing required claims (nameidentifier, name, or role)')
+      }
+
+      // Save token and user data in auth store with permissions
       authStore.setAuthToken(token)
-      authStore.setUser({
+      
+      // Handle permissions - if not provided in JWT, use role-based fallback
+      let userPermissions = []
+      if (permissions && Array.isArray(permissions)) {
+        userPermissions = permissions
+        console.log('✅ Using permissions from JWT token:', permissions.length, 'permissions')
+      } else {
+        console.log('⚠️  No permissions in JWT token, using role-based fallback for role:', role)
+        // SuperAdmin gets all permissions, others get basic permissions
+        if (role === 'SuperAdmin' || role === 'Super Admin') {
+          userPermissions = ['*'] // All permissions
+        } else {
+          userPermissions = ['view_dashboard'] // Basic permission
+        }
+      }
+
+      await authStore.setUserWithPermissions({
         id: user_id.toString(),
         username: username_from_token,
         name: username_from_token,
         role: role,
-        permissions: permissions || []
+        permissions: userPermissions
       })
 
-      console.log('Auth store updated successfully')
+      console.log('✅ Auth store updated successfully')
+      console.log('- Final permissions count:', userPermissions.length)
+      console.log('- Final permissions:', userPermissions)
 
       // Check role for redirection
       if (role === 'Super Admin' || role === 'SuperAdmin') {

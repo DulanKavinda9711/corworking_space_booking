@@ -150,7 +150,63 @@ interface Booking {
 export const useBookingsStore = defineStore('bookings', () => {
   // State
   const allBookings = ref<Booking[]>([])
+  const allBookingsAndSubscriptions = ref<any[]>([]) // Store for 'All' tab data
+  const subscriptions = ref<any[]>([])
+  const bookingHistory = ref<any[]>([]) // Store for history tab data
   const bookingStatuses = ref<Record<string, Booking['status']>>({})
+
+  // Load persisted data on store initialization
+  const loadPersistedData = () => {
+    try {
+      const savedBookings = localStorage.getItem('pinia_bookings_data')
+      const savedSubscriptions = localStorage.getItem('pinia_subscriptions_data')
+      const savedAllBookings = localStorage.getItem('pinia_all_bookings_data')
+      
+      if (savedBookings) {
+        const parsedBookings = JSON.parse(savedBookings)
+        if (Array.isArray(parsedBookings)) {
+          allBookings.value = parsedBookings
+          console.log('Loaded persisted bookings:', parsedBookings.length, 'bookings')
+          
+          // Log dedicated desk bookings specifically
+          const dedicatedDeskCount = parsedBookings.filter(b => b.productType === 'Dedicated Desk').length
+          if (dedicatedDeskCount > 0) {
+            console.log('Found', dedicatedDeskCount, 'dedicated desk bookings in persisted data')
+          }
+        }
+      }
+      
+      if (savedSubscriptions) {
+        const parsedSubscriptions = JSON.parse(savedSubscriptions)
+        if (Array.isArray(parsedSubscriptions)) {
+          subscriptions.value = parsedSubscriptions
+          console.log('Loaded persisted subscriptions:', parsedSubscriptions.length, 'subscriptions')
+        }
+      }
+
+      if (savedAllBookings) {
+        const parsedAllBookings = JSON.parse(savedAllBookings)
+        if (Array.isArray(parsedAllBookings)) {
+          allBookingsAndSubscriptions.value = parsedAllBookings
+          console.log('Loaded persisted all bookings:', parsedAllBookings.length, 'items')
+        }
+      }
+    } catch (error) {
+      console.error('Error loading persisted data:', error)
+    }
+  }
+
+  // Save data to localStorage
+  const persistData = () => {
+    try {
+      localStorage.setItem('pinia_bookings_data', JSON.stringify(allBookings.value))
+      localStorage.setItem('pinia_subscriptions_data', JSON.stringify(subscriptions.value))
+      localStorage.setItem('pinia_all_bookings_data', JSON.stringify(allBookingsAndSubscriptions.value))
+      console.log('Persisted', allBookings.value.length, 'bookings,', subscriptions.value.length, 'subscriptions, and', allBookingsAndSubscriptions.value.length, 'all bookings')
+    } catch (error) {
+      console.error('Error persisting data:', error)
+    }
+  }
 
   // Actions
   const updateBookingStatus = (id: string, status: Booking['status']) => {
@@ -158,6 +214,14 @@ export const useBookingsStore = defineStore('bookings', () => {
     if (booking) {
       booking.status = status
       bookingStatuses.value[id] = status
+      
+      // Persist changes immediately
+      persistData()
+      
+      // Log if it's a dedicated desk booking
+      if (booking.productType === 'Dedicated Desk') {
+        console.log('Updated dedicated desk booking status:', { id, status, productName: booking.productName })
+      }
     }
   }
 
@@ -218,6 +282,16 @@ export const useBookingsStore = defineStore('bookings', () => {
           return booking
         })
         allBookings.value = mappedBookings
+        
+        // Persist the fetched and mapped bookings
+        persistData()
+        
+        // Log dedicated desk bookings specifically
+        const dedicatedDeskBookings = mappedBookings.filter(booking => booking.productType === 'Dedicated Desk')
+        if (dedicatedDeskBookings.length > 0) {
+          console.log('Fetched and stored', dedicatedDeskBookings.length, 'dedicated desk bookings:', 
+            dedicatedDeskBookings.map(b => ({ id: b.id, productName: b.productName, customerName: b.customerName })))
+        }
       }
     } catch (error) {
       console.error('Failed to fetch bookings:', error)
@@ -245,7 +319,218 @@ export const useBookingsStore = defineStore('bookings', () => {
     return null
   }
 
+  // Fetch subscriptions from API
+  const fetchSubscriptions = async () => {
+    try {
+      const response = await bookingApi.getAdminSubscriptionTable()
+      if (response.success && response.data) {
+        const mappedSubscriptions = response.data.map((item: any) => ({
+          id: item.booking_id,
+          bookingId: item.booking_id,
+          customerName: `${item.first_name} ${item.last_name}`,
+          customerEmail: item.email,
+          productName: item.product_type,
+          productType: 'Subscription',
+          locationName: item.location_name,
+          subscribedDate: item.subscribed_date,
+          nextBillingDate: item.next_billing_date,
+          subscriptionEndDate: item.subscription_end_date,
+          totalPrice: item.total_price,
+          status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
+          subscriptionType: item.package_type,
+          userType: item.customer_type ? String(item.customer_type).charAt(0).toUpperCase() + String(item.customer_type).slice(1).toLowerCase() : 'Registered'
+        }))
+        subscriptions.value = mappedSubscriptions
+        
+        // Persist subscription data
+        persistData()
+        
+        console.log('Fetched and stored', mappedSubscriptions.length, 'subscriptions')
+      }
+    } catch (error) {
+      console.error('Failed to fetch subscriptions:', error)
+    }
+  }
 
+  // Fetch all bookings and subscriptions for 'All' tab
+  const fetchAllBookingsAndSubscriptions = async (filters?: any) => {
+    try {
+      const response = await bookingApi.getAdminAllBookingsTable(filters)
+      if (response.success && response.data) {
+        const mappedData = response.data.map((item: any) => {
+          // Check if this is a subscription or regular booking
+          const isSubscription = item.subscription_start_date && item.subscription_end_date && item.package_type
+          
+          let mappedProductType: string
+          let productType: string
+          
+          if (isSubscription) {
+            mappedProductType = 'Subscription'
+            productType = 'Subscription'
+          } else {
+            mappedProductType = mapProductType(item.product_type)
+            productType = mappedProductType
+          }
+          
+          const booking = {
+            id: item.booking_id,
+            productName: item.product_type || 'Subscription',
+            productType: productType,
+            productId: '',
+            productImage: '',
+            customerName: item.first_name && item.last_name ? `${item.first_name} ${item.last_name}` : 'N/A',
+            customerEmail: item.email || '',
+            customerPhone: item.phone || '',
+            customerType: item.customer_type || 'Registered',
+            userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
+            date: item.booking_date !== '0001-01-01' ? item.booking_date : '',
+            startTime: item.start_time ? convertTo12Hour(item.start_time) : '',
+            endTime: item.end_time ? convertTo12Hour(item.end_time) : '',
+            duration: item.duration || '',
+            totalPrice: item.total_price,
+            basePrice: item.total_price,
+            additionalFacilities: 0,
+            taxes: 0,
+            status: mapStatus(item.status),
+            location: '',
+            locationName: item.location_name,
+            companyName: '',
+            capacity: 0,
+            facilities: [],
+            subscriptionType: item.package_type || '',
+            subscribedDate: item.subscription_start_date || '',
+            nextBillingDate: item.subscription_end_date || '',
+            customerMessage: ''
+          }
+
+          // Calculate real-time status for non-subscription bookings
+          if (!isSubscription) {
+            const dynamicStatus = calculateDynamicStatus(booking)
+            booking.status = dynamicStatus === 'on going' ? 'ongoing' :
+                            dynamicStatus === 'up comming' ? 'confirmed' :
+                            dynamicStatus === 'complete' ? 'completed' :
+                            dynamicStatus === 'cancelled' ? 'cancelled' : booking.status
+          }
+
+          return booking
+        })
+        
+        allBookingsAndSubscriptions.value = mappedData
+        persistData()
+        
+        console.log('Fetched and stored', mappedData.length, 'all bookings and subscriptions')
+        console.log('Sample data from admin-all-bookings-table API:', mappedData.slice(0, 3).map(item => ({
+          id: item.id,
+          customerName: item.customerName,
+          productType: item.productType,
+          locationName: item.locationName,
+          status: item.status
+        })))
+      } else {
+        console.error('Failed to fetch all bookings and subscriptions:', response.message)
+      }
+    } catch (error) {
+      console.error('Error fetching all bookings and subscriptions:', error)
+    }
+  }
+
+  // Fetch booking history from API
+  const fetchBookingHistory = async (filters?: any) => {
+    try {
+      const response = await bookingApi.getAdminBookingHistoryTable(filters)
+      if (response.success && response.data) {
+        const mappedHistory = response.data.map((item: any) => {
+          const mappedProductType = mapProductType(item.product_type)
+          
+          return {
+            id: item.booking_id,
+            productName: item.product_type,
+            productType: mappedProductType,
+            productId: '',
+            productImage: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+            customerName: `${item.first_name} ${item.last_name}`,
+            customerEmail: item.email || '',
+            customerPhone: item.phone || '',
+            customerType: item.customer_type || 'Registered',
+            userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
+            date: item.booking_date,
+            startTime: item.start_time ? convertTo12Hour(item.start_time) : '',
+            endTime: item.end_time ? convertTo12Hour(item.end_time) : '',
+            duration: item.duration || '',
+            totalPrice: item.total_price,
+            basePrice: item.total_price,
+            additionalFacilities: 0,
+            taxes: 0,
+            status: item.status === 'SUCCESS' ? 'completed' : mapStatus(item.status),
+            location: '',
+            locationName: item.location_name,
+            companyName: '',
+            capacity: 0,
+            facilities: [],
+            subscriptionType: item.package_type || '',
+            subscribedDate: item.subscription_start_date || '',
+            nextBillingDate: item.subscription_end_date || '',
+            customerMessage: ''
+          }
+        })
+        
+        bookingHistory.value = mappedHistory
+        console.log('Fetched and stored', mappedHistory.length, 'booking history records')
+      } else {
+        console.error('Failed to fetch booking history:', response.message)
+      }
+    } catch (error) {
+      console.error('Error fetching booking history:', error)
+    }
+  }
+
+  // Add new booking to the store
+  const addBooking = (booking: Booking) => {
+    const existingIndex = allBookings.value.findIndex(b => b.id === booking.id)
+    
+    if (existingIndex >= 0) {
+      allBookings.value[existingIndex] = booking
+      console.log('Updated existing booking:', booking.id, booking.productType)
+    } else {
+      allBookings.value.push(booking)
+      console.log('Added new booking:', booking.id, booking.productType)
+    }
+    
+    // Log specifically for dedicated desk bookings
+    if (booking.productType === 'Dedicated Desk') {
+      console.log('Dedicated desk booking added/updated:', {
+        id: booking.id,
+        productName: booking.productName,
+        customerName: booking.customerName,
+        status: booking.status,
+        date: booking.date
+      })
+    }
+    
+    // Persist changes
+    persistData()
+  }
+
+  // Remove booking from the store
+  const removeBooking = (id: string) => {
+    const index = allBookings.value.findIndex(b => b.id === id)
+    if (index >= 0) {
+      const removedBooking = allBookings.value[index]
+      allBookings.value.splice(index, 1)
+      
+      if (removedBooking.productType === 'Dedicated Desk') {
+        console.log('Dedicated desk booking removed:', {
+          id: removedBooking.id,
+          productName: removedBooking.productName,
+          customerName: removedBooking.customerName
+        })
+      }
+      
+      persistData()
+      return removedBooking
+    }
+    return null
+  }
 
   // Getters (computed)
   const confirmedBookings = computed(() =>
@@ -260,29 +545,86 @@ export const useBookingsStore = defineStore('bookings', () => {
     allBookings.value.filter(b => b.status === 'cancelled')
   )
 
-  const subscriptions = computed(() =>
-    allBookings.value.filter(b => b.productType === 'Subscription')
-  )
+  const allSubscriptions = computed(() => subscriptions.value)
 
   const activeSubscriptions = computed(() =>
-    subscriptions.value.filter(b => b.status === 'confirmed')
+    subscriptions.value.filter(b => b.status === 'confirmed' || b.status === 'ongoing')
   )
+
+  // Dedicated Desk specific getters
+  const dedicatedDeskBookings = computed(() =>
+    allBookings.value.filter(b => b.productType === 'Dedicated Desk')
+  )
+
+  const activeDedicatedDeskBookings = computed(() =>
+    dedicatedDeskBookings.value.filter(b => b.status === 'confirmed' || b.status === 'ongoing')
+  )
+
+  const completedDedicatedDeskBookings = computed(() =>
+    dedicatedDeskBookings.value.filter(b => b.status === 'completed')
+  )
+
+  // Hot Desk specific getters
+  const hotDeskBookings = computed(() =>
+    allBookings.value.filter(b => b.productType === 'Hot Desk')
+  )
+
+  const activeHotDeskBookings = computed(() =>
+    hotDeskBookings.value.filter(b => b.status === 'confirmed' || b.status === 'ongoing')
+  )
+
+  // Meeting Room specific getters
+  const meetingRoomBookings = computed(() =>
+    allBookings.value.filter(b => b.productType === 'Meeting Room')
+  )
+
+  const activeMeetingRoomBookings = computed(() =>
+    meetingRoomBookings.value.filter(b => b.status === 'confirmed' || b.status === 'ongoing')
+  )
+
+  // Initialize store - load persisted data
+  const initStore = () => {
+    loadPersistedData()
+  }
+
+  // Call initialization immediately
+  initStore()
 
   return {
     // State
     allBookings,
+    allBookingsAndSubscriptions,
+    subscriptions,
+    bookingHistory,
     bookingStatuses,
 
     // Actions
     updateBookingStatus,
     getBookingById,
     fetchBookings,
+    fetchSubscriptions,
+    fetchAllBookingsAndSubscriptions,
+    fetchBookingHistory,
+    addBooking,
+    removeBooking,
+    persistData,
+    loadPersistedData,
+    initStore,
 
     // Getters
     confirmedBookings,
     completedBookings,
     cancelledBookings,
-    subscriptions,
-    activeSubscriptions
+    allSubscriptions,
+    activeSubscriptions,
+    
+    // Product-specific getters
+    dedicatedDeskBookings,
+    activeDedicatedDeskBookings,
+    completedDedicatedDeskBookings,
+    hotDeskBookings,
+    activeHotDeskBookings,
+    meetingRoomBookings,
+    activeMeetingRoomBookings
   }
 })

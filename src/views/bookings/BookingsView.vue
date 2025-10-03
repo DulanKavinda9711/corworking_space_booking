@@ -384,27 +384,38 @@
                 <td v-if="activeTab !== 'history' && activeTab !== 'all'" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
                     <!-- Cancel subscription button for active subscriptions -->
-                    <button v-if="activeTab === 'subscriptions' && (booking.status === 'confirmed' || booking.status === 'ongoing')"
-                      @click.stop="cancelSubscription(booking)"
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
-                      title="Cancel Subscription">
-                      <span>Cancel</span>
-                    </button>
+                    <PermissionGuard permission="cancel_bookings">
+                      <button v-if="activeTab === 'subscriptions' && booking.productType === 'Subscription' && (getDynamicStatus(booking) === 'on going' || getDynamicStatus(booking) === 'up comming')"
+                        @click.stop="cancelSubscription(booking)"
+                        class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
+                        title="Cancel Subscription">
+                        <span>Cancel</span>
+                      </button>
+                    </PermissionGuard>
 
                     <!-- Cancel booking button for upcoming and ongoing bookings -->
-                    <button v-if="activeTab === 'bookings' && (booking.status === 'ongoing' || booking.status === 'confirmed')"
-                      @click.stop="cancelBooking(booking)"
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
-                      title="Cancel Booking">
-                      <span>Cancel</span>
-                    </button>
+                    <PermissionGuard permission="cancel_bookings">
+                      <button v-if="activeTab === 'bookings' && (getDynamicStatus(booking) === 'on going' || getDynamicStatus(booking) === 'up comming')"
+                        @click.stop="cancelBooking(booking)"
+                        class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1"
+                        title="Cancel Booking">
+                        <span>Cancel</span>
+                      </button>
+                    </PermissionGuard>
 
                     <!-- Delete booking button for history bookings -->
-                    <button v-if="activeTab === 'history'" @click.stop="confirmDeleteBooking(booking)"
-                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center space-x-1"
-                      title="Delete Booking">
-                      <span>Delete</span>
-                    </button>
+                    <PermissionGuard permission="delete_bookings">
+                      <button v-if="activeTab === 'history'" @click.stop="confirmDeleteBooking(booking)"
+                        class="px-3 py-1 text-xs font-medium rounded-md transition-colors bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 flex items-center space-x-1"
+                        title="Delete Booking">
+                        <span>Delete</span>
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Show message if no actions available -->
+                    <div v-if="!hasAnyBookingPermissions && (activeTab === 'subscriptions' || activeTab === 'bookings')" class="text-sm text-gray-500 italic">
+                      No actions available
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -483,17 +494,30 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { locationApi, bookingApi } from '@/services/api'
 import { mdiCalendar } from '@mdi/js'
-import { useBookingsStore } from '@/stores/bookings'
+import { usePermissions } from '@/composables/usePermissions'
 
 // Router
 const route = useRoute()
 const router = useRouter()
 
-// Initialize Pinia store
-const bookingsStore = useBookingsStore()
+// Local state instead of Pinia store
+const allBookings = ref<any[]>([])
+const allBookingsAndSubscriptions = ref<any[]>([])
+const subscriptions = ref<any[]>([])
+const bookingHistory = ref<any[]>([])
+
+const permissionsStore = usePermissions()
+
+// Check if user has any booking permissions
+const hasAnyBookingPermissions = computed(() => {
+  return permissionsStore.hasPermission('edit_bookings') || 
+         permissionsStore.hasPermission('delete_bookings') ||
+         permissionsStore.hasPermission('cancel_bookings')
+})
 
 // State
 const activeTab = ref('all')
@@ -522,8 +546,7 @@ const locations = ref<any[]>([])
 const locationsLoading = ref(false)
 const locationsError = ref('')
 
-// Subscriptions state
-const subscriptions = ref<any[]>([])
+// Subscriptions state (now using Pinia store)
 const subscriptionsLoading = ref(false)
 const subscriptionsError = ref('')
 
@@ -551,8 +574,7 @@ const filters = ref({
 const currentPage = ref(1)
 const itemsPerPage = 10
 
-// Use bookings from Pinia store
-const allBookings = computed(() => bookingsStore.allBookings)
+// Using local state arrays defined at component setup
 
 // Computed properties
 const filteredBookings = computed(() => {
@@ -560,12 +582,12 @@ const filteredBookings = computed(() => {
 
   // Filter by tab
   if (activeTab.value === 'all') {
-    // Show all bookings and subscriptions combined
-    bookings = [...allBookings.value, ...subscriptions.value]
+    // Use dedicated All bookings API data
+    bookings = allBookingsAndSubscriptions.value
   } else if (activeTab.value === 'bookings') {
-    // Show only Meeting Room, Hot Desk, and Dedicated Desk bookings that are not cancelled and not completed
+    // Show all bookings from the bookings API (already filtered on server)
+    // Filter out cancelled bookings and completed ones based on dynamic status
     bookings = allBookings.value.filter(b => 
-      (b.productType === 'Meeting Room' || b.productType === 'Hot Desk' || b.productType === 'Dedicated Desk') && 
       b.status !== 'cancelled' &&
       getDynamicStatus(b) !== 'complete'
     )
@@ -573,11 +595,8 @@ const filteredBookings = computed(() => {
     // Use subscription data from API
     bookings = subscriptions.value.filter(b => b.status !== 'cancelled')
   } else if (activeTab.value === 'history') {
-    // Show all bookings that are completed or cancelled
-    bookings = allBookings.value.filter(b => {
-      const dynamicStatus = getDynamicStatus(b)
-      return dynamicStatus === 'complete' || b.status === 'cancelled'
-    })
+    // Use booking history from API
+    bookings = bookingHistory.value
   } else {
     bookings = allBookings.value
   }
@@ -694,7 +713,7 @@ const viewBookingDetails = (booking: any) => {
   console.log('Viewing booking details for:', booking.id, booking)
 
   // Log the view action for analytics/audit purposes
-  const viewLogs = JSON.parse(localStorage.getItem('bookingViewLogs') || '[]')
+  const viewLogs = JSON.parse(sessionStorage.getItem('bookingViewLogs') || '[]')
   viewLogs.push({
     bookingId: booking.id,
     viewedAt: new Date().toISOString(),
@@ -706,7 +725,7 @@ const viewBookingDetails = (booking: any) => {
       date: booking.date || booking.subscribedDate
     }
   })
-  localStorage.setItem('bookingViewLogs', JSON.stringify(viewLogs))
+  sessionStorage.setItem('bookingViewLogs', JSON.stringify(viewLogs))
 
   // Navigate to the appropriate route
   const routePath = booking.productType === 'Subscription'
@@ -779,18 +798,18 @@ const addNewBooking = (newBookingData: any) => {
   // Add to bookings array
   allBookings.value.unshift(newBooking) // Add at beginning for recent bookings to show first
 
-  // Save to localStorage for persistence
-  // localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+  // Save to sessionStorage for persistence
+  // sessionStorage.setItem('allBookings', JSON.stringify(allBookings.value))
 
   // Log the addition
-  const additionLogs = JSON.parse(localStorage.getItem('bookingAdditionLogs') || '[]')
+  const additionLogs = JSON.parse(sessionStorage.getItem('bookingAdditionLogs') || '[]')
   additionLogs.push({
     bookingId: newId,
     addedAt: new Date().toISOString(),
     addedBy: 'Admin',
     bookingData: newBooking
   })
-  localStorage.setItem('bookingAdditionLogs', JSON.stringify(additionLogs))
+  sessionStorage.setItem('bookingAdditionLogs', JSON.stringify(additionLogs))
 
   console.log('New booking added:', newId, newBooking)
 
@@ -801,8 +820,8 @@ const addNewBooking = (newBookingData: any) => {
 // Methods
 const getTabCount = (tabId: string) => {
   if (tabId === 'all') {
-    // Count all bookings and subscriptions combined
-    return allBookings.value.length + subscriptions.value.length
+    // Count all bookings and subscriptions from dedicated All API
+    return allBookingsAndSubscriptions.value.length
   } else if (tabId === 'bookings') {
     // Count Meeting Room, Hot Desk, and Dedicated Desk bookings that are not cancelled and not completed
     return allBookings.value.filter(b => 
@@ -814,11 +833,8 @@ const getTabCount = (tabId: string) => {
     // Count subscriptions from API data
     return subscriptions.value.filter(b => b.status !== 'cancelled').length
   } else if (tabId === 'history') {
-    // Count all bookings that are completed or cancelled
-    return allBookings.value.filter(b => {
-      const dynamicStatus = getDynamicStatus(b)
-      return dynamicStatus === 'complete' || b.status === 'cancelled'
-    }).length
+    // Count booking history records from API
+    return bookingHistory.value.length
   }
   return 0
 }
@@ -989,14 +1005,58 @@ const navigateToBookingDetails = (booking: any) => {
 
 // Cancel subscription handler
 const cancelSubscription = (booking: any) => {
+  console.log('Cancelling subscription with customer data:', {
+    bookingId: booking.id,
+    customerName: booking.customerName,
+    email: booking.customerEmail,
+    phone: booking.customerPhone
+  })
+
+  // Store customer data in sessionStorage for the cancel page
+  const customerData = {
+    email: booking.customerEmail || '',
+    phone: booking.customerPhone || '',
+    name: booking.customerName || '',
+    bookingId: booking.id
+  }
+  
+  sessionStorage.setItem(`cancelBooking_${booking.id}`, JSON.stringify(customerData))
+  
   const routePath = `/subscriptions/${booking.id}/cancel`
-  router.push(routePath)
+  router.push({
+    path: routePath,
+    state: {
+      customerData: customerData
+    }
+  })
 }
 
 // Cancel booking handler
 const cancelBooking = (booking: any) => {
+  console.log('Cancelling booking with customer data:', {
+    bookingId: booking.id,
+    customerName: booking.customerName,
+    email: booking.customerEmail,
+    phone: booking.customerPhone
+  })
+
+  // Store customer data in sessionStorage for the cancel page
+  const customerData = {
+    email: booking.customerEmail || '',
+    phone: booking.customerPhone || '',
+    name: booking.customerName || '',
+    bookingId: booking.id
+  }
+  
+  sessionStorage.setItem(`cancelBooking_${booking.id}`, JSON.stringify(customerData))
+  
   const routePath = `/bookings/${booking.id}/cancel`
-  router.push(routePath)
+  router.push({
+    path: routePath,
+    state: {
+      customerData: customerData
+    }
+  })
 }
 
 const resetFilters = () => {
@@ -1216,17 +1276,17 @@ const deleteBooking = async () => {
       allBookings.value.splice(index, 1)
     }
 
-    // Save to localStorage for persistence
-    // localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+    // Save to sessionStorage for persistence
+    // sessionStorage.setItem('allBookings', JSON.stringify(allBookings.value))
 
     // Log the deletion
-    const deletedBookings = JSON.parse(localStorage.getItem('deletedBookings') || '[]')
+    const deletedBookings = JSON.parse(sessionStorage.getItem('deletedBookings') || '[]')
     deletedBookings.push({
       ...bookingToDelete.value,
       deletedAt: new Date().toISOString(),
       deletedBy: 'Admin' // In real app, get from auth context
     })
-    localStorage.setItem('deletedBookings', JSON.stringify(deletedBookings))
+    sessionStorage.setItem('deletedBookings', JSON.stringify(deletedBookings))
 
     closeDeleteModal()
 
@@ -1379,58 +1439,170 @@ const fetchLocations = async () => {
   }
 }
 
-// Fetch subscriptions from API
-const fetchSubscriptions = async () => {
-  subscriptionsLoading.value = true
-  subscriptionsError.value = ''
 
+
+// Direct API fetch functions
+const fetchAllBookingsData = async () => {
+  try {
+    console.log('Fetching bookings data from API...')
+    const response = await bookingApi.getAdminBookingTabTable()
+    console.log('Bookings API response:', response)
+    
+    if (response.success && response.data) {
+      allBookings.value = response.data.map((item: any) => {
+        // Map product type to standardized format
+        let mappedProductType = item.product_type
+        if (item.product_type === 'HotDesk') mappedProductType = 'Hot Desk'
+        if (item.product_type === 'MeetingRoom') mappedProductType = 'Meeting Room'
+        if (item.product_type === 'DedicatedDesk') mappedProductType = 'Dedicated Desk'
+        
+        return {
+          id: item.booking_id,
+          productName: mappedProductType,
+          productType: mappedProductType,
+          customerName: `${item.first_name} ${item.last_name}`,
+          customerEmail: item.email || '',
+          customerPhone: item.phone || '',
+          customerType: item.customer_type || 'Registered',
+          date: item.booking_date,
+          startTime: item.start_time,
+          endTime: item.end_time,
+          duration: item.duration || '',
+          totalPrice: item.total_price,
+          locationName: item.location_name,
+          status: item.status?.toLowerCase() || 'confirmed',
+          userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
+          // Store customer contact info for cancel booking functionality
+          customerContactInfo: {
+            email: item.email || '',
+            phone: item.phone || '',
+            firstName: item.first_name || '',
+            lastName: item.last_name || ''
+          }
+        }
+      })
+      console.log('Mapped bookings data:', allBookings.value)
+    } else {
+      console.log('No bookings data received or API call failed')
+      allBookings.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching all bookings:', error)
+    allBookings.value = []
+  }
+}
+
+const fetchAllBookingsAndSubscriptionsData = async () => {
+  try {
+    const response = await bookingApi.getAdminAllBookingsTable()
+    if (response.success && response.data) {
+      // Use the same mapping logic from the store
+      allBookingsAndSubscriptions.value = response.data.map((item: any) => {
+        const isSubscription = item.subscription_start_date && item.subscription_end_date && item.package_type
+        
+        return {
+          id: item.booking_id,
+          productName: item.product_type || 'Subscription',
+          productType: isSubscription ? 'Subscription' : item.product_type,
+          customerName: `${item.first_name} ${item.last_name}`,
+          customerEmail: item.email,
+          locationName: item.location_name,
+          date: item.booking_date || item.subscribed_date,
+          startTime: item.start_time,
+          endTime: item.end_time,
+          totalPrice: item.total_price,
+          status: item.status?.toLowerCase() || 'confirmed',
+          // Add more fields as needed
+        }
+      })
+    } else {
+      allBookingsAndSubscriptions.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching all bookings and subscriptions:', error)
+    allBookingsAndSubscriptions.value = []
+  }
+}
+
+const fetchSubscriptionsData = async () => {
   try {
     const response = await bookingApi.getAdminSubscriptionTable()
-
     if (response.success && response.data) {
-      // Map API response to expected format
       subscriptions.value = response.data.map((item: any) => ({
-  id: item.booking_id,
-  bookingId: item.booking_id,
-  customerName: `${item.first_name} ${item.last_name}`,
-  customerEmail: item.email,
-  productName: item.product_type,
-  productType: 'Subscription',
-  locationName: item.location_name,
-  subscribedDate: item.subscribed_date,
-  nextBillingDate: item.next_billing_date,
-  subscriptionEndDate: item.subscription_end_date,
-  totalPrice: item.total_price,
-  status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
-  subscriptionType: item.package_type,
-  userType: item.customer_type ? String(item.customer_type).charAt(0).toUpperCase() + String(item.customer_type).slice(1).toLowerCase() : 'Registered'
+        id: item.booking_id,
+        customerName: `${item.first_name} ${item.last_name}`,
+        customerEmail: item.email,
+        productName: item.product_type,
+        productType: 'Subscription',
+        locationName: item.location_name,
+        subscribedDate: item.subscribed_date,
+        nextBillingDate: item.next_billing_date,
+        subscriptionEndDate: item.subscription_end_date,
+        totalPrice: item.total_price,
+        status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
+        subscriptionType: item.package_type,
       }))
     } else {
-      subscriptionsError.value = response.message || 'Failed to load subscriptions'
-      console.error('Failed to load subscriptions:', response.message)
+      subscriptions.value = []
     }
   } catch (error) {
     console.error('Error fetching subscriptions:', error)
-    subscriptionsError.value = 'An unexpected error occurred while loading subscriptions'
-  } finally {
-    subscriptionsLoading.value = false
+    subscriptions.value = []
+  }
+}
+
+const fetchBookingHistoryData = async () => {
+  try {
+    const response = await bookingApi.getAdminBookingHistoryTable()
+    if (response.success && response.data) {
+      bookingHistory.value = response.data.map((item: any) => ({
+        id: item.booking_id,
+        productName: item.product_type,
+        productType: item.product_type,
+        customerName: `${item.first_name} ${item.last_name}`,
+        customerEmail: item.email || '',
+        customerPhone: item.phone || '',
+        date: item.booking_date,
+        startTime: item.start_time,
+        endTime: item.end_time,
+        duration: item.duration || '',
+        totalPrice: item.total_price,
+        locationName: item.location_name,
+        status: item.status?.toLowerCase() || 'completed',
+        userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
+      }))
+    } else {
+      bookingHistory.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching booking history:', error)
+    bookingHistory.value = []
   }
 }
 
 // Lifecycle hooks
 onMounted(async () => {
+  console.log('BookingsView mounted - loading initial data...')
+  
   // Fetch locations first
   await fetchLocations()
 
-  // Fetch subscriptions
-  await fetchSubscriptions()
-
-  // Fetch bookings from API
-  await bookingsStore.fetchBookings()
+  // Fetch all data types using direct API calls
+  await fetchAllBookingsAndSubscriptionsData()
+  await fetchSubscriptionsData()
+  await fetchAllBookingsData()
+  await fetchBookingHistoryData()
 
   // Debug: Log locations and bookings for troubleshooting
   console.log('Loaded locations:', locations.value)
   console.log('Location options:', locationOptions.value)
+  console.log('All bookings loaded:', allBookings.value.length, 'items')
+  console.log('All tab data from new API:', allBookingsAndSubscriptions.value.slice(0, 3).map(b => ({
+    id: b.id,
+    customerName: b.customerName,
+    productType: b.productType,
+    locationName: b.locationName
+  })))
   console.log('Sample booking locations:', allBookings.value.slice(0, 3).map(b => ({
     id: b.id,
     locationName: b.locationName
@@ -1480,6 +1652,38 @@ watch([() => filters.value, activeTab], () => {
   currentPage.value = 1
 }, { deep: true })
 
+// Watch for tab activation to refetch data
+watch(activeTab, async (newTab, oldTab) => {
+  console.log(`Tab switched from "${oldTab}" to "${newTab}"`)
+  
+  if (newTab === 'history' && newTab !== oldTab) {
+    console.log('Loading history data...')
+    // Refresh history data when history tab is activated
+    await fetchBookingHistoryData()
+  } else if (newTab === 'bookings' && newTab !== oldTab) {
+    console.log('Loading fresh bookings data from API...')
+    // Refresh bookings data when bookings tab is activated
+    await fetchAllBookingsData()
+  }
+})
+
+// Watch for filter changes to refetch history data if history tab is active
+watch(() => filters.value, async () => {
+  if (activeTab.value === 'history') {
+    // Apply current filters to history API call
+    const filterParams = {
+      startDate: filters.value.startDate,
+      endDate: filters.value.endDate,
+      location: filters.value.location,
+      productType: filters.value.productType,
+      status: filters.value.status
+    }
+    // Note: If the API supports filter parameters, we can pass them
+    // For now, we'll fetch all data and filter client-side
+    await fetchBookingHistoryData()
+  }
+}, { deep: true })
+
 onUnmounted(() => {
   // Clear status update interval
   if ((window as any).statusUpdateInterval) {
@@ -1501,8 +1705,8 @@ watch(activeTab, (newTab) => {
         booking.status = 'completed'
       }
     })
-    // Persist status changes to localStorage
-    // localStorage.setItem('allBookings', JSON.stringify(allBookings.value))
+    // Persist status changes to sessionStorage
+    // sessionStorage.setItem('allBookings', JSON.stringify(allBookings.value))
   }
 })
 

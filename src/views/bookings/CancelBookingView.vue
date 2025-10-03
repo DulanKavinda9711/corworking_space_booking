@@ -25,15 +25,7 @@
           </div>
         </div>
 
-        <!-- Payment slip quick summary -->
-        <div class="mt-4 text-sm text-gray-600">
-          <strong>Payment Slip:</strong>
-          <span v-if="cancellationForm.sendPaymentSlip">
-            Will be sent to customer
-            <span v-if="paymentSlipFile" class="text-gray-600"> ({{ paymentSlipFile.name }})</span>
-          </span>
-          <span v-else>Will not be sent</span>
-        </div>
+        
       </div>
 
       <!-- Loading State -->
@@ -149,53 +141,91 @@
           </div>
 
           <form @submit.prevent="submitCancellation" class="space-y-6">
-            <!-- Cancellation Reason -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Reason for Cancellation <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                v-model="cancellationForm.reason"
-                rows="3"
-                required
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-                placeholder="Please provide the reason for cancellation..."
-              ></textarea>
-            </div>
-
-            <!-- Payment Slip Option -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <label class="flex items-start space-x-3">
-                <input
-                  v-model="cancellationForm.sendPaymentSlip"
-                  type="checkbox"
-                  class="mt-0.5 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <div>
-                  <div class="text-sm font-medium text-gray-900">Send payment slip to customer</div>
-                  <div class="text-xs text-gray-600">Check this option to send a payment slip/receipt to the customer via email</div>
+            <!-- Customer Notification -->
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Send via</label>
+                <div class="space-y-3">
+                  <label class="flex items-center space-x-3">
+                    <input
+                      v-model="cancellationForm.sendVia"
+                      type="radio"
+                      value="email"
+                      class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                    />
+                    <span class="text-sm text-gray-700">Email</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input
+                      v-model="cancellationForm.sendVia"
+                      type="radio"
+                      value="phone"
+                      class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                    />
+                    <span class="text-sm text-gray-700">Phone</span>
+                  </label>
                 </div>
-              </label>
-              
-              <!-- Payment Slip Upload Section -->
-              <div v-if="cancellationForm.sendPaymentSlip" class="mt-4 pt-4 border-t border-green-200">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Payment Slip <span class="text-red-500">*</span>
-                </label>
+              </div>
+
+              <!-- Subject Field (only for email) -->
+              <div v-if="cancellationForm.sendVia === 'email'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <input
+                  v-model="cancellationForm.subject"
+                  type="text"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+"
+                  placeholder="Message to customer"
+                />
+              </div>
+
+              <!-- Message Field -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <textarea
+                  v-model="cancellationForm.message"
+                  rows="4"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+"
+                  placeholder="Enter your message to the customer..."
+                ></textarea>
+              </div>
+
+              <!-- Email Address Field (only for email) -->
+              <div v-if="cancellationForm.sendVia === 'email'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input
+                  v-model="cancellationForm.emailAddress"
+                  type="email"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+"
+                  :placeholder="customerInfo.email"
+                />
                 
-                <!-- File Upload Area -->
-                <div
-                  @drop="handleFileDrop"
-                  @dragover.prevent="isDragOver = true"
-                  @dragenter.prevent="isDragOver = true"
-                  @dragleave="dragLeave"
-                  :class="[
-                    'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
-                    isDragOver ? 'border-primary-400 bg-primary-50' : 'border-gray-300 hover:border-gray-400',
-                    paymentSlipFile ? 'bg-green-50 border-green-300' : ''
-                  ]"
-                  @click="triggerFileInput"
-                >
+                <!-- File Upload for Email (can be used as refund proof) -->
+                <div class="mt-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Attach Refund Proof (Optional)</label>
+                  <div class="flex items-center space-x-3">
+                    <button
+                      type="button"
+                      @click="triggerFileInput"
+                      class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                      </svg>
+                      Choose File
+                    </button>
+                    <span v-if="attachedFile" class="text-sm text-gray-600">{{ attachedFile.name }}</span>
+                    <button
+                      v-if="attachedFile"
+                      type="button"
+                      @click="removeAttachedFile"
+                      class="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
                   <input
                     ref="fileInput"
                     type="file"
@@ -203,77 +233,52 @@
                     @change="handleFileSelect"
                     class="hidden"
                   />
-                  
-                  <div v-if="!paymentSlipFile" class="space-y-2">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <div>
-                      <p class="text-sm text-gray-600">
-                        <span class="font-medium text-primary-600">Click to upload</span> or drag and drop
-                      </p>
-                      <p class="text-xs text-gray-500">PDF, PNG, JPG, DOC up to 10MB</p>
-                    </div>
-                  </div>
-                  
-                  <!-- Selected File Display -->
-                  <div v-else class="space-y-2">
-                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path :d="mdiFileDocument" />
-                    </svg>
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ paymentSlipFile.name }}</p>
-                      <p class="text-xs text-gray-500">{{ formatFileSize(paymentSlipFile.size) }}</p>
-                    </div>
+                </div>
+              </div>
+
+              <!-- Phone Number Field (only for phone) -->
+              <div v-if="cancellationForm.sendVia === 'phone'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input
+                  v-model="cancellationForm.phoneNumber"
+                  type="tel"
+                  class="appearance-none relative block w-full px-2 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-md
+"
+                  :placeholder="customerInfo.mobile"
+                />
+                
+                <!-- File Upload for Phone (refund proof) -->
+                <div class="mt-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Attach Refund Proof (Optional)</label>
+                  <div class="flex items-center space-x-3">
                     <button
                       type="button"
-                      @click.stop="removeFile"
-                      class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 transition-colors"
+                      @click="triggerFileInput"
+                      class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
-                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
+                      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                       </svg>
+                      Choose File
+                    </button>
+                    <span v-if="attachedFile" class="text-sm text-gray-600">{{ attachedFile.name }}</span>
+                    <button
+                      v-if="attachedFile"
+                      type="button"
+                      @click="removeAttachedFile"
+                      class="text-red-600 hover:text-red-800 text-sm"
+                    >
                       Remove
                     </button>
                   </div>
-                </div>
-                
-                <!-- File Upload Error -->
-                <div v-if="fileUploadError" class="mt-2 text-sm text-red-600">
-                  {{ fileUploadError }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Notification Options -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h3 class="text-sm font-medium text-gray-800 mb-3">Customer Notification</h3>
-              <div class="space-y-4">
-                <div class="text-sm text-gray-700">Notifications will be sent to the customer's contact below. Choose which channels to use.</div>
-
-                <label class="flex items-start space-x-3 p-2 bg-white rounded-lg">
                   <input
-                    v-model="cancellationForm.notifyEmail"
-                    type="checkbox"
-                    class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-gray-500"
+                    ref="fileInput"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    @change="handleFileSelect"
+                    class="hidden"
                   />
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">Email</div>
-                    <div class="text-xs text-gray-500">{{ customerInfo.email }}</div>
-                  </div>
-                </label>
-
-                <label class="flex items-start space-x-3 p-2 bg-white rounded-lg">
-                  <input
-                    v-model="cancellationForm.notifySms"
-                    type="checkbox"
-                    class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                  />
-                  <div>
-                    <div class="text-sm font-medium text-gray-900">Mobile (SMS)</div>
-                    <div class="text-xs text-gray-500">{{ customerInfo.mobile }}</div>
-                  </div>
-                </label>
+                </div>
               </div>
             </div>
 
@@ -321,11 +326,6 @@
             <div class="mt-4 p-3 bg-gray-50 rounded-lg text-gray-900">
               <div class="text-sm space-y-1">
                 <div><strong>{{ isSubscription ? 'Subscription' : 'Booking' }}:</strong> {{ booking?.id }}</div>
-                <div><strong>Reason:</strong> {{ cancellationForm.reason }}</div>
-                <div><strong>Payment Slip:</strong> 
-                  <span v-if="cancellationForm.sendPaymentSlip">Will be sent to customer</span>
-                  <span v-else>Will not be sent</span>
-                </div>
               </div>
             </div>
           </div>
@@ -369,15 +369,6 @@
             <div v-if="cancellationResult" class="mt-4 p-3 bg-gray-50 rounded-lg text-gray-900">
               <div class="text-sm space-y-1">
                 <div><strong>Cancellation ID:</strong> {{ cancellationResult.cancellationId }}</div>
-                <div><strong>Payment Slip:</strong> 
-                  <span v-if="cancellationResult.paymentSlipSent">
-                    Sent to customer
-                    <span v-if="cancellationResult.paymentSlipFileName" class="text-gray-600">
-                      ({{ cancellationResult.paymentSlipFileName }})
-                    </span>
-                  </span>
-                  <span v-else>Not sent</span>
-                </div>
               </div>
             </div>
           </div>
@@ -392,6 +383,31 @@
         </div>
       </div>
     </div>
+
+    <!-- Error Modal -->
+    <div v-if="showErrorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeErrorModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-center mx-auto w-12 h-12 rounded-full bg-red-100">
+            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+              <path :d="mdiAlertCircle" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 text-center mt-4">Cancellation Failed</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500 text-center">{{ errorMessage }}</p>
+          </div>
+          <div class="flex items-center justify-center pt-4">
+            <button
+              @click="closeErrorModal"
+              class="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -399,8 +415,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { mdiArrowLeft, mdiCancel, mdiInformationOutline, mdiAlertCircle, mdiCheckCircle, mdiFileDocument, mdiDelete } from '@mdi/js'
+import { mdiArrowLeft, mdiCancel, mdiInformationOutline, mdiAlertCircle, mdiCheckCircle } from '@mdi/js'
 import { useBookings } from '@/composables/useBookings'
+import { customerApi, bookingApi } from '@/services/api'
 
 // Router
 const route = useRoute()
@@ -415,22 +432,25 @@ const error = ref('')
 const booking = ref<any>(null)
 const showConfirmModal = ref(false)
 const showSuccessModal = ref(false)
+const showErrorModal = ref(false)
 const isCancelling = ref(false)
 const cancellationResult = ref<any>(null)
+const errorMessage = ref('')
 
-// File upload state
-const paymentSlipFile = ref<File | null>(null)
-const isDragOver = ref(false)
-const fileUploadError = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
+// File upload state (removed as not needed)
 
 // Cancellation Form
 const cancellationForm = ref({
-  reason: '',
-  sendPaymentSlip: false,
-  notifyEmail: true,
-  notifySms: false
+  sendVia: 'email',
+  subject: '',
+  message: '',
+  emailAddress: '',
+  phoneNumber: ''
 })
+
+// File upload state
+const attachedFile = ref<File | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // Customer Information (auto-populated from booking)
 const customerInfo = ref({
@@ -444,9 +464,14 @@ const isSubscription = computed(() => {
 })
 
 const canCancel = computed(() => {
-  const hasReason = cancellationForm.value.reason.trim() !== ''
-  const hasFileIfRequired = !cancellationForm.value.sendPaymentSlip || paymentSlipFile.value !== null
-  return hasReason && hasFileIfRequired
+  if (cancellationForm.value.sendVia === 'email') {
+    return cancellationForm.value.subject.trim() !== '' && 
+           cancellationForm.value.message.trim() !== '' &&
+           cancellationForm.value.emailAddress.trim() !== ''
+  } else {
+    return cancellationForm.value.message.trim() !== '' &&
+           cancellationForm.value.phoneNumber.trim() !== ''
+  }
 })
 
 // Methods
@@ -574,6 +599,18 @@ const loadBookingDetails = async () => {
 
     const bookingId = route.params.id as string
 
+    // First, check if we have stored customer data from the BookingsView
+    let storedCustomerData = null
+    try {
+      const storedData = sessionStorage.getItem(`cancelBooking_${bookingId}`)
+      if (storedData) {
+        storedCustomerData = JSON.parse(storedData)
+        console.log('Found stored customer data for booking:', storedCustomerData)
+      }
+    } catch (storageErr) {
+      console.warn('Error parsing stored customer data:', storageErr)
+    }
+
     // Use composable to get booking by id (no hard-coded localStorage logic here)
     const found = getBookingById(bookingId)
     if (!found) {
@@ -590,11 +627,51 @@ const loadBookingDetails = async () => {
       timeSlot: found.startTime && found.endTime ? `${found.startTime} - ${found.endTime}` : found.duration || 'N/A'
     }
 
-    // Populate customer information automatically
-    customerInfo.value = {
-      email: booking.value.customerEmail || `${booking.value.customerName?.toLowerCase().replace(' ', '.')}@example.com`,
-      mobile: booking.value.customerPhone || '+1 (555) 000-0000'
+    // Use stored customer data if available, otherwise fetch from API or fallback to booking data
+    if (storedCustomerData && storedCustomerData.email && storedCustomerData.phone) {
+      // Use the stored customer data from BookingsView (most accurate)
+      console.log('Using stored customer data from BookingsView')
+      customerInfo.value = {
+        email: storedCustomerData.email,
+        mobile: storedCustomerData.phone
+      }
+    } else if (booking.value.customerEmail) {
+      // Fallback to API call if no stored data
+      try {
+        const customerResponse = await customerApi.getAllCustomers({ email: booking.value.customerEmail })
+        if (customerResponse.success && customerResponse.data && customerResponse.data.length > 0) {
+          const customer = customerResponse.data[0] // Get the first matching customer
+          customerInfo.value = {
+            email: customer.email || booking.value.customerEmail,
+            mobile: customer.phone || booking.value.customerPhone || '+1 (555) 000-0000'
+          }
+        } else {
+          // Fallback to booking data if customer not found
+          customerInfo.value = {
+            email: booking.value.customerEmail,
+            mobile: booking.value.customerPhone || '+1 (555) 000-0000'
+          }
+        }
+      } catch (customerErr) {
+        console.error('Error fetching customer data:', customerErr)
+        // Fallback to booking data if API fails
+        customerInfo.value = {
+          email: booking.value.customerEmail || `${booking.value.customerName?.toLowerCase().replace(' ', '.')}@example.com`,
+          mobile: booking.value.customerPhone || '+1 (555) 000-0000'
+        }
+      }
+    } else {
+      // Final fallback if no customer email in booking
+      customerInfo.value = {
+        email: `${booking.value.customerName?.toLowerCase().replace(' ', '.')}@example.com`,
+        mobile: booking.value.customerPhone || '+1 (555) 000-0000'
+      }
     }
+
+    // Set default form values
+    cancellationForm.value.emailAddress = customerInfo.value.email
+    cancellationForm.value.phoneNumber = customerInfo.value.mobile
+    cancellationForm.value.subject = `Booking Cancellation - ${booking.value.id}`
 
     // Check if booking/subscription can be cancelled
     if (booking.value.status !== 'confirmed') {
@@ -619,46 +696,81 @@ const confirmCancellation = async () => {
   try {
     isCancelling.value = true
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1200))
+    if (!booking.value) {
+      throw new Error('No booking data available')
+    }
 
-    // Use composable to update booking status (single source of truth)
-    if (booking.value && booking.value.id) {
+    // Prepare form data for API call
+    const cancellationData = {
+      OrderId: booking.value.id,
+      ProductId: booking.value.productId || booking.value.id, // Use productId if available, otherwise fallback to booking id
+      CancellationReason: cancellationForm.value.message,
+      Email: cancellationForm.value.emailAddress,
+      Phone: cancellationForm.value.phoneNumber,
+      SmsContent: cancellationForm.value.sendVia === 'phone' ? cancellationForm.value.message : '',
+      RefundProof: attachedFile.value || undefined
+    }
+
+    console.log('Submitting cancellation request:', cancellationData)
+
+    // Call the admin cancel booking API
+    const response = await bookingApi.adminCancelBooking(cancellationData)
+
+    if (response.success && response.data) {
+      // Update local booking status using composable
       updateBookingStatus(booking.value.id, 'cancelled')
+
+      // Set cancellation result from API response
+      cancellationResult.value = {
+        cancellationId: response.data.cancellationId,
+        message: response.data.message
+      }
+
+      // Log cancellation for audit trail
+      const cancellationLogs = JSON.parse(localStorage.getItem('cancellationLogs') || '[]')
+      cancellationLogs.push({
+        bookingId: booking.value.id,
+        cancelledAt: new Date().toISOString(),
+        cancelledBy: 'Admin',
+        sendVia: cancellationForm.value.sendVia,
+        subject: cancellationForm.value.subject,
+        message: cancellationForm.value.message,
+        emailAddress: cancellationForm.value.emailAddress,
+        phoneNumber: cancellationForm.value.phoneNumber,
+        attachedFile: attachedFile.value?.name || null,
+        customerEmail: customerInfo.value.email,
+        customerMobile: customerInfo.value.mobile,
+        apiResponse: response.data
+      })
+      localStorage.setItem('cancellationLogs', JSON.stringify(cancellationLogs))
+
+      // Update booking status in local view
+      booking.value.status = 'cancelled'
+
+      // Clean up stored customer data after successful cancellation
+      try {
+        sessionStorage.removeItem(`cancelBooking_${booking.value.id}`)
+        console.log('Cleaned up stored customer data for booking:', booking.value.id)
+      } catch (cleanupErr) {
+        console.warn('Error cleaning up stored customer data:', cleanupErr)
+      }
+
+      // Close confirm modal and show success modal
+      showConfirmModal.value = false
+      showSuccessModal.value = true
+    } else {
+      // Handle API error response
+      const apiErrorMessage = response.message || 'Failed to cancel booking'
+      console.error('API cancellation failed:', response)
+      errorMessage.value = `Cancellation failed: ${apiErrorMessage}`
+      showErrorModal.value = true
     }
 
-    // Generate cancellation result
-    cancellationResult.value = {
-      cancellationId: `CANCEL-${Date.now()}`,
-      paymentSlipSent: cancellationForm.value.sendPaymentSlip,
-      paymentSlipFileName: paymentSlipFile.value?.name || null
-    }
-
-    // Log cancellation
-    const cancellationLogs = JSON.parse(localStorage.getItem('cancellationLogs') || '[]')
-    cancellationLogs.push({
-      bookingId: booking.value.id,
-      cancelledAt: new Date().toISOString(),
-      reason: cancellationForm.value.reason,
-      sendPaymentSlip: cancellationForm.value.sendPaymentSlip,
-      paymentSlipFileName: paymentSlipFile.value?.name || null,
-      cancelledBy: 'Admin',
-      customerNotified: cancellationForm.value.notifyEmail,
-      smsNotified: cancellationForm.value.notifySms,
-      customerEmail: customerInfo.value.email,
-      customerMobile: customerInfo.value.mobile
-    })
-    localStorage.setItem('cancellationLogs', JSON.stringify(cancellationLogs))
-
-    // Update booking status in local view
-    if (booking.value) booking.value.status = 'cancelled'
-
-    // Close confirm modal and show success modal
-    showConfirmModal.value = false
-    showSuccessModal.value = true
-
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error cancelling booking:', err)
+    const apiErrorMessage = err.message || 'An unexpected error occurred while cancelling the booking'
+    errorMessage.value = `Error: ${apiErrorMessage}`
+    showErrorModal.value = true
   } finally {
     isCancelling.value = false
   }
@@ -670,6 +782,11 @@ const closeConfirmModal = () => {
 
 const closeSuccessModal = () => {
   showSuccessModal.value = false
+}
+
+const closeErrorModal = () => {
+  showErrorModal.value = false
+  errorMessage.value = ''
 }
 
 const goBack = () => {
@@ -693,62 +810,29 @@ const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = target.files
   if (files && files[0]) {
-    handleFile(files[0])
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowedTypes.includes(files[0].type)) {
+      alert('Please select a PDF, JPG, PNG, or DOC file.')
+      return
+    }
+    
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    if (files[0].size > maxSize) {
+      alert('File size must be less than 10MB.')
+      return
+    }
+    
+    attachedFile.value = files[0]
   }
 }
 
-const handleFileDrop = (event: DragEvent) => {
-  event.preventDefault()
-  isDragOver.value = false
-  
-  const files = event.dataTransfer?.files
-  if (files && files[0]) {
-    handleFile(files[0])
-  }
-}
-
-const dragLeave = () => {
-  isDragOver.value = false
-}
-
-const handleFile = (file: File) => {
-  // Reset error
-  fileUploadError.value = ''
-  
-  // Validate file type
-  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-  if (!allowedTypes.includes(file.type)) {
-    fileUploadError.value = 'Please select a PDF, JPG, PNG, or DOC file.'
-    return
-  }
-  
-  // Validate file size (10MB max)
-  const maxSize = 10 * 1024 * 1024 // 10MB in bytes
-  if (file.size > maxSize) {
-    fileUploadError.value = 'File size must be less than 10MB.'
-    return
-  }
-  
-  // Set the file
-  paymentSlipFile.value = file
-}
-
-const removeFile = () => {
-  paymentSlipFile.value = null
-  fileUploadError.value = ''
+const removeAttachedFile = () => {
+  attachedFile.value = null
   if (fileInput.value) {
     fileInput.value.value = ''
   }
-}
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes'
-  
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 // Lifecycle

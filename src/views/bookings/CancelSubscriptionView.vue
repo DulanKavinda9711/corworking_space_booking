@@ -24,11 +24,6 @@
           </div>
         </div>
 
-        <!-- Quick summary -->
-        <div class="mt-4 text-sm text-gray-600">
-          <strong>Important:</strong>
-          <span>The subscription will remain active until the next billing date and then be cancelled permanently.</span>
-        </div>
       </div>
 
       <!-- Loading State -->
@@ -51,7 +46,7 @@
           <p class="text-gray-600 text-center">{{ error }}</p>
           <button
             @click="goBack"
-            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
             Go Back
           </button>
@@ -404,10 +399,11 @@ const cancellationForm = ref({
   notifySms: false
 })
 
-// Sample subscription data (matches BookingsView)
+// Sample subscription data (fallback when API fails)
 const allSubscriptions = ref([
   {
-    id: 'SUB-3001',
+    id: '1001',
+    bookingId: '1001',
     productName: 'Dedicated Desk',
     productType: 'Subscription',
     productId: 'SUB001',
@@ -418,11 +414,11 @@ const allSubscriptions = ref([
     userType: 'registered',
     subscriptionType: 'monthly',
     subscribedDate: '2025-08-01',
-    nextBillingDate: '2025-09-01',
+    nextBillingDate: '2025-11-01',
     totalPrice: 800,
     basePrice: 750,
     additionalFacilities: 50,
-    status: 'confirmed',
+    status: 'ongoing',
     location: 'main-branch',
     locationName: 'Main Branch',
     companyName: 'Premium Co-working Ltd.',
@@ -430,50 +426,28 @@ const allSubscriptions = ref([
     facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
   },
   {
-    id: 'SUB-3003',
-    productName: 'Dedicated Desk',
+    id: '1002',
+    bookingId: '1002',
+    productName: 'Hot Desk',
     productType: 'Subscription',
-    productId: 'SUB003',
+    productId: 'SUB002',
     productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
     customerName: 'Sarah Wilson',
     customerEmail: 'sarah.wilson@example.com',
     customerPhone: '+1 (555) 234-5678',
     userType: 'registered',
-    subscriptionType: 'annually',
-    subscribedDate: '2025-01-01',
-    nextBillingDate: '2026-01-01',
-    totalPrice: 8000,
-    basePrice: 7500,
-    additionalFacilities: 500,
-    status: 'confirmed',
+    subscriptionType: 'monthly',
+    subscribedDate: '2025-09-01',
+    nextBillingDate: '2025-12-01',
+    totalPrice: 500,
+    basePrice: 450,
+    additionalFacilities: 50,
+    status: 'ongoing',
     location: 'business-center',
     locationName: 'Business Center',
     companyName: 'Global Solutions Inc.',
     capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line', '24/7 Access']
-  },
-  {
-    id: 'SUB-3004',
-    productName: 'Dedicated Desk',
-    productType: 'Subscription',
-    productId: 'SUB001',
-    productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
-    customerName: 'Michael Brown',
-    customerEmail: 'michael.brown@example.com',
-    customerPhone: '+1 (555) 345-6789',
-    userType: 'guest',
-    subscriptionType: 'monthly',
-    subscribedDate: '2025-07-15',
-    nextBillingDate: '2025-08-15',
-    totalPrice: 850,
-    basePrice: 800,
-    additionalFacilities: 50,
-    status: 'cancelled',
-    location: 'main-branch',
-    locationName: 'Main Branch',
-    companyName: 'Premium Co-working Ltd.',
-    capacity: 1,
-    facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp']
+    facilities: ['WiFi', 'Shared Workspace', 'Coffee Machine Access']
   }
 ])
 
@@ -562,34 +536,67 @@ const loadSubscriptionDetails = async () => {
 
     const subscriptionId = route.params.id as string
 
-    // Load from localStorage first (same as BookingsView)
-    const savedBookings = localStorage.getItem('allBookings')
-    if (savedBookings) {
-      try {
-        const parsedBookings = JSON.parse(savedBookings)
-        const subscriptions = parsedBookings.filter((booking: any) => booking.productType === 'Subscription')
-        if (subscriptions.length > 0) {
-          allSubscriptions.value = subscriptions
-        }
-      } catch (error) {
-        console.warn('Error loading subscriptions from localStorage:', error)
+    try {
+      // Import bookingApi to fetch subscription data (same as BookingsView)
+      const { bookingApi } = await import('@/services/api')
+      
+      console.log('Fetching subscription data from API...')
+      
+      // Fetch subscriptions from API (same as BookingsView)
+      const response = await bookingApi.getAdminSubscriptionTable()
+
+      if (response.success && response.data && response.data.length > 0) {
+        console.log('API response success, mapping data:', response.data.length, 'subscriptions')
+        
+        // Map API response to expected format (same as BookingsView)
+        allSubscriptions.value = response.data.map((item: any) => ({
+          id: item.booking_id,
+          bookingId: item.booking_id,
+          productName: item.product_type,
+          productType: 'Subscription',
+          productId: `SUB${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+          productImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=100&h=100&fit=crop&crop=center',
+          customerName: `${item.first_name} ${item.last_name}`,
+          customerEmail: item.email,
+          customerPhone: item.phone || '+1 (555) 000-0000',
+          userType: item.customer_type ? String(item.customer_type).charAt(0).toUpperCase() + String(item.customer_type).slice(1).toLowerCase() : 'Registered',
+          subscriptionType: item.package_type,
+          subscribedDate: item.subscribed_date,
+          nextBillingDate: item.next_billing_date,
+          subscriptionEndDate: item.subscription_end_date,
+          totalPrice: item.total_price,
+          basePrice: Math.floor(item.total_price * 0.9), // Calculate base price as 90% of total
+          additionalFacilities: Math.floor(item.total_price * 0.1), // Calculate additional facilities as 10% of total
+          status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
+          location: item.location_name ? item.location_name.toLowerCase().replace(/\s/g, '-') : 'main-branch',
+          locationName: item.location_name,
+          companyName: 'Premium Co-working Ltd.',
+          capacity: 1,
+          facilities: ['WiFi', 'Private Storage', 'Ergonomic Chair', 'Desk Lamp', 'Personal Phone Line']
+        }))
+        
+        console.log('Successfully mapped', allSubscriptions.value.length, 'subscriptions')
+      } else {
+        console.warn('API call failed or returned no data:', response.message || 'No data')
+        console.log('Using fallback sample data')
       }
+    } catch (apiError) {
+      console.error('Error calling subscription API:', apiError)
+      console.log('Using fallback sample data due to API error')
     }
 
-    // Update subscription statuses from localStorage
-    const bookingStatuses = JSON.parse(localStorage.getItem('bookingStatuses') || '{}')
-    allSubscriptions.value.forEach(sub => {
-      if (bookingStatuses[sub.id]) {
-        sub.status = bookingStatuses[sub.id]
-      }
-    })
-
     // Find subscription
+    console.log('Looking for subscription ID:', subscriptionId)
+    console.log('Available subscription IDs:', allSubscriptions.value.map(s => s.id))
+    
     const found = allSubscriptions.value.find(s => s.id === subscriptionId)
     if (!found) {
+      console.error('Subscription not found. Available subscriptions:', allSubscriptions.value)
       error.value = `Subscription with ID ${subscriptionId} not found.`
       return
     }
+    
+    console.log('Found subscription:', found)
 
     // If customerEmail or customerPhone is missing, fetch from customersData
     if (!found.customerEmail || !found.customerPhone) {
@@ -610,7 +617,8 @@ const loadSubscriptionDetails = async () => {
     subscription.value = found
 
     // Check if subscription can be cancelled
-    if (subscription.value.status !== 'confirmed') {
+    const cancellableStatuses = ['confirmed', 'ongoing', 'upcoming']
+    if (!cancellableStatuses.includes(subscription.value.status)) {
       error.value = `Only active subscriptions can be cancelled. Current status: ${subscription.value.status}`
       return
     }

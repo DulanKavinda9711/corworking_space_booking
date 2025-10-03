@@ -14,13 +14,15 @@
             </span>
           </div>
         </div>
-        <router-link to="/companies/add"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add New Company</span>
-        </router-link>
+        <PermissionGuard permission="create_companies">
+          <router-link to="/companies/add"
+            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add New Company</span>
+          </router-link>
+        </PermissionGuard>
       </div>
 
       <!-- Companies Table -->
@@ -125,33 +127,51 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
+                    <!-- View Details - Always visible (just viewing) -->
                     <router-link :to="`/companies/${company.id}`"
                       class="text-primary-600 hover:text-primary-900 flex items-center space-x-1" title="View Details">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path :d="mdiEye" />
                       </svg>
                     </router-link>
-                    <router-link :to="`/companies/${company.id}/edit`"
-                      class="text-blue-600 hover:text-blue-900 flex items-center space-x-1" title="Edit Company">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiPencil" />
-                      </svg>
-                    </router-link>
-                    <button @click="toggleCompanyStatus(company)"
-                      :class="company.status === 'active' ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'"
-                      class="flex items-center space-x-1"
-                      :title="company.status === 'active' ? 'Deactivate Company' : 'Activate Company'">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="company.status === 'active' ? mdiCloseCircle : mdiCheckCircle" />
-                      </svg>
-                      <!-- <span class="hidden sm:inline">{{ company.status === 'active' ? 'Deactivate' : 'Activate' }}</span> -->
-                    </button>
-                    <button @click="deleteCompany(company)"
-                      class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Company">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="mdiDelete" />
-                      </svg>
-                    </button>
+                    
+                    <!-- Edit Company - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_companies">
+                      <router-link :to="`/companies/${company.id}/edit`"
+                        class="text-blue-600 hover:text-blue-900 flex items-center space-x-1" title="Edit Company">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiPencil" />
+                        </svg>
+                      </router-link>
+                    </PermissionGuard>
+                    
+                    <!-- Toggle Status - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_companies">
+                      <button @click="toggleCompanyStatus(company)"
+                        :class="company.status === 'active' ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'"
+                        class="flex items-center space-x-1"
+                        :title="company.status === 'active' ? 'Deactivate Company' : 'Activate Company'">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="company.status === 'active' ? mdiCloseCircle : mdiCheckCircle" />
+                        </svg>
+                        <!-- <span class="hidden sm:inline">{{ company.status === 'active' ? 'Deactivate' : 'Activate' }}</span> -->
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Delete Company - Hidden if no delete permission -->
+                    <PermissionGuard permission="delete_companies">
+                      <button @click="deleteCompany(company)"
+                        class="text-red-600 hover:text-red-900 flex items-center space-x-1" title="Delete Company">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="mdiDelete" />
+                        </svg>
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Show message if no actions available (excluding view) -->
+                    <div v-if="!hasAnyCompanyPermissions" class="text-sm text-gray-500 italic">
+                      No actions available
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -319,11 +339,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import { useCompanies } from '@/composables/useCompanies'
+import { usePermissions } from '@/composables/usePermissions'
 import { mdiEye, mdiPencil, mdiCheckCircle, mdiCloseCircle, mdiDelete, mdiOfficeBuilding } from '@mdi/js'
 
 // Use shared companies data
 const { companies, toggleCompanyStatus: toggleStatus, deleteCompany: removeCompany } = useCompanies()
+const permissionsStore = usePermissions()
+
+// Check if user has any company permissions
+const hasAnyCompanyPermissions = computed(() => {
+  return permissionsStore.hasPermission('create_companies') || 
+         permissionsStore.hasPermission('edit_companies') ||
+         permissionsStore.hasPermission('delete_companies')
+})
 
 // Filters
 const filters = ref({

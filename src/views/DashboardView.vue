@@ -28,44 +28,50 @@
             </svg>
             <input
               type="text"
-              placeholder="Search bookings by ID, name, or email"
+              placeholder="Search bookings by ID, customer name, or email"
               v-model="searchQuery"
               @input="handleSearchInput"
               @focus="showSearchResults = true"
+              @blur="hideSearchResults"
               class="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:ring-1 focus:z-10 sm:text-md text-gray-900"
             />
 
-            <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div v-if="showSearchResults && filteredResults.length > 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
               <div
-                v-for="result in filteredResults"
-                :key="result.id"
-                @click="selectBooking(result)"
+                v-for="booking in filteredResults"
+                :key="booking.id"
+                @click="selectBooking(booking)"
                 class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
               >
                 <div class="flex items-center space-x-3">
-                  <div class="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path :d="mdiCalendarCheck" />
                     </svg>
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-900">{{ result.id }}</p>
-                    <p class="text-xs text-gray-500">{{ result.customerName }} • {{ result.productName }}</p>
-                    <p class="text-xs text-gray-400">{{ result.date }} • ${{ result.totalPrice }}</p>
+                    <div class="text-sm font-medium text-gray-900">{{ booking.id }}</div>
+                    <div class="text-xs text-gray-500">{{ booking.customerName }}</div>
+                    <div v-if="booking.customerEmail" class="text-xs text-gray-400">{{ booking.customerEmail }}</div>
                   </div>
                 </div>
-                <span :class="getStatusClass(result.status)" class="px-2 py-1 text-xs font-medium rounded-full">
-                  {{ result.status }}
-                </span>
+                <div class="text-right">
+                  <div class="text-sm text-gray-900">{{ booking.productName || booking.productType }}</div>
+                  <div class="text-xs text-gray-500">{{ formatBookingDate(booking) }}</div>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" :class="getStatusClass(booking.status)">
+                    {{ booking.status }}
+                  </span>
+                </div>
               </div>
             </div>
 
             <div v-if="showSearchResults && searchQuery && filteredResults.length === 0" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
               <div class="text-center text-gray-500">
-                <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <p class="text-sm">No bookings found</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
+                <p class="mt-1 text-sm text-gray-500">No bookings match "{{ searchQuery }}". Try searching by booking ID, customer name, or email.</p>
               </div>
             </div>
           </div>
@@ -154,25 +160,44 @@
           </div>
         </div>
 
-        <!-- Card: SquareHub Commission (white card with icon) -->
-        <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
-          <div class="flex items-start justify-between">
-            <div>
-              <p class="text-sm text-gray-500">SquareHub Commission</p>
-              <div v-if="statsLoading" class="mt-2">
-                <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
-                <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-4/6"></div>
+        <!-- Card: SquareHub Commission (white card with icon) - Protected by permissions -->
+        <PermissionGuard
+          permission="view_squrehub_commission"
+          :show-fallback="false"
+        >
+          <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-white border border-gray-100 hover:shadow-md transition-transform duration-300 cursor-pointer">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-sm text-gray-500">SquareHub Commission</p>
+                <div v-if="statsLoading" class="mt-2">
+                  <div class="h-8 bg-gray-200 rounded animate-pulse"></div>
+                  <div class="h-3 bg-gray-200 rounded animate-pulse mt-1 w-4/6"></div>
+                </div>
+                <div v-else>
+                  <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.SquareHubCommission.toLocaleString() }}</p>
+                  <p class="text-xs text-gray-500 mt-1">{{ stats.SquareHubPeriod }}</p>
+                </div>
               </div>
-              <div v-else>
-                <p class="text-3xl font-bold mt-2 text-gray-900">LKR {{ stats.SquareHubCommission.toLocaleString() }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ stats.SquareHubPeriod }}</p>
+              <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center border border-yellow-100">
+                <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCashMultiple"/></svg>
               </div>
-            </div>
-            <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center border border-yellow-100">
-              <svg class="w-7 h-7 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path :d="mdiCashMultiple"/></svg>
             </div>
           </div>
-        </div>
+
+          <template #fallback>
+            <div class="relative overflow-hidden rounded-2xl p-5 shadow-sm bg-gray-50 border border-gray-200">
+              <div class="flex items-center justify-center h-20">
+                <div class="text-center">
+                  <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p class="text-xs text-gray-500">Access Restricted</p>
+                  <p class="text-xs text-gray-400 mt-1">Contact administrator</p>
+                </div>
+              </div>
+            </div>
+          </template>
+        </PermissionGuard>
       </div>
 
       <!-- Main content: charts + lists -->
@@ -307,6 +332,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import {
   mdiCalendarCheck,
   mdiCalendarClock,
@@ -321,8 +347,10 @@ import {
   mdiCheckCircle
 } from '@mdi/js'
 import { dashboardApi } from '@/services/api'
+import { useBookingsStore } from '@/stores/bookings'
 
 const router = useRouter()
+const bookingsStore = useBookingsStore()
 
 // Chart data and options
 const chartOptions = ref({
@@ -612,9 +640,26 @@ const handleSearchInput = () => {
     return
   }
 
-  // TODO: Implement API call to fetch search results
-  // For now, show no results since hardcoded data is removed
-  filteredResults.value = []
+  const query = searchQuery.value.toLowerCase().trim()
+  
+  // Get all bookings from store (regular bookings + subscriptions + history)
+  const allBookings = [
+    ...bookingsStore.allBookings,
+    ...bookingsStore.allSubscriptions,
+    ...bookingsStore.bookingHistory
+  ]
+  
+  // Filter bookings by ID, customer name, or email
+  filteredResults.value = allBookings.filter(booking => {
+    const bookingId = booking.id?.toLowerCase() || ''
+    const customerName = booking.customerName?.toLowerCase() || ''
+    const customerEmail = booking.customerEmail?.toLowerCase() || ''
+    
+    return bookingId.includes(query) || 
+           customerName.includes(query) || 
+           customerEmail.includes(query)
+  }).slice(0, 10) // Limit to 10 results for better performance
+  
   showSearchResults.value = true
 }
 
@@ -622,17 +667,51 @@ const selectBooking = (booking: any) => {
   showSearchResults.value = false
   searchQuery.value = booking.id
   
-  // Navigate to booking detail page
-  router.push(`/bookings/${booking.id}`)
+  // Navigate to appropriate page based on booking type
+  if (booking.productType === 'Subscription') {
+    router.push(`/subscriptions/${booking.id}`)
+  } else {
+    // Check if it's a history booking
+    const isHistoryBooking = booking.status === 'completed' || booking.status === 'cancelled'
+    if (isHistoryBooking) {
+      router.push(`/bookings?tab=history`)
+    } else {
+      router.push(`/bookings/${booking.id}`)
+    }
+  }
 }
 
 const viewBookingDetails = (bookingId: string) => {
   router.push(`/bookings/${bookingId}`)
 }
 
+const formatBookingDate = (booking: any) => {
+  if (booking.productType === 'Subscription') {
+    return booking.subscribedDate || 'N/A'
+  }
+  
+  const date = booking.date || 'N/A'
+  const startTime = booking.startTime
+  const endTime = booking.endTime
+  
+  if (startTime && endTime) {
+    return `${date} ${startTime}-${endTime}`
+  }
+  
+  return date
+}
+
+const hideSearchResults = () => {
+  // Hide search results after a small delay to allow click events to fire
+  setTimeout(() => {
+    showSearchResults.value = false
+  }, 200)
+}
+
 const getStatusClass = (status: string) => {
   switch (status) {
     case 'confirmed':
+    case 'ongoing':
       return 'bg-green-100 text-green-800'
     case 'upcoming':
       return 'bg-blue-100 text-blue-800'
@@ -671,13 +750,20 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   updateCurrentTime()
   // Update time every minute
   setInterval(updateCurrentTime, 60000)
   
   // Add click outside listener
   document.addEventListener('click', handleClickOutside)
+
+  // Load booking data for search functionality
+  await Promise.all([
+    bookingsStore.fetchBookings(),
+    bookingsStore.fetchSubscriptions(),
+    bookingsStore.fetchBookingHistory()
+  ])
 
   // Load booking summary data
   loadBookingSummary()

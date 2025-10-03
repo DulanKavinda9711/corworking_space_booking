@@ -143,17 +143,25 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-3">
-                    <button @click.stop="confirmToggleStatus(customer)"
-                      :class="customer.status === 'active' 
-                        ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' 
-                        : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1"
-                      :title="customer.status === 'active' ? 'Make Customer Inactive' : 'Make Customer Active'">
-                      <!-- <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                        <path :d="customer.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
-                      </svg> -->
-                      <span>{{ customer.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                    </button>
+                    <!-- Toggle Status Button - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_customers">
+                      <button @click.stop="confirmToggleStatus(customer)"
+                        :class="customer.status === 'active' 
+                          ? 'bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100' 
+                          : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'"
+                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1"
+                        :title="customer.status === 'active' ? 'Make Customer Inactive' : 'Make Customer Active'">
+                        <!-- <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                          <path :d="customer.status === 'active' ? mdiAccountCancel : mdiAccountCheck" />
+                        </svg> -->
+                        <span>{{ customer.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Show message if no actions available -->
+                    <div v-if="!hasAnyCustomerPermissions" class="text-sm text-gray-500 italic">
+                      No actions available
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -299,16 +307,146 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
-import { useCustomers, type Customer } from '@/composables/useCustomers'
-import { useRewardsStore } from '@/stores/rewards'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
+import { customerApi } from '@/services/api'
+import { usePermissions } from '@/composables/usePermissions'
 import { mdiAccount, mdiAccountCheck, mdiAccountCancel } from '@mdi/js'
+
+// Customer interface (local definition)
+interface Customer {
+  id: string
+  name: string
+  email: string
+  phone: string
+  customerType: 'registered' | 'guest'
+  totalBookings: number
+  status: 'active' | 'inactive'
+  dateJoined?: string
+  address?: string
+  city?: string
+  country?: string
+}
 
 // Use router for navigation
 const router = useRouter()
+const permissionsStore = usePermissions()
 
-// Use shared customers data
-const { customers, toggleCustomerStatus: toggleStatus, fetchCustomers } = useCustomers()
-const rewardsStore = useRewardsStore()
+// Check if user has any customer permissions
+const hasAnyCustomerPermissions = computed(() => {
+  return permissionsStore.hasPermission('edit_customers')
+})
+
+// Local state for customers data
+const customers = ref<Customer[]>([])
+const customersLoading = ref(false)
+const customersError = ref('')
+
+// Local API functions
+const fetchCustomers = async () => {
+  customersLoading.value = true
+  customersError.value = ''
+  
+  try {
+    console.log('Fetching customers from API...')
+    const response = await customerApi.getAllCustomers()
+    console.log('Customers API response:', response)
+
+    if (response.success && response.data) {
+      const mappedCustomers = response.data.map((apiCustomer: any) => ({
+        id: String(apiCustomer.id || apiCustomer.user_id || ''),
+        name: apiCustomer.name || `${apiCustomer.first_name || ''} ${apiCustomer.last_name || ''}`.trim() || '',
+        email: apiCustomer.email || '',
+        phone: apiCustomer.phone || '',
+        customerType: (apiCustomer.customer_type || apiCustomer.customerType || 'registered') as 'registered' | 'guest',
+        totalBookings: apiCustomer.total_bookings || apiCustomer.totalBookings || 0,
+        status: (apiCustomer.status || 'active') as 'active' | 'inactive',
+        dateJoined: apiCustomer.date_joined || apiCustomer.dateJoined,
+        address: apiCustomer.address,
+        city: apiCustomer.city,
+        country: apiCustomer.country
+      }))
+
+      customers.value = mappedCustomers
+      console.log('Mapped customers:', mappedCustomers)
+
+      // Apply any persisted status changes from sessionStorage
+      loadPersistedStatuses()
+    } else {
+      console.log('No customers data received')
+      customers.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching customers:', error)
+    customersError.value = 'Failed to load customers'
+    customers.value = []
+  } finally {
+    customersLoading.value = false
+  }
+}
+
+const toggleCustomerStatus = async (customerId: string) => {
+  try {
+    console.log('Toggling status for customer:', customerId)
+    
+    // Find current customer
+    const customer = customers.value.find(c => c.id === customerId)
+    if (!customer) {
+      console.error('Customer not found:', customerId)
+      return null
+    }
+
+    const currentStatus = customer.status
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+    
+    console.log(`Changing customer status from ${currentStatus} to ${newStatus}`)
+
+    // Call API to update status
+    const response = await customerApi.activateUser({
+      id: parseInt(customerId),
+      is_active: newStatus === 'active'
+    })
+    
+    if (response.success) {
+      // Update local state
+      customer.status = newStatus
+      
+      // Persist status change to sessionStorage
+      saveStatusChange(customerId, newStatus)
+      
+      console.log('Customer status updated successfully')
+      return newStatus
+    } else {
+      console.error('Failed to update customer status:', response.message)
+      return null
+    }
+  } catch (error) {
+    console.error('Error toggling customer status:', error)
+    return null
+  }
+}
+
+// Session storage functions for status persistence
+const saveStatusChange = (customerId: string, status: 'active' | 'inactive') => {
+  const statusChanges = JSON.parse(sessionStorage.getItem('customerStatusChanges') || '{}')
+  statusChanges[customerId] = {
+    status,
+    changedAt: new Date().toISOString(),
+    changedBy: 'Admin' // In real app, get from auth context
+  }
+  sessionStorage.setItem('customerStatusChanges', JSON.stringify(statusChanges))
+}
+
+const loadPersistedStatuses = () => {
+  const statusChanges = JSON.parse(sessionStorage.getItem('customerStatusChanges') || '{}')
+  
+  customers.value.forEach(customer => {
+    if (statusChanges[customer.id]) {
+      customer.status = statusChanges[customer.id].status
+    }
+  })
+  
+  console.log('Applied persisted status changes:', Object.keys(statusChanges).length)
+}
 
 // State
 const searchQuery = ref('')
@@ -416,7 +554,8 @@ const getStatusClass = (status: string) => {
 }
 
 const getCustomerRewards = (customerId: string) => {
-  return rewardsStore.getCustomerRewards(customerId)
+  // Rewards functionality removed - return 0 or remove this if not needed
+  return 0
 }
 
 // Dropdown toggle functions
@@ -499,7 +638,7 @@ const confirmToggleCustomerStatus = async () => {
   isProcessing.value = true
   
   try {
-    const newStatus = await toggleStatus(customerToToggle.value.id)
+    const newStatus = await toggleCustomerStatus(customerToToggle.value.id)
     if (newStatus) {
       // Update the local customer object immediately for UI responsiveness
       customerToToggle.value.status = newStatus
@@ -547,8 +686,9 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-// Load persisted customer statuses on component mount
+// Load customer data on component mount
 onMounted(async () => {
+  console.log('CustomersView mounted - loading customer data...')
   await fetchCustomers() // Load customer data from API (this will also apply persisted statuses)
   document.addEventListener('click', handleClickOutside)
 })

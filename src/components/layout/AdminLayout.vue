@@ -15,7 +15,7 @@
       <nav class="mt-5 flex-1 overflow-y-auto">
         <div class="px-4">
           <router-link
-            v-for="item in menuItems"
+            v-for="item in visibleMenuItems"
             :key="item.name"
             :to="item.path"
             class="flex items-center py-5 px-4 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors w-full"
@@ -143,6 +143,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { usePermissionsStore } from '@/stores/permissions'
 import { useThemeStore } from '@/stores/theme'
 import {
   mdiViewDashboard,
@@ -164,7 +165,8 @@ import {
   mdiMessage,
   mdiWifi,
   mdiGoogleClassroom,
-  mdiOffer
+  mdiOffer,
+  mdiTag
 } from '@mdi/js'
 
 const route = useRoute()
@@ -195,21 +197,21 @@ const mdiIcons = {
   mdiMessage
 }
 
-// Menu items
+// Menu items with permission requirements
 const menuItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard, color: 'text-green-600' },
-  { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck, color: 'text-green-600' },
-  { name: 'Customers', path: '/customers', icon: mdiAccountGroup, color: 'text-purple-600' },
-  { name: 'Messages', path: '/messages', icon: mdiMessage, color: 'text-blue-600' },
-  // { name: 'Approver', path: '/approver', icon: mdiCheckCircle, color: 'text-blue-600' },
-  { name: 'Facilities', path: '/facilities', icon: mdiWifi, color: 'text-orange-600' },
-  { name: 'Products', path: '/products', icon: mdiGoogleClassroom, color: 'text-indigo-600' },
-  { name: 'Locations', path: '/locations', icon: mdiMapMarker, color: 'text-red-600' },
-  { name: 'Payments', path: '/payments', icon: mdiCreditCard, color: 'text-teal-600' },
-  { name: 'Promotions', path: '/promotions', icon: mdiOffer, color: 'text-pink-600' },
-  { name: 'User Management', path: '/user-management', icon: mdiAccountSettings, color: 'text-yellow-600' },
-  // { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600' },
-  // { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600' }
+  { name: 'Dashboard', path: '/dashboard', icon: mdiViewDashboard, color: 'text-green-600', permission: 'view_dashboard' },
+  { name: 'Bookings', path: '/bookings', icon: mdiCalendarCheck, color: 'text-green-600', permission: 'view_bookings' },
+  { name: 'Customers', path: '/customers', icon: mdiAccountGroup, color: 'text-purple-600', permission: 'view_customers' },
+  { name: 'Messages', path: '/messages', icon: mdiMessage, color: 'text-blue-600', permission: 'view_messages' },
+  // { name: 'Approver', path: '/approver', icon: mdiCheckCircle, color: 'text-blue-600', permission: 'approve_bookings' },
+  { name: 'Facilities', path: '/facilities', icon: mdiWifi, color: 'text-orange-600', permission: 'view_facilities' },
+  { name: 'Products', path: '/products', icon: mdiGoogleClassroom, color: 'text-indigo-600', permission: 'view_products' },
+  { name: 'Locations', path: '/locations', icon: mdiMapMarker, color: 'text-red-600', permission: 'view_locations' },
+  { name: 'Payments', path: '/payments', icon: mdiCreditCard, color: 'text-teal-600', permission: 'view_payments' },
+  { name: 'Promotions', path: '/promotions', icon: mdiTag, color: 'text-pink-600', permission: 'view_promotions' },
+  { name: 'User Management', path: '/user-management', icon: mdiAccountSettings, color: 'text-yellow-600', permission: 'view_users' },
+  // { name: 'Dual Auth', path: '/dual-auth', icon: mdiShieldCheck, color: 'text-emerald-600', permission: 'system_settings' },
+  // { name: 'Activity Log', path: '/activity-log', icon: mdiHistory, color: 'text-gray-600', permission: 'view_activity_logs' }
 ]
 
 // Notifications
@@ -233,9 +235,22 @@ const notifications = ref([
 ])
 
 const authStore = useAuthStore()
+const permissionsStore = usePermissionsStore()
 const themeStore = useThemeStore()
 
 const notificationCount = computed(() => notifications.value.length)
+
+// Filter menu items based on user permissions
+const visibleMenuItems = computed(() => {
+  return menuItems.filter(item => {
+    // If no permission specified, show the item
+    if (!item.permission) {
+      return true
+    }
+    // Check if user has the required permission
+    return permissionsStore.hasPermission(item.permission)
+  })
+})
 
 // Use theme from store
 const theme = computed(() => themeStore.theme)

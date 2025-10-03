@@ -27,20 +27,27 @@
             </button>
           </nav>
           <div class="flex items-center space-x-2">
-            <button v-if="activeTab === 'role-creation'" @click="router.push('/user-management/add-role')"
-              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Create New Role</span>
-            </button>
-            <button v-if="activeTab === 'user-creation'" @click="router.push('/user-management/add')"
-              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Create New User</span>
-            </button>
+            <!-- Create New Role Button - Hidden if no create permission -->
+            <PermissionGuard permission="create_users">
+              <button v-if="activeTab === 'role-creation'" @click="router.push('/user-management/add-role')"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Create New Role</span>
+              </button>
+            </PermissionGuard>
+            
+            <!-- Create New User Button - Hidden if no create permission -->
+            <PermissionGuard permission="create_users">
+              <button v-if="activeTab === 'user-creation'" @click="router.push('/user-management/add')"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Create New User</span>
+              </button>
+            </PermissionGuard>
           </div>
         </div>
       </div>
@@ -193,14 +200,22 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
-                        <button @click.stop="toggleRoleStatus(role)"
-                          :class="[
-                            role.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
-                          ]"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                          :title="role.is_active ? 'Make Role Inactive' : 'Make Role Active'">
-                          <span>{{ role.is_active ? 'Inactive' : 'Active' }}</span>
-                        </button>
+                        <!-- Toggle Role Status Button - Hidden if no edit permission -->
+                        <PermissionGuard permission="edit_users">
+                          <button @click.stop="toggleRoleStatus(role)"
+                            :class="[
+                              role.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
+                            ]"
+                            class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                            :title="role.is_active ? 'Make Role Inactive' : 'Make Role Active'">
+                            <span>{{ role.is_active ? 'Inactive' : 'Active' }}</span>
+                          </button>
+                        </PermissionGuard>
+                        
+                        <!-- Show message if no actions available -->
+                        <div v-if="!hasAnyUserPermissions" class="text-sm text-gray-500 italic">
+                          No actions available
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -384,14 +399,22 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" @click.stop>
                       <div class="flex items-center justify-end space-x-2">
-                        <button @click.stop="toggleAdminStatus(admin)"
-                          :class="[
-                            admin.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
-                          ]"
-                          class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                          :title="admin.is_active ? 'Make Admin Inactive' : 'Make Admin Active'">
-                          <span>{{ admin.is_active ? 'Inactive' : 'Active' }}</span>
-                        </button>
+                        <!-- Toggle Admin Status Button - Hidden if no edit permission -->
+                        <PermissionGuard permission="edit_users">
+                          <button @click.stop="toggleAdminStatus(admin)"
+                            :class="[
+                              admin.is_active ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200'
+                            ]"
+                            class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                            :title="admin.is_active ? 'Make Admin Inactive' : 'Make Admin Active'">
+                            <span>{{ admin.is_active ? 'Inactive' : 'Active' }}</span>
+                          </button>
+                        </PermissionGuard>
+                        
+                        <!-- Show message if no actions available -->
+                        <div v-if="!hasAnyUserPermissions" class="text-sm text-gray-500 italic">
+                          No actions available
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -546,10 +569,12 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { mdiShieldAccount } from '@mdi/js'
 import { permissionApi, authApi } from '@/services/api'
+import { usePermissions } from '@/composables/usePermissions'
 
 // Role interface
 interface Role {
@@ -603,6 +628,14 @@ const roles = ref<Role[]>([])
 
 // State
 const router = useRouter()
+const permissionsStore = usePermissions()
+
+// Check if user has any user management permissions
+const hasAnyUserPermissions = computed(() => {
+  return permissionsStore.hasPermission('create_users') || 
+         permissionsStore.hasPermission('edit_users')
+})
+
 const searchQuery = ref('')
 
 // Loading states

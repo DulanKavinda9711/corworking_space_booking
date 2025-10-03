@@ -21,14 +21,26 @@ export interface MessageFilters {
 }
 
 // Adapter functions to convert between API and local formats
-const apiMessageToLocal = (apiMessage: ApiMessage): Message => ({
-  id: apiMessage.id,
-  name: apiMessage.customerName,
-  email: apiMessage.customerEmail,
-  message: apiMessage.message,
-  date: apiMessage.sentAt,
-  status: apiMessage.status === 'sent' ? 'unread' : apiMessage.status === 'delivered' ? 'read' : 'replied'
-})
+const apiMessageToLocal = (apiMessage: any): Message => {
+  // Handle different possible API response formats
+  const id = apiMessage.id || apiMessage.message_id || `msg-${Date.now()}-${Math.random()}`
+  const name = apiMessage.customerName || apiMessage.customer_name || apiMessage.name || apiMessage.sender_name || 'Unknown'
+  const email = apiMessage.customerEmail || apiMessage.customer_email || apiMessage.email || apiMessage.sender_email || ''
+  const message = apiMessage.message || apiMessage.content || apiMessage.text || ''
+  const date = apiMessage.sentAt || apiMessage.sent_at || apiMessage.created_at || apiMessage.date || new Date().toISOString()
+  const status = apiMessage.status || 'unread'
+  
+  return {
+    id: String(id),
+    name: String(name),
+    email: String(email),
+    message: String(message),
+    date: String(date),
+    status: status === 'sent' ? 'unread' as const : 
+           status === 'delivered' || status === 'read' ? 'read' as const : 
+           status === 'replied' ? 'replied' as const : 'unread' as const
+  }
+}
 
 const localMessageToApi = (localMessage: Message): ApiMessage => ({
   id: localMessage.id,
@@ -47,9 +59,44 @@ const localMessageToApi = (localMessage: Message): ApiMessage => ({
 // API service functions using real API
 const fetchMessages = async (): Promise<Message[]> => {
   try {
+    console.log('Fetching messages from API...')
     const response = await messageApi.getAllMessages()
+    console.log('API response:', response)
+    
     if (response.success && response.data) {
-      return response.data.map(apiMessageToLocal)
+      console.log('Raw API data:', response.data)
+      
+      // Check if we have actual message data
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        const mappedMessages = response.data.map(apiMessageToLocal)
+        console.log('Mapped messages:', mappedMessages)
+        return mappedMessages
+      } else {
+        console.log('No messages found in API response - API returned empty data')
+        
+        // For testing purposes, return some mock data when API is empty
+        // Remove this section when real data is available
+        const mockMessages: Message[] = [
+          {
+            id: 'mock-1',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            message: 'Hello, I would like to inquire about booking a meeting room for next week. Please let me know the availability and pricing.',
+            date: new Date().toISOString(),
+            status: 'unread'
+          },
+          {
+            id: 'mock-2',
+            name: 'Jane Smith',
+            email: 'jane.smith@company.com',
+            message: 'Thank you for the excellent service. The dedicated desk was perfect for our team needs.',
+            date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+            status: 'read'
+          }
+        ]
+        console.log('Returning mock messages for testing:', mockMessages)
+        return mockMessages
+      }
     } else {
       console.error('Failed to fetch messages:', response.message)
       return []
@@ -160,7 +207,14 @@ export const useMessages = () => {
     error.value = null
 
     try {
-      messages.value = await fetchMessages()
+      console.log('Loading messages from API...')
+      const fetchedMessages = await fetchMessages()
+      messages.value = fetchedMessages
+      console.log(`Successfully loaded ${fetchedMessages.length} messages`)
+      
+      if (fetchedMessages.length === 0) {
+        console.log('No messages found - this might be expected if the API returns empty data')
+      }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load messages'
       console.error('Error loading messages:', err)

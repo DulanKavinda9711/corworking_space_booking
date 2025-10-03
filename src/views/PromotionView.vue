@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
             <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-              <path :d="mdiBullhorn" />
+              <path :d="mdiTag" />
             </svg>
             <span class="text-sm font-medium text-green-700">
               Total Promotions:
@@ -528,11 +528,11 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { advertisingApi, buildBaseUrl } from '@/services/api'
-import { usePromotionsStore } from '@/stores/promotions'
 import {
     mdiBullhorn,
   mdiPlus,
-  mdiPencil
+  mdiPencil,
+  mdiTag
 } from '@mdi/js'
 
 // Types
@@ -544,8 +544,8 @@ interface Promotion {
   createdAt: string
 }
 
-// Store
-const promotionsStore = usePromotionsStore()
+// Local state instead of Pinia store
+const promotions = ref<Promotion[]>([])
 
 // State
 const showCreateModal = ref(false)
@@ -563,17 +563,15 @@ const searchQuery = ref('')
 // const currentPage = ref(1)
 // const itemsPerPage = ref(12)
 
-// Promotions data - now from store
-// const promotions = ref<Promotion[]>([])
+// Promotions data - local state management
 
 // Computed properties for filtering and pagination
 const filteredPromotions = computed(() => {
-  const promotions = promotionsStore.promotions
   if (!searchQuery.value.trim()) {
-    return promotions
+    return promotions.value
   }
   const query = searchQuery.value.toLowerCase()
-  return promotions.filter(promotion =>
+  return promotions.value.filter((promotion: Promotion) =>
     promotion.name.toLowerCase().includes(query) ||
     (promotion.link && promotion.link.toLowerCase().includes(query))
   )
@@ -764,8 +762,8 @@ const confirmCreate = async () => {
         createdAt: new Date().toISOString()
       }
 
-      // Add to promotions store
-      promotionsStore.addPromotion(promotion)
+      // Add to local promotions array
+      promotions.value.push(promotion)
 
       // Reset form
       newPromotion.value = { name: '', link: '', image: '' }
@@ -880,8 +878,13 @@ const confirmEdit = async () => {
         createdAt: promotionToEdit.value.createdAt // Keep original creation date
       }
 
-      // Update promotion in store
-      promotionsStore.updatePromotion(promotionToEdit.value.id, updatedPromotion)
+      // Update promotion in local array
+      if (promotionToEdit.value) {
+        const index = promotions.value.findIndex(p => p.id === promotionToEdit.value!.id)
+        if (index !== -1) {
+          promotions.value[index] = updatedPromotion
+        }
+      }
       alert('Promotion updated successfully!')
 
       // Close modal
@@ -972,8 +975,8 @@ const loadPromotions = async () => {
         }
       })
 
-      // Set promotions in store
-      promotionsStore.setPromotions(transformedPromotions)
+      // Set promotions in local array
+      promotions.value = transformedPromotions
     } else {
       console.error('Failed to load promotions:', result.message)
     }

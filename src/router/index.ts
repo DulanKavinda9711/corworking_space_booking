@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { usePermissionsStore } from '@/stores/permissions'
 
 // Auth
 import LoginView from '@/views/auth/LoginView.vue'
@@ -99,50 +100,74 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'Dashboard',
     component: DashboardView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_dashboard']
+    }
   },
   {
     path: '/bookings',
     name: 'Bookings',
     component: BookingsView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_bookings']
+    }
   },
   {
     path: '/bookings/:id',
     name: 'BookingDetail',
     component: BookingDetailView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_booking_details']
+    }
   },
   {
     path: '/bookings/:id/cancel',
     name: 'CancelBooking',
     component: CancelBookingView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['cancel_bookings']
+    }
   },
   
   {
     path: '/subscriptions/:id',
     name: 'SubscriptionDetail',
     component: SubscriptionDetailView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_subscriptions']
+    }
   },
   {
     path: '/subscriptions/:id/cancel',
     name: 'CancelSubscription',
     component: CancelSubscriptionView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['cancel_subscriptions']
+    }
   },
   {
     path: '/customers',
     name: 'Customers',
     component: CustomersView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_customers']
+    }
   },
   {
     path: '/customers/:id',
     name: 'CustomerDetail',
     component: CustomerDetailView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_customer_details']
+    }
   },
   {
     path: '/messages',
@@ -160,97 +185,145 @@ const routes: RouteRecordRaw[] = [
     path: '/facilities',
     name: 'Facilities',
     component: FacilitiesView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_facilities']
+    }
   },
   {
     path: '/facilities/add',
     name: 'AddFacility',
     component: AddFacilityView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['create_facilities']
+    }
   },
   {
     path: '/facilities/:id',
     name: 'ViewFacility',
     component: ViewFacilityView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_facilities']
+    }
   },
   {
     path: '/facilities/:id/edit',
     name: 'EditFacility',
     component: EditFacilityView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['edit_facilities']
+    }
   },
   {
     path: '/products',
     name: 'Products',
     component: ProductsView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_products']
+    }
   },
   {
     path: '/products/add',
     name: 'AddProduct',
     component: AddProductView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['create_products']
+    }
   },
   {
     path: '/products/:id',
     name: 'ProductsViewDetails',
     component: ProductsViewDetails,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_products']
+    }
   },
   {
     path: '/products/:id/edit',
     name: 'EditProduct',
     component: EditProductView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['edit_products']
+    }
   },
   {
     path: '/locations',
     name: 'Locations',
     component: LocationsView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_locations']
+    }
   },
   {
     path: '/locations/add',
     name: 'AddLocation',
     component: AddLocationView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['create_locations']
+    }
   },
   {
     path: '/locations/:id',
     name: 'LocationDetail',
     component: LocationDetailView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_locations']
+    }
   },
   {
     path: '/locations/:id/edit',
     name: 'EditLocation',
     component: EditLocationView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['edit_locations']
+    }
   },
   {
     path: '/payments',
     name: 'Payments',
     component: PaymentsView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_payments']
+    }
   },
   {
     path: '/payments/:id',
     name: 'PaymentDetail',
     component: PaymentDetailView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_payment_details']
+    }
   },
   {
     path: '/user-management',
     name: 'UserManagement',
     component: UserManagementView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['view_users']
+    }
   },
   {
     path: '/user-management/add',
     name: 'AddUser',
     component: AddUserView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['users.create']
+    }
   },
   {
     path: '/user-management/add-role',
@@ -304,7 +377,10 @@ const routes: RouteRecordRaw[] = [
     path: '/settings',
     name: 'Settings',
     component: SettingsView,
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      permissions: ['settings.view']
+    }
   },
   {
     path: '/profile',
@@ -325,9 +401,10 @@ const router = createRouter({
   routes
 })
 
-// Auth guard
+// Auth guard with permission checking
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
+  const permissionsStore = usePermissionsStore()
 
   const isAuthenticated = authStore.authToken
   const passwordReset = authStore.passwordReset
@@ -347,6 +424,28 @@ router.beforeEach((to, from, next) => {
     // Already authenticated, redirect to appropriate page
     console.log('🔄 Router Guard: Already authenticated, redirecting to dashboard')
     next('/dashboard')
+  } else if (isAuthenticated && to.meta.permissions) {
+    // Check permissions for authenticated users
+    const requiredPermissions = to.meta.permissions as string[]
+    const requireAll = to.meta.requireAllPermissions as boolean || false
+    
+    // Check if permissions store is empty (might be after page refresh)
+    if (permissionsStore.userPermissions.length === 0 && authStore.user?.permissions) {
+      console.log('🔄 Router Guard: Permissions store empty, reinitializing from auth store')
+      authStore.initializeFromStorage()
+    }
+    
+    if (!permissionsStore.canAccessRoute(requiredPermissions, requireAll)) {
+      console.log('🚫 Router Guard: Access denied - insufficient permissions for', to.path)
+      console.log('- Required permissions:', requiredPermissions)
+      console.log('- User permissions:', permissionsStore.userPermissions)
+      // Redirect to dashboard or show access denied page
+      next('/dashboard')
+      return
+    }
+    
+    console.log('✅ Router Guard: Permission check passed for', to.path)
+    next()
   } else if (to.path === '/onboarding' && isAuthenticated && authStore.isPasswordReset && authStore.isOnboardingComplete) {
     // User has already completed onboarding, redirect to dashboard
     console.log('✅ Router Guard: Onboarding complete, redirecting to dashboard')

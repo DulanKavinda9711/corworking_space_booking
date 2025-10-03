@@ -12,13 +12,17 @@
               <span class="font-bold text-green-800">{{ filteredLocations.length }}</span>
             </span>
           </div>
-        <router-link to="/locations/add"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add New Location</span>
-        </router-link>
+        
+        <!-- Add New Location Button - Hidden if no create permission -->
+        <PermissionGuard permission="create_locations">
+          <router-link to="/locations/add"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Add New Location</span>
+          </router-link>
+        </PermissionGuard>
       </div>
 
       <!-- Error Message
@@ -176,25 +180,37 @@
                 </td>
                 <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-center" @click.stop>
                   <div class="flex items-center justify-center space-x-2">
-                    <button @click.stop="editLocation(location.id)"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 flex items-center justify-center space-x-1"
-                      title="Edit Location">
-                      <span>Edit</span>
-                    </button>
-                    <button @click.stop="toggleLocationStatus(location)"
-                      :disabled="toggleStatusLoading.has(location.id)"
-                      :class="[
-                        location.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
-                        toggleStatusLoading.has(location.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                      ]"
-                      class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
-                      :title="toggleStatusLoading.has(location.id) ? 'Updating...' : (location.status === 'active' ? 'Make Location Inactive' : 'Make Location Active')">
-                      <svg v-if="toggleStatusLoading.has(location.id)" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span v-else>{{ location.status === 'active' ? 'Inactive' : 'Active' }}</span>
-                    </button>
+                    <!-- Edit Button - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_locations">
+                      <button @click.stop="editLocation(location.id)"
+                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors bg-green-50 hover:bg-green-100 text-green-800 border border-green-200 flex items-center justify-center space-x-1"
+                        title="Edit Location">
+                        <span>Edit</span>
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Toggle Status Button - Hidden if no edit permission -->
+                    <PermissionGuard permission="edit_locations">
+                      <button @click.stop="toggleLocationStatus(location)"
+                        :disabled="toggleStatusLoading.has(location.id)"
+                        :class="[
+                          location.status === 'active' ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200' : 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200',
+                          toggleStatusLoading.has(location.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                        ]"
+                        class="w-20 px-3 py-1 text-xs font-medium rounded-md transition-colors border flex items-center justify-center space-x-1"
+                        :title="toggleStatusLoading.has(location.id) ? 'Updating...' : (location.status === 'active' ? 'Make Location Inactive' : 'Make Location Active')">
+                        <svg v-if="toggleStatusLoading.has(location.id)" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span v-else>{{ location.status === 'active' ? 'Inactive' : 'Active' }}</span>
+                      </button>
+                    </PermissionGuard>
+                    
+                    <!-- Show message if no actions available -->
+                    <div v-if="!hasAnyLocationPermissions" class="text-sm text-gray-500 italic">
+                      No actions available
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -455,10 +471,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import { locationApi } from '@/services/api'
+import { usePermissions } from '@/composables/usePermissions'
 import { mdiMapMarker } from '@mdi/js'
 
 const router = useRouter()
+const permissionsStore = usePermissions()
+
+// Check if user has any location permissions
+const hasAnyLocationPermissions = computed(() => {
+  return permissionsStore.hasPermission('create_locations') || 
+         permissionsStore.hasPermission('edit_locations')
+})
 
 // State
 const searchQuery = ref('')

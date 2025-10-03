@@ -5,6 +5,7 @@ import { createPersistedState } from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router'
 import VueApexCharts from 'vue3-apexcharts'
+import { useAuthStore } from './stores/auth'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -17,4 +18,9 @@ pinia.use(createPersistedState({
 app.use(pinia)
 app.use(router)
 app.component('apex-chart', VueApexCharts)
+
+// Initialize auth store from persisted data after pinia is ready
+const authStore = useAuthStore()
+authStore.initializeFromStorage()
+
 app.mount('#app')

@@ -6,7 +6,7 @@
         <div
           class="bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center space-x-2 md:sticky md:top-0 z-50">
           <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-            <path :d="mdiWallet" />
+            <path :d="mdiCreditCard" />
           </svg>
           <span class="text-sm font-medium text-green-700">
             Total Payments:
@@ -140,12 +140,17 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total Amount
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  SquareHub Commission
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ceylinco Commission
-                </th>
+                <!-- Commission columns - Hidden if no commission permission -->
+                <PermissionGuard permission="view_squrehub_commission">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    SquareHub Commission
+                  </th>
+                </PermissionGuard>
+                <PermissionGuard permission="view_squrehub_commission">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ceylinco Commission
+                  </th>
+                </PermissionGuard>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
@@ -188,14 +193,19 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-semibold text-gray-900">LKR {{ payment.totalAmount }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-gray-600">LKR {{ payment.SquareHubCommission }}</div>
-                  <!-- <div class="text-sm text-gray-500">{{ payment.SquareHubRate }}%</div> -->
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-semibold text-gray-600">LKR {{ payment.ceylincoCommission }}</div>
-                  <!-- <div class="text-sm text-gray-500">{{ payment.ceylincoRate }}%</div> -->
-                </td>
+                <!-- Commission data - Hidden if no commission permission -->
+                <PermissionGuard permission="view_squrehub_commission">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-600">LKR {{ payment.SquareHubCommission }}</div>
+                    <!-- <div class="text-sm text-gray-500">{{ payment.SquareHubRate }}%</div> -->
+                  </td>
+                </PermissionGuard>
+                <PermissionGuard permission="view_squrehub_commission">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-gray-600">LKR {{ payment.ceylincoCommission }}</div>
+                    <!-- <div class="text-sm text-gray-500">{{ payment.ceylincoRate }}%</div> -->
+                  </td>
+                </PermissionGuard>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-600">{{ payment.date }}</div>
                   <div class="text-sm text-gray-500">{{ payment.time }}</div>
@@ -231,13 +241,16 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCommissionStore } from '@/stores/commission'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
+import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { paymentApi, locationApi } from '@/services/api'
+import { usePermissions } from '@/composables/usePermissions'
 import {
   mdiCog,
   mdiWallet,
   mdiCreditCard,
-  mdiAccount
+  mdiAccount,
+  mdiCard
 } from '@mdi/js'
 
 interface Payment {
@@ -258,6 +271,7 @@ interface Payment {
 
 const router = useRouter()
 const commissionStore = useCommissionStore()
+const permissionsStore = usePermissions()
 
 // State
 const dateRange = ref({
