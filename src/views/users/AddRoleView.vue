@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
         <router-link :to="getBackNavigationPath()" class="p-2 items-center rounded-lg border border-gray-300 text-gray-600 hover:text-gray-900 hover:bg-gray-50">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
           {{ getBackNavigationLabel() }}
@@ -62,40 +62,25 @@
 
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-4">Permissions</label>
-            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-6">
-              <!-- Quick Role Templates -->
-              <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h4 class="text-sm font-medium text-blue-900 mb-3">Quick Role Templates</h4>
-                <div class="flex flex-wrap gap-2">
-                  <button 
-                    v-for="(permissions, roleName) in roleTemplates" 
-                    :key="roleName"
-                    @click="applyRoleTemplate(permissions)"
-                    type="button"
-                    class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors"
-                  >
-                    {{ roleName }}
-                  </button>
-                  <button 
-                    @click="clearAllPermissions"
-                    type="button"
-                    class="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    Clear All
-                  </button>
-                </div>
-              </div>
-
+            
+            <!-- Loading State -->
+            <div v-if="permissionsLoading" class="text-center py-8">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              <p class="mt-2 text-sm text-gray-600">Loading permissions...</p>
+            </div>
+            
+            <!-- Permissions List -->
+            <div v-else class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-6">
               <!-- Permission Categories -->
               <div class="space-y-6">
-                <div v-for="category in Object.keys(PERMISSIONS_BY_CATEGORY)" :key="category" class="border border-gray-100 rounded-lg p-4">
+                <div v-for="category in categories" :key="category" class="border border-gray-100 rounded-lg p-4">
                   <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-sm font-medium text-gray-900">{{ getCategoryDisplayName(category) }}</h4>
+                    <h4 class="text-sm font-medium text-gray-900">{{ category }}</h4>
                     <div class="flex items-center space-x-2">
                       <button 
                         @click="toggleCategoryPermissions(category, true)"
                         type="button"
-                        class="text-xs text-blue-600 hover:text-blue-800"
+                        class="text-xs text-green-600 hover:text-green-800"
                       >
                         Select All
                       </button>
@@ -112,19 +97,20 @@
                   
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <label 
-                      v-for="permission in getCategoryPermissions(category)" 
-                      :key="permission" 
-                      class="flex items-center p-2 rounded hover:bg-gray-50"
+                      v-for="permission in permissionsByCategory[category]" 
+                      :key="permission.permission_id" 
+                      class="flex items-center p-2 rounded hover:bg-gray-50 cursor-pointer"
+                      @click="togglePermission(permission)"
                     >
                       <input
                         type="checkbox"
-                        :value="permission"
-                        v-model="selectedPermissions"
+                        :checked="isPermissionSelected(permission.permission_id)"
                         class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        @click.stop="togglePermission(permission)"
                       />
                       <div class="ml-3">
-                        <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permission) }}</div>
-                        <div class="text-xs text-gray-500">{{ getPermissionDescription(permission) }}</div>
+                        <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permission.code_name) }}</div>
+                        <!-- <div class="text-xs text-gray-500">{{ permission.code_name }}</div> -->
                       </div>
                     </label>
                   </div>
@@ -133,16 +119,16 @@
 
               <!-- Selected Permissions Summary -->
               <div class="mt-6 p-4 bg-green-50 rounded-lg">
-                <h4 class="text-sm font-medium text-green-900 mb-2">Selected Permissions ({{ selectedPermissions.length }})</h4>
+                <h4 class="text-sm font-medium text-green-900 mb-2">Selected Permissions ({{ selectedPermissionIds.length }})</h4>
                 <div class="flex flex-wrap gap-1">
                   <span 
-                    v-for="permission in selectedPermissions" 
-                    :key="permission"
+                    v-for="permId in selectedPermissionIds" 
+                    :key="permId"
                     class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full"
                   >
-                    {{ formatPermissionName(permission) }}
+                    {{ formatPermissionName(apiPermissions.find(p => p.permission_id === permId)?.code_name || '') }}
                   </span>
-                  <span v-if="selectedPermissions.length === 0" class="text-xs text-green-600">No permissions selected</span>
+                  <span v-if="selectedPermissionIds.length === 0" class="text-xs text-green-600">No permissions selected</span>
                 </div>
               </div>
             </div>
@@ -196,13 +182,8 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
 import { usePermissionsStore } from '@/stores/permissions'
+import type { Permission } from '@/stores/permissions'
 import { permissionApi } from '@/services/api'
-import { 
-  PERMISSIONS, 
-  PERMISSION_CATEGORIES, 
-  PERMISSION_DESCRIPTIONS,
-  PERMISSIONS_BY_CATEGORY 
-} from '@/constants/permissions'
 
 // Role interface
 interface Role {
@@ -236,32 +217,49 @@ const newRole = ref({
   status: 'active' as 'active' | 'inactive'
 })
 
-// Selected permission IDs (legacy)
+// Selected permission IDs (for API submission)
 const selectedPermissionIds = ref<number[]>([])
 
-// Selected permissions (new system)
-const selectedPermissions = ref<string[]>([])
+// API permissions data
+const apiPermissions = ref<Permission[]>([])
+const permissionsLoading = ref(false)
 
-// Role templates for quick setup
+// Computed: Group permissions by category
+const permissionsByCategory = computed(() => {
+  const grouped: Record<string, Permission[]> = {}
+  
+  apiPermissions.value.forEach(permission => {
+    if (!grouped[permission.category]) {
+      grouped[permission.category] = []
+    }
+    grouped[permission.category].push(permission)
+  })
+  
+  return grouped
+})
+
+// Computed: Get all categories
+const categories = computed(() => {
+  return Object.keys(permissionsByCategory.value).sort()
+})
+
+// Role templates for quick setup (optional)
 const roleTemplates = {
-  'Super Admin': ['*'], // All permissions
+  'Super Admin': 'all',
   'Admin': [
-    'users.view', 'users.create', 'users.update', 'users.delete',
-    'bookings.view', 'bookings.create', 'bookings.update', 'bookings.cancel',
-    'companies.view', 'companies.create', 'companies.update',
-    'facilities.view', 'facilities.create', 'facilities.update',
-    'payments.view', 'reports.view', 'settings.view', 'settings.update'
+    'view_users', 'create_users', 'update_users',
+    'view_bookings', 'cancel_bookings',
+    'view_customers', 'view_payments', 'view_products'
   ],
   'Manager': [
-    'users.view', 'bookings.view', 'bookings.create', 'bookings.update', 'bookings.cancel',
-    'companies.view', 'facilities.view', 'payments.view', 'reports.view'
+    'view_users', 'view_bookings', 'cancel_bookings',
+    'view_customers', 'view_payments'
   ],
   'Staff': [
-    'bookings.view', 'bookings.create', 'bookings.update',
-    'companies.view', 'facilities.view'
+    'view_bookings', 'view_customers'
   ],
   'User': [
-    'bookings.view', 'bookings.create'
+    'view_bookings'
   ]
 }
 
@@ -278,7 +276,17 @@ const getStatusLabel = (statusValue: string) => {
 
 // Fetch permissions on component mount
 onMounted(async () => {
-  await permissionsStore.fetchPermissions()
+  permissionsLoading.value = true
+  try {
+    await permissionsStore.fetchPermissions()
+    apiPermissions.value = permissionsStore.allPermissions
+  } catch (error) {
+    console.error('Failed to load permissions:', error)
+    errorMessage.value = 'Failed to load permissions. Please refresh the page.'
+    showErrorModal.value = true
+  } finally {
+    permissionsLoading.value = false
+  }
 })
 
 // Navigation functions
@@ -301,53 +309,50 @@ const selectStatus = (statusValue: string) => {
 }
 
 // Permission management methods
-const formatPermissionName = (permission: string): string => {
-  return permission.split('.').map(part => 
+const formatPermissionName = (code_name: string): string => {
+  return code_name.split('_').map(part => 
     part.charAt(0).toUpperCase() + part.slice(1)
   ).join(' ')
 }
 
-const applyRoleTemplate = (permissions: string[]) => {
-  selectedPermissions.value = [...permissions]
+const isPermissionSelected = (permissionId: number): boolean => {
+  return selectedPermissionIds.value.includes(permissionId)
 }
 
-const clearAllPermissions = () => {
-  selectedPermissions.value = []
+const togglePermission = (permission: Permission) => {
+  const index = selectedPermissionIds.value.indexOf(permission.permission_id)
+  if (index === -1) {
+    selectedPermissionIds.value.push(permission.permission_id)
+  } else {
+    selectedPermissionIds.value.splice(index, 1)
+  }
 }
 
 const toggleCategoryPermissions = (category: string, selectAll: boolean) => {
-  const categoryPerms = PERMISSIONS_BY_CATEGORY[category as keyof typeof PERMISSIONS_BY_CATEGORY] as readonly string[]
+  const categoryPerms = permissionsByCategory.value[category] || []
   if (selectAll) {
-    // Add all category permissions that aren't already selected
+    // Add all category permission IDs that aren't already selected
     categoryPerms.forEach(permission => {
-      if (!selectedPermissions.value.includes(permission)) {
-        selectedPermissions.value.push(permission)
+      if (!selectedPermissionIds.value.includes(permission.permission_id)) {
+        selectedPermissionIds.value.push(permission.permission_id)
       }
     })
   } else {
-    // Remove all category permissions
-    selectedPermissions.value = selectedPermissions.value.filter(
-      permission => !categoryPerms.includes(permission)
+    // Remove all category permission IDs
+    const idsToRemove = categoryPerms.map(p => p.permission_id)
+    selectedPermissionIds.value = selectedPermissionIds.value.filter(
+      id => !idsToRemove.includes(id)
     )
   }
 }
 
-// Helper functions for TypeScript compatibility
-const getCategoryDisplayName = (category: string) => {
-  return PERMISSION_CATEGORIES[category as keyof typeof PERMISSION_CATEGORIES] || category
-}
-
-const getCategoryPermissions = (category: string) => {
-  return PERMISSIONS_BY_CATEGORY[category as keyof typeof PERMISSIONS_BY_CATEGORY] || []
-}
-
-const getPermissionDescription = (permission: string) => {
-  return PERMISSION_DESCRIPTIONS[permission as keyof typeof PERMISSION_DESCRIPTIONS] || 'No description available'
+const clearAllPermissions = () => {
+  selectedPermissionIds.value = []
 }
 
 // Methods
 const createRole = async () => {
-  if (selectedPermissions.value.length === 0) {
+  if (selectedPermissionIds.value.length === 0) {
     errorMessage.value = 'Please select at least one permission'
     showErrorModal.value = true
     return
@@ -356,30 +361,29 @@ const createRole = async () => {
   isSubmitting.value = true
 
   try {
-    // Prepare role data with new permission system
+    // Prepare role data for API
     const roleData = {
-      id: Date.now().toString(), // Generate temporary ID
       name: newRole.value.name,
-      description: `${newRole.value.name} role with custom permissions`,
-      permissions: selectedPermissions.value,
-      isActive: newRole.value.status === 'active'
+      is_active: newRole.value.status === 'active',
+      permission_ids: selectedPermissionIds.value
     }
 
-    // For now, just add to the permissions store (mock API call)
-    // In a real implementation, this would call: await permissionApi.createRole(roleData)
-    console.log('Creating role:', roleData)
+    // Call the actual API
+    const response = await permissionApi.createRole(roleData)
     
-    // Simulate API success
-    showSuccessModal.value = true
-
-    // Reset form
-    newRole.value = {
-      name: '',
-      permissions: [],
-      status: 'active'
+    if (response.success) {
+      showSuccessModal.value = true
+      
+      // Reset form
+      newRole.value = {
+        name: '',
+        permissions: [],
+        status: 'active'
+      }
+      selectedPermissionIds.value = []
+    } else {
+      throw new Error(response.message || 'Failed to create role')
     }
-    selectedPermissions.value = []
-    selectedPermissionIds.value = []
   } catch (error: any) {
     console.error('Error creating role:', error)
     errorMessage.value = error.message || 'An error occurred while creating the role'

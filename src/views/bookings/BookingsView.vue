@@ -315,8 +315,8 @@
                     <div class="ml-4">
                       <div class="text-sm font-medium text-gray-900">{{ booking.productName || booking.productType }}
                       </div>
-                      <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-500">{{
-                        booking.subscriptionType }}</div>
+                      <div v-if="activeTab === 'subscriptions'" class="text-sm text-gray-500">{{ booking.subscriptionType }}</div>
+                      <div v-if="activeTab === 'all' && booking.productType === 'Subscription' && booking.subscriptionType" class="text-sm text-gray-500">{{ booking.subscriptionType }}</div>
                     </div>
                   </div>
                 </td>
@@ -325,7 +325,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{{ booking.customerName }}</div>
-                  <div class="text-xs text-gray-500">{{ booking.userType || booking.customerType }}</div>
+                  <div class="text-xs text-gray-500">{{ booking.customerType || booking.userType }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div v-if="activeTab === 'subscriptions' || (activeTab === 'all' && booking.productType === 'Subscription')" class="text-sm text-gray-900">{{ booking.subscribedDate }}
@@ -365,13 +365,13 @@
                   <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming')" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
+                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming' || booking.status === 'confirmed')" class="text-sm text-gray-900">{{ booking.nextBillingDate }}
                   </div>
                   <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
                   <div v-else class="text-sm text-gray-500">-</div>
                 </td>
                 <td v-if="activeTab === 'subscriptions' || activeTab === 'all'" class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming')" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
+                  <div v-if="booking.productType === 'Subscription' && (booking.status === 'ongoing' || booking.status === 'upcoming' || booking.status === 'confirmed')" class="text-sm text-gray-900">{{ getSubscriptionEndDate(booking) }}
                   </div>
                   <div v-else-if="booking.productType === 'Subscription'" class="text-sm text-gray-500 italic">Cancelled</div>
                   <div v-else class="text-sm text-gray-500">-</div>
@@ -646,7 +646,12 @@ const filteredBookings = computed(() => {
     })
   }
   if (filters.value.productType && filters.value.productType.length > 0) {
-    bookings = bookings.filter(b => filters.value.productType.includes(b.productType))
+    bookings = bookings.filter(b => {
+      // Check exact matches for productType and productName
+      return filters.value.productType.some(filterType => 
+        b.productType === filterType || b.productName === filterType
+      )
+    })
   }
   if (filters.value.status && filters.value.status.length > 0) {
     bookings = bookings.filter(b => {
@@ -1500,19 +1505,39 @@ const fetchAllBookingsAndSubscriptionsData = async () => {
       allBookingsAndSubscriptions.value = response.data.map((item: any) => {
         const isSubscription = item.subscription_start_date && item.subscription_end_date && item.package_type
         
+        // Map product type to standardized format
+        let mappedProductType = item.product_type || 'Dedicated Desk'
+        if (item.product_type === 'HotDesk') mappedProductType = 'Hot Desk'
+        if (item.product_type === 'MeetingRoom') mappedProductType = 'Meeting Room'
+        if (item.product_type === 'DedicatedDesk') mappedProductType = 'Dedicated Desk'
+        
         return {
           id: item.booking_id,
-          productName: item.product_type || 'Subscription',
-          productType: isSubscription ? 'Subscription' : item.product_type,
+          productName: mappedProductType,
+          productType: isSubscription ? 'Subscription' : mappedProductType,
           customerName: `${item.first_name} ${item.last_name}`,
           customerEmail: item.email,
+          customerPhone: item.phone || '',
+          customerType: item.customer_type || 'Registered',
           locationName: item.location_name,
-          date: item.booking_date || item.subscribed_date,
+          date: item.booking_date || item.subscription_start_date,
           startTime: item.start_time,
           endTime: item.end_time,
+          duration: item.duration || '',
           totalPrice: item.total_price,
           status: item.status?.toLowerCase() || 'confirmed',
-          // Add more fields as needed
+          userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
+          subscribedDate: item.subscription_start_date,
+          subscriptionType: item.package_type,
+          nextBillingDate: item.next_billing_date,
+          subscriptionEndDate: item.subscription_end_date,
+          // Store customer contact info for cancel functionality
+          customerContactInfo: {
+            email: item.email || '',
+            phone: item.phone || '',
+            firstName: item.first_name || '',
+            lastName: item.last_name || ''
+          }
         }
       })
     } else {
@@ -1532,6 +1557,7 @@ const fetchSubscriptionsData = async () => {
         id: item.booking_id,
         customerName: `${item.first_name} ${item.last_name}`,
         customerEmail: item.email,
+        customerType: item.customer_type || 'Registered',
         productName: item.product_type,
         productType: 'Subscription',
         locationName: item.location_name,
@@ -1541,6 +1567,7 @@ const fetchSubscriptionsData = async () => {
         totalPrice: item.total_price,
         status: item.status.toLowerCase() === 'unknown' ? 'ongoing' : item.status.toLowerCase(),
         subscriptionType: item.package_type,
+        userType: (item.customer_type ? item.customer_type.toLowerCase() : 'registered') as 'registered' | 'guest',
       }))
     } else {
       subscriptions.value = []

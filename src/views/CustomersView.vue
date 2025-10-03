@@ -352,22 +352,56 @@ const fetchCustomers = async () => {
     console.log('Customers API response:', response)
 
     if (response.success && response.data) {
-      const mappedCustomers = response.data.map((apiCustomer: any) => ({
-        id: String(apiCustomer.id || apiCustomer.user_id || ''),
-        name: apiCustomer.name || `${apiCustomer.first_name || ''} ${apiCustomer.last_name || ''}`.trim() || '',
-        email: apiCustomer.email || '',
-        phone: apiCustomer.phone || '',
-        customerType: (apiCustomer.customer_type || apiCustomer.customerType || 'registered') as 'registered' | 'guest',
-        totalBookings: apiCustomer.total_bookings || apiCustomer.totalBookings || 0,
-        status: (apiCustomer.status || 'active') as 'active' | 'inactive',
-        dateJoined: apiCustomer.date_joined || apiCustomer.dateJoined,
-        address: apiCustomer.address,
-        city: apiCustomer.city,
-        country: apiCustomer.country
-      }))
+      const mappedCustomers = response.data.map((apiCustomer: any) => {
+        // Handle different possible status field names and values
+        let customerStatus = 'active' // default value
+        
+        // Check for various possible status fields and values
+        if (apiCustomer.status !== undefined) {
+          customerStatus = apiCustomer.status
+        } else if (apiCustomer.is_active !== undefined) {
+          customerStatus = apiCustomer.is_active ? 'active' : 'inactive'
+        } else if (apiCustomer.active !== undefined) {
+          customerStatus = apiCustomer.active ? 'active' : 'inactive'
+        }
+        
+        // Normalize status values to ensure consistency
+        if (typeof customerStatus === 'boolean') {
+          customerStatus = customerStatus ? 'active' : 'inactive'
+        } else if (typeof customerStatus === 'string') {
+          // Handle various string representations
+          const statusLower = customerStatus.toLowerCase()
+          if (statusLower === 'true' || statusLower === '1' || statusLower === 'active' || statusLower === 'enabled') {
+            customerStatus = 'active'
+          } else if (statusLower === 'false' || statusLower === '0' || statusLower === 'inactive' || statusLower === 'disabled') {
+            customerStatus = 'inactive'
+          }
+        } else if (typeof customerStatus === 'number') {
+          customerStatus = customerStatus === 1 ? 'active' : 'inactive'
+        }
+
+        return {
+          id: String(apiCustomer.id || apiCustomer.user_id || ''),
+          name: apiCustomer.name || `${apiCustomer.first_name || ''} ${apiCustomer.last_name || ''}`.trim() || '',
+          email: apiCustomer.email || '',
+          phone: apiCustomer.phone || '',
+          customerType: (apiCustomer.customer_type || apiCustomer.customerType || 'registered') as 'registered' | 'guest',
+          totalBookings: apiCustomer.total_bookings || apiCustomer.totalBookings || 0,
+          status: customerStatus as 'active' | 'inactive',
+          dateJoined: apiCustomer.date_joined || apiCustomer.dateJoined,
+          address: apiCustomer.address,
+          city: apiCustomer.city,
+          country: apiCustomer.country
+        }
+      })
 
       customers.value = mappedCustomers
       console.log('Mapped customers:', mappedCustomers)
+      console.log('Customer statuses after mapping:', mappedCustomers.map(c => ({
+        id: c.id,
+        name: c.name,
+        finalStatus: c.status
+      })))
 
       // Apply any persisted status changes from sessionStorage
       loadPersistedStatuses()
@@ -440,12 +474,19 @@ const loadPersistedStatuses = () => {
   const statusChanges = JSON.parse(sessionStorage.getItem('customerStatusChanges') || '{}')
   
   customers.value.forEach(customer => {
+    const originalStatus = customer.status
     if (statusChanges[customer.id]) {
       customer.status = statusChanges[customer.id].status
+      console.log(`Customer ${customer.id} (${customer.name}): ${originalStatus} -> ${customer.status}`)
     }
   })
   
   console.log('Applied persisted status changes:', Object.keys(statusChanges).length)
+  console.log('Current customer statuses:', customers.value.map(c => ({
+    id: c.id,
+    name: c.name,
+    status: c.status
+  })))
 }
 
 // State

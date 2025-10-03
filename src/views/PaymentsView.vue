@@ -244,6 +244,7 @@ import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import AdvancedDateRangePicker from '@/components/ui/AdvancedDateRangePicker.vue'
 import { paymentApi, locationApi } from '@/services/api'
+import type { Payment as ApiPayment } from '@/services/api'
 import { usePermissions } from '@/composables/usePermissions'
 import {
   mdiCog,
@@ -253,20 +254,12 @@ import {
   mdiCard
 } from '@mdi/js'
 
-interface Payment {
-  id: string
-  bookingId: string
-  customerName: string
+type Payment = Omit<ApiPayment, 'SquareHubCommission' | 'ceylincoCommission' | 'customerEmail' | 'productName' | 'productType'> & {
+  SquareHubCommission: number
+  ceylincoCommission: number
   customerEmail: string
   productName: string
   productType: string
-  locationName: string
-  baseAmount: number
-  additionalFacilities: { name: string; price: number }[]
-  totalAmount: number
-  status: string
-  date: string
-  time: string
 }
 
 const router = useRouter()
@@ -328,38 +321,23 @@ onUnmounted(() => {
 const fetchPayments = async () => {
   try {
     const response = await paymentApi.getAllPayments()
+
     if (response.success && response.data) {
-      payments.value = response.data.map((item: any) => {
-        // Split payment_date into date and time
-        let date = '', time = ''
-        if (item.payment_date) {
-          const [d, t] = item.payment_date.split(' ')
-          date = d
-          time = t || ''
-        }
-        return {
-          id: item.booking_id,
-          bookingId: item.booking_id,
-          customerName: `${item.first_name} ${item.last_name}`,
-          customerEmail: item.email || '',
-          productName: item.product_name || '',
-          productType: item.product_type || '',
-          locationName: item.location_name || '',
-          baseAmount: item.base_amount || 0,
-          additionalFacilities: item.additional_facilities || [],
-          totalAmount: item.total_price || 0,
-          status: item.status || '',
-          date,
-          time,
-          SquareHubCommission: item.squarehub_commission || 0,
-          ceylincoCommission: item.celynco_commission || 0
-        }
-      })
+      payments.value = response.data.map((payment: ApiPayment) => ({
+        ...payment,
+        customerEmail: payment.customerEmail || 'N/A',
+        productName: payment.productName || 'N/A',
+        productType: payment.productType || '',
+        SquareHubCommission: payment.SquareHubCommission ?? 0,
+        ceylincoCommission: payment.ceylincoCommission ?? 0
+      }))
     } else {
       console.error('Failed to fetch payments:', response.message)
+      payments.value = []
     }
   } catch (error) {
     console.error('Error fetching payments:', error)
+    payments.value = []
   }
 }
 
@@ -428,15 +406,14 @@ const payments = ref<Payment[]>([])
 // Locations data (to be populated from API)
 const locations = ref<any[]>([])
 
-// Computed payments with dynamic commission calculation
+// Use payments directly since API provides commission values
 const paymentsWithCommission = computed(() => {
   return payments.value.map(payment => ({
     ...payment,
-    SquareHubCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate),
+    // Use API-provided commission values directly
     SquareHubRate: commissionSettings.value.SquareHubRate,
-    ceylincoCommission: calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate),
     ceylincoRate: commissionSettings.value.ceylincoRate,
-    totalCommission: calculateCommission(payment.totalAmount, commissionSettings.value.SquareHubRate) + calculateCommission(payment.totalAmount, commissionSettings.value.ceylincoRate)
+    totalCommission: (payment.SquareHubCommission || 0) + (payment.ceylincoCommission || 0)
   }))
 })
 
@@ -630,6 +607,7 @@ const exportToCSV = () => {
 }
 
 const navigateToPaymentDetail = (paymentId: string) => {
+  console.log('Navigating to payment detail with ID:', paymentId)
   // Navigate to the payment detail page
   router.push(`/payments/${paymentId}`)
 }

@@ -3,9 +3,9 @@ import { ref, computed } from 'vue'
 import { permissionApi } from '@/services/api'
 
 export interface Permission {
-  id: number
+  permission_id: number
+  category: string
   code_name: string
-  description: string
 }
 
 export interface Role {
@@ -38,7 +38,7 @@ export const usePermissionsStore = defineStore('permissions', () => {
   const allPermissions = computed(() => permissions.value)
 
   const getPermissionById = (id: number) => {
-    return permissions.value.find(permission => permission.id === id)
+    return permissions.value.find(permission => permission.permission_id === id)
   }
 
   // RBAC Getters

@@ -244,7 +244,7 @@
               </svg>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">{{ errorTitle }}</h3>
-            <br />
+            <p class="text-sm text-gray-600 mb-4 leading-relaxed">{{ errorMessage }}</p>
             <button
               @click="closeErrorModal"
               class="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
@@ -396,15 +396,15 @@ const handleLogin = async () => {
       router.push('/onboarding')
     } else {
       // Wrong credentials or other errors - show error modal
-      errorTitle.value = 'Login Failed'
+      errorTitle.value = 'Invalid Credentials'
       errorMessage.value = response.message || 'Invalid username or password. Please check your credentials and try again.'
       errorModal.value = true
     }
   }
   catch (err: any) {
     // For any unexpected errors, show error modal
-    errorTitle.value = 'Login Failed'
-    errorMessage.value = err.message || 'An unexpected error occurred. Please try again.'
+    errorTitle.value = 'Invalid Credentials'
+    errorMessage.value = err.message || 'Invalid username or password. Please check your credentials and try again.'
     errorModal.value = true
   } finally {
     loading.value = false
@@ -427,7 +427,7 @@ const handleForgotPassword = async () => {
 
   try {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 800))
 
     // Success - show instructions sent
     forgotPasswordSuccess.value = true
@@ -475,7 +475,7 @@ const handlePasswordReset = async () => {
     }
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 300))
 
     // Store the new password and mark as reset
     authStore.setUserPassword(resetForm.value.newPassword)

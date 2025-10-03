@@ -71,7 +71,7 @@
                 </div>
                 <div>
                   <p class="text-sm text-gray-500">Total Permissions</p>
-                  <p class="text-sm font-medium text-gray-900">{{ role?.permission_details?.length || 0 }} Active</p>
+                  <p class="text-sm font-medium text-gray-900">{{ role?.permission_count || 0 }} Active</p>
                 </div>
               </div>
             </div>
@@ -89,16 +89,15 @@
             <span>Permissions</span>
           </h3>
 
-          <div v-if="role?.permission_details?.length" class="space-y-6">
+          <div v-if="role?.permission_codes?.length" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              <div v-for="permission in role.permission_details" :key="permission.id"
+              <div v-for="(permissionCode, index) in role.permission_codes" :key="index"
                    class="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
                 <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path :d="mdiCheckCircle" />
                 </svg>
                 <div>
-                  <span class="text-sm font-medium text-green-800">{{ permission.code_name }}</span>
-                  <p class="text-xs text-green-600">{{ permission.description }}</p>
+                  <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permissionCode) }}</div>
                 </div>
               </div>
             </div>
@@ -124,18 +123,15 @@ import { mdiInformationOutline, mdiAccountGroup, mdiShieldCheck, mdiChartBar, md
 import {
   mdiCheckCircle
 } from '@mdi/js'
+import { permissionApi } from '@/services/api'
 
 // Types
 interface Role {
   id: number
   name: string
   is_active: boolean
-  created_date: string
-  permission_details: Array<{
-    id: number
-    code_name: string
-    description: string
-  }>
+  permission_count: number
+  permission_codes: string[]
 }
 
 // Route and Router
@@ -150,6 +146,13 @@ const roleId = computed(() => route.params.id as string)
 
 // Methods
 
+const formatPermissionName = (permissionCode: string) => {
+  // Convert permission codes like "view_dashboard" to "View Dashboard"
+  return permissionCode
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
 
 const formatUserLevel = (userLevel?: string) => {
   const levelMap: Record<string, string> = {
@@ -171,64 +174,28 @@ const formatDate = (dateString?: string | null) => {
   })
 }
 
-// Mock role data - in a real app, this would be fetched from an API
-const loadRole = () => {
-  // Sample roles data matching API response structure
-  const roles: Role[] = [
-    {
-      id: 1,
-      name: 'SuperAdmin',
-      is_active: true,
-      created_date: '2025-09-22T14:10:06.300137',
-      permission_details: []
-    },
-    {
-      id: 2,
-      name: 'Admin 1',
-      is_active: true,
-      created_date: '2025-09-22T14:12:37.124291',
-      permission_details: [
-        {
-          id: 1,
-          code_name: 'Role.Create',
-          description: 'Allows creation of new roles'
-        },
-        {
-          id: 3,
-          code_name: 'Role.ViewAll',
-          description: 'Allows viewing all roles'
-        },
-        {
-          id: 5,
-          code_name: 'Admin.Delete',
-          description: 'Allows soft-deletion of admin accounts'
-        },
-        {
-          id: 7,
-          code_name: 'Admin.AssignRole',
-          description: 'Allows assigning roles to admins'
-        },
-        {
-          id: 9,
-          code_name: 'Admin.ForcePasswordChange',
-          description: 'Allows forcing a password change on an admin'
-        },
-        {
-          id: 11,
-          code_name: 'Permission.Delete',
-          description: 'Allows deletion of permissions'
-        },
-        {
-          id: 13,
-          code_name: 'Permission.ViewAll',
-          description: 'Allows viewing all permissions'
-        }
-      ]
+// Fetch role data from API
+const loadRole = async () => {
+  try {
+    const roleIdNum = parseInt(roleId.value)
+    const response = await permissionApi.getRoleById(roleIdNum)
+    
+    if (response.success && response.data) {
+      role.value = {
+        id: response.data.id,
+        name: response.data.role_name,
+        is_active: response.data.is_active,
+        permission_count: response.data.permission_count,
+        permission_codes: response.data.permission_codes
+      }
+    } else {
+      console.error('Failed to fetch role:', response.message)
+      role.value = null
     }
-  ]
-
-  const roleIdNum = parseInt(roleId.value)
-  role.value = roles.find(r => r.id === roleIdNum) || null
+  } catch (error) {
+    console.error('Error loading role:', error)
+    role.value = null
+  }
 }
 
 const editRole = () => {

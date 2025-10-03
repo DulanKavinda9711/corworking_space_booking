@@ -136,19 +136,31 @@
           <!-- Permissions -->
           <div>
             <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
-              
               <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-                <path :d="mdiShieldCheck" />
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm3 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
               </svg>
               <span>Permissions</span>
             </h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-              <label v-for="permission in getRolePermissions(newUser.role)" :key="permission"
-                class="flex items-center">
-                <input type="checkbox" :value="permission" v-model="newUser.permissions"
-                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                <span class="ml-2 text-sm text-gray-700">{{ permission }}</span>
-              </label>
+
+            <div v-if="getRolePermissions(newUser.role).length > 0" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div v-for="(permission, index) in getRolePermissions(newUser.role)" :key="index"
+                     class="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path :d="mdiCheckCircle" />
+                  </svg>
+                  <div>
+                    <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permission) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="text-center py-8">
+              <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <p class="text-gray-500 text-sm">{{ newUser.role ? 'No permissions assigned to this role.' : 'Please select a role to view permissions.' }}</p>
             </div>
           </div>
 
@@ -194,7 +206,7 @@ import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
-import { mdiAccountDetails, mdiShieldCheck, mdiAccountCog } from '@mdi/js'
+import { mdiAccountDetails, mdiShieldCheck, mdiAccountCog, mdiCheckCircle } from '@mdi/js'
 import { permissionApi } from '@/services/api'
 import { authApi } from '@/services/api'
 
@@ -319,6 +331,15 @@ const fetchRoles = async () => {
   } finally {
     isLoadingRoles.value = false
   }
+}
+
+// Format permission code into readable name
+const formatPermissionName = (permissionCode: string) => {
+  // Convert permission codes like "view_dashboard" to "View Dashboard"
+  return permissionCode
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 // Methods

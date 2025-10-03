@@ -160,11 +160,10 @@
                 <div v-for="(permission, index) in adminPermissions" :key="index"
                      class="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
                   <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    <path :d="mdiCheckCircle" />
                   </svg>
                   <div>
-                    <span class="text-sm font-medium text-green-800">{{ permission }}</span>
-                    <p class="text-xs text-green-600">{{ permission }}</p>
+                    <div class="text-sm text-gray-700 font-medium">{{ formatPermissionName(permission) }}</div>
                   </div>
                 </div>
               </div>
@@ -191,6 +190,7 @@ import { useRoute } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import { dashboardApi } from '@/services/api'
 import type { Admin } from '@/services/api'
+import { mdiCheckCircle } from '@mdi/js'
 
 // State
 const route = useRoute()
@@ -198,6 +198,14 @@ const admin = ref<Admin | null>(null)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 const adminPermissions = ref<string[]>([])
+
+// Helper function to format permission names
+const formatPermissionName = (permissionCode: string): string => {
+  return permissionCode
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
 
 // Methods
 const fetchAdminDetails = async () => {

@@ -56,9 +56,9 @@ export interface User {
 }
 
 export interface Permission {
-  id: number
+  permission_id: number
+  category: string
   code_name: string
-  description: string
 }
 
 export interface PermissionDetail {
@@ -88,6 +88,19 @@ export interface Admin {
   role_id: number
   is_deleted: boolean
   permission_list?: string[]
+}
+
+export interface AdminProfile {
+  id: number
+  first_name: string | null
+  last_name: string | null
+  email: string | null
+  phone: string | null
+  role: string
+  joined_date: string
+  last_login: string
+  avatar: string | null
+  is_active: boolean
 }
 
 export interface Booking {
@@ -223,6 +236,7 @@ export interface Payment {
   bookingId: string
   customerName: string
   customerEmail: string
+  customerPhone?: string
   productName: string
   productType: string
   locationName: string
@@ -232,6 +246,17 @@ export interface Payment {
   status: string
   date: string
   time: string
+  products?: {
+    productType: string
+    productName: string
+    productPrice: number
+    totalPrice: number
+    facilities: { name: string; price: number }[]
+  }[]
+  SquareHubCommission?: number
+  SquareHubRate?: number
+  ceylincoCommission?: number
+  ceylincoRate?: number
 }
 
 export interface Message {
@@ -3176,26 +3201,66 @@ export const paymentApi = {
       const result = await response.json()
 
       if (result.status_code === 200) {
-        // Map API response to Payment interface
         const payments: Payment[] = result.data.map((item: any) => {
-          const dateTime = item.updated_at?.split('T') || ['', '']
-          const date = dateTime[0] || ''
-          const time = dateTime[1]?.split('.')[0] || '00:00:00'
+          const bookingId = item.booking_id || item.order_id || ''
+
+          const extractDateTime = (rawValue?: string | null) => {
+            if (!rawValue || typeof rawValue !== 'string') {
+              return { date: '', time: '' }
+            }
+
+            const normalised = rawValue.replace('T', ' ')
+            const [datePart = '', timePart = ''] = normalised.split(' ')
+            const time = timePart.split('.')[0] || ''
+
+            return {
+              date: datePart,
+              time
+            }
+          }
+
+          const toNumber = (value: unknown) => {
+            if (typeof value === 'number') {
+              return Number.isFinite(value) ? value : 0
+            }
+
+            if (typeof value === 'string' && value.trim() !== '') {
+              const parsed = parseFloat(value.replace(/,/g, ''))
+              return Number.isFinite(parsed) ? parsed : 0
+            }
+
+            return 0
+          }
+
+          const { date, time } = extractDateTime(item.payment_date ?? item.updated_at)
+
+          const additionalFacilities = Array.isArray(item.additional_facilities)
+            ? item.additional_facilities.map((facility: any) => ({
+                name: facility?.facility_name || facility?.name || '',
+                price: toNumber(facility?.price ?? facility?.amount)
+              }))
+            : []
+
+          const customerName = `${item.first_name || ''} ${item.last_name || ''}`.trim()
 
           return {
-            id: item.booking_id || '',
-            bookingId: item.booking_id || '',
-            customerName: `${item.first_name || ''} ${item.last_name || ''}`.trim(),
-            customerEmail: '', // Not provided in API response
-            productName: '', // Not provided in API response
-            productType: '', // Not provided in API response
-            locationName: item.location_name || '',
-            baseAmount: 0, // Not provided, calculate if needed
-            additionalFacilities: [], // Not provided in current API response
-            totalAmount: parseFloat(item.total_price) || 0,
-            status: 'paid', // Assuming confirmed payments are paid
+            id: bookingId,
+            bookingId,
+            customerName: customerName || 'Unknown Customer',
+            customerEmail: item.email || item.customer_email || 'N/A',
+            productName: item.product_name || item.product_type || 'Unknown Product',
+            productType: item.product_type || '',
+            locationName: item.location_name || 'Unknown Location',
+            baseAmount: toNumber(item.base_amount ?? item.product_price),
+            additionalFacilities,
+            totalAmount: toNumber(item.total_price),
+            status: item.status || 'confirmed',
             date,
-            time
+            time,
+            SquareHubCommission: toNumber(item.squarehub_commission ?? item.squarehubCommission),
+            SquareHubRate: item.squarehub_rate ? toNumber(item.squarehub_rate) : undefined,
+            ceylincoCommission: toNumber(item.celynco_commission ?? item.ceylinco_commission ?? item.ceylincoCommission),
+            ceylincoRate: item.ceylinco_rate || item.celynco_rate ? toNumber(item.ceylinco_rate ?? item.celynco_rate) : undefined
           }
         })
 
@@ -3215,12 +3280,17 @@ export const paymentApi = {
   async getPaymentById(id: string): Promise<ApiResponse<Payment>> {
     // Real API call
     try {
-      const token = localStorage.getItem('authToken')
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
       if (!token) {
         return errorResponse('No authentication token found')
       }
 
-      const response = await fetch(buildApiUrl('/payment/get-payment-detail'), {
+      console.log('Fetching payment detail for ID:', id)
+
+      // Try with order_id first
+      let response = await fetch(buildApiUrl('/payment/get-payment-detail'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3228,40 +3298,142 @@ export const paymentApi = {
         },
         body: JSON.stringify({ order_id: id }),
       })
+      
+      console.log('Payment detail API response status (order_id):', response.status)
 
       if (!response.ok) {
+        console.error('HTTP error for order_id:', response.status)
         return errorResponse(`HTTP error! status: ${response.status}`)
       }
 
-      const result = await response.json()
+      let result = await response.json()
+      
+      console.log('Payment detail API result:', result)
 
       if (result.status_code === 200) {
-        // Map API response to Payment interface
         const item = result.data
-        const additionalFacilities = item.facility_list?.map((f: any) => ({
-          name: f.facility_name,
-          price: parseFloat(f.price) || 0
-        })) || []
+        
+        if (!item) {
+          console.error('Payment data is empty')
+          return errorResponse('Payment not found')
+        }
 
-        const dateTime = item.updated_at?.split('T') || ['', '']
-        const date = dateTime[0] || ''
-        const time = dateTime[1]?.split('.')[0] || '00:00:00'
+        const extractDateTime = (rawValue?: string | null) => {
+          if (!rawValue || typeof rawValue !== 'string') {
+            return { date: '', time: '' }
+          }
+
+          const normalised = rawValue.replace('T', ' ')
+          const [datePart = '', timePart = ''] = normalised.split(' ')
+          const time = timePart.split('.')[0] || ''
+
+          return {
+            date: datePart,
+            time
+          }
+        }
+
+        const toNumber = (value: unknown) => {
+          if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : 0
+          }
+
+          if (typeof value === 'string' && value.trim() !== '') {
+            const parsed = parseFloat(value.replace(/,/g, ''))
+            return Number.isFinite(parsed) ? parsed : 0
+          }
+
+          return 0
+        }
+
+        // Handle products array - combine all products and facilities
+        const products = Array.isArray(item.products) ? item.products : []
+        let totalAmount = 0
+        let baseAmount = 0
+        let allFacilities: Array<{ name: string; price: number }> = []
+        let productNames: string[] = []
+        let productTypes: string[] = []
+        let locationName = ''
+
+        // Process each product
+        products.forEach((product: any) => {
+          totalAmount += toNumber(product.total_price)
+          baseAmount += toNumber(product.product_price)
+          
+          if (product.product_type && !productTypes.includes(product.product_type)) {
+            productTypes.push(product.product_type)
+          }
+          
+          if (product.location_name && !locationName) {
+            locationName = product.location_name
+          }
+
+          // Process facilities for this product
+          if (Array.isArray(product.facility_list)) {
+            product.facility_list.forEach((facility: any) => {
+              allFacilities.push({
+                name: facility?.facility_name || 'Unknown Facility',
+                price: toNumber(facility?.price)
+              })
+            })
+          }
+        })
+
+        // Combine product types for display
+        const productType = productTypes.join(', ') || 'Unknown'
+        const productName = productTypes.map(type => {
+          switch (type) {
+            case 'MeetingRoom': return 'Meeting Room'
+            case 'HotDesk': return 'Hot Desk' 
+            case 'DedicatedDesk': return 'Dedicated Desk'
+            default: return type
+          }
+        }).join(', ') || 'Unknown Product'
+
+        const { date, time } = extractDateTime(item.updated_at)
+        const bookingId = item.order_id || ''
+        const customerName = `${item.first_name || ''} ${item.last_name || ''}`.trim()
+
+        // Map individual products for detailed display
+        const mappedProducts = products.map((product: any) => ({
+          productType: product.product_type || '',
+          productName: product.product_type === 'MeetingRoom' ? 'Meeting Room' : 
+                       product.product_type === 'HotDesk' ? 'Hot Desk' : 
+                       product.product_type === 'DedicatedDesk' ? 'Dedicated Desk' :
+                       (product.product_type || 'Unknown Product'),
+          productPrice: toNumber(product.product_price),
+          totalPrice: toNumber(product.total_price),
+          facilities: Array.isArray(product.facility_list) 
+            ? product.facility_list.map((facility: any) => ({
+                name: facility?.facility_name || 'Unknown Facility',
+                price: toNumber(facility?.price)
+              }))
+            : []
+        }))
 
         const payment: Payment = {
-          id: item.order_id || '',
-          bookingId: item.order_id || '',
-          customerName: `${item.first_name || ''} ${item.last_name || ''}`.trim(),
-          customerEmail: item.email || '',
-          productName: item.product_type || '', // Using product_type as productName since product name not provided
-          productType: item.product_type || '',
-          locationName: item.location_name || '',
-          baseAmount: parseFloat(item.product_price) || 0,
-          additionalFacilities,
-          totalAmount: parseFloat(item.total_price) || 0,
-          status: item.status || 'paid',
+          id: bookingId,
+          bookingId,
+          customerName: customerName || 'Unknown Customer',
+          customerEmail: item.email || 'N/A',
+          customerPhone: item.phone || 'N/A',
+          productName,
+          productType,
+          locationName: locationName || 'Unknown Location',
+          baseAmount,
+          additionalFacilities: allFacilities,
+          totalAmount,
+          status: item.status?.toLowerCase() === 'success' ? 'paid' : (item.status || 'paid'),
           date,
-          time
+          time,
+          products: mappedProducts,
+          SquareHubCommission: toNumber(item.squarehub_commission),
+          SquareHubRate: item.squarehub_rate ? toNumber(item.squarehub_rate) : undefined,
+          ceylincoCommission: toNumber(item.ceylinco_commission),
+          ceylincoRate: item.ceylinco_rate ? toNumber(item.ceylinco_rate) : undefined
         }
+
+        console.log('Mapped payment detail:', payment)
 
         return successResponse(payment, result.message)
       } else {
@@ -3820,6 +3992,47 @@ export const buildBaseUrl = (path: string): string => {
 }
 
 // ============================================================================
+// ADMIN API
+// ============================================================================
+
+export const adminApi = {
+  /**
+   * Get admin profile by ID
+   */
+  async getAdminById(adminId: number): Promise<ApiResponse<AdminProfile>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('admins/get-by-id'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ id: adminId })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Admin profile fetched successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to fetch admin profile')
+      }
+    } catch (error: any) {
+      console.error('Get admin profile error:', error)
+      return errorResponse('Network error while fetching admin profile', [error.message])
+    }
+  }
+}
+
+// ============================================================================
 // PERMISSIONS API
 // ============================================================================
 
@@ -3833,7 +4046,7 @@ export const permissionApi = {
       const authStore = (await import('@/stores/auth')).useAuthStore()
       const token = authStore.authToken
 
-      const response = await fetch(buildApiUrl('permissions/get-all-permissions'), {
+      const response = await fetch(buildApiUrl('/permissions/get-permission-list'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4031,6 +4244,47 @@ export const permissionApi = {
       console.error('Get roles error:', error)
       return errorResponse('Network error while fetching roles', [error.message])
     }
+  },
+
+  /**
+   * Get role by ID with permission details
+   */
+  async getRoleById(id: number): Promise<ApiResponse<{
+    id: number
+    role_name: string
+    is_active: boolean
+    permission_count: number
+    permission_codes: string[]
+  }>> {
+    try {
+      // Get auth token from Pinia store
+      const authStore = (await import('@/stores/auth')).useAuthStore()
+      const token = authStore.authToken
+
+      const response = await fetch(buildApiUrl('roles/get-by-id'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ id })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.status_code === 200 && data.data) {
+        return successResponse(data.data, data.message || 'Role fetched successfully')
+      } else {
+        return errorResponse(data.message || 'Failed to fetch role')
+      }
+    } catch (error: any) {
+      console.error('Get role by ID error:', error)
+      return errorResponse('Network error while fetching role', [error.message])
+    }
   }
 }
 
@@ -4053,5 +4307,6 @@ export default {
   message: messageApi,
   advertising: advertisingApi,
   dashboard: dashboardApi,
+  admin: adminApi,
   permission: permissionApi
 }

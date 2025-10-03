@@ -158,16 +158,16 @@
               </tbody>
 
               <!-- Empty State Row -->
-              <tbody v-if="filteredFacilities.length === 0 && !isLoading" class="bg-white">
+              <tbody v-if="filteredFacilities.length === 0" class="bg-white">
                 <tr>
                   <td colspan="3" class="px-6 py-12 text-center">
                     <div>
-                      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8V5a2 2 0 00-2-2H9a2 2 0 00-2-2v2h10z" />
+                      <svg class="mx-auto h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path :d="mdiWifi" />
                       </svg>
                       <h3 class="mt-2 text-sm font-medium text-gray-900">No facilities found</h3>
                       <p class="mt-1 text-sm text-gray-500">
-                        {{ facilities.length === 0 ? 'Get started by creating a new facility.' : 'Try adjusting your search or filters.' }}
+                        {{ facilities.length === 0 ? 'Get started by creating a new facility.' : 'No facilities match the current filters.' }}
                       </p>
                     </div>
                   </td>
@@ -179,7 +179,8 @@
 
         <!-- Tile View -->
         <div v-else class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <!-- Facilities Grid -->
+          <div v-if="filteredFacilities.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div v-for="facility in paginatedFacilities" :key="facility.id"
               class="group relative bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
               <!-- Gradient overlay on hover -->
@@ -255,6 +256,19 @@
               <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
             </div>
           </div>
+
+          <!-- Empty State for Tile View -->
+          <div v-else-if="filteredFacilities.length === 0" class="text-center py-12">
+            <div>
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path :d="mdiWifi" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">No facilities found</h3>
+              <p class="mt-1 text-sm text-gray-500">
+                {{ facilities.length === 0 ? 'Get started by creating a new facility.' : 'No facilities match the current filters.' }}
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Pagination (only show if there are facilities) -->
@@ -310,28 +324,6 @@
         
         <div class="overflow-x-auto"></div>
 
-        <!-- Loading State -->
-        <div v-if="isLoading" class="bg-white rounded-xl shadow-card p-8">
-        <div class="flex items-center justify-center">
-          <svg class="animate-spin h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span class="ml-3 text-gray-600">Loading Facilities...</span>
-        </div>
-      </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">Error loading facilities</h3>
-          <p class="mt-1 text-sm text-red-500">{{ error }}</p>
-          <button @click="loadFacilities" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-            Try Again
-          </button>
-        </div>
 
       </div>
     </div>
@@ -504,7 +496,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onBeforeMount, watch, nextTick } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router'
 import AdminLayout from '@/components/layout/AdminLayout.vue'
 import PermissionGuard from '@/components/ui/PermissionGuard.vue'
 import { facilityApi } from '@/services/api'
@@ -593,11 +586,25 @@ const filteredFacilities = computed(() => {
 const totalPages = computed(() => Math.ceil(filteredFacilities.value.length / itemsPerPage.value))
 
 const paginatedFacilities = computed(() => {
-  console.log('Paginating facilities:', filteredFacilities, 'itemsPerPage:', itemsPerPage.value, 'currentPage:', currentPage.value)
+  console.log('FacilitiesView: Paginating facilities - total:', filteredFacilities.value.length, 'itemsPerPage:', itemsPerPage.value, 'currentPage:', currentPage.value)
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredFacilities.value.slice(start, end)
 })
+
+// Watch for changes in facilities and filtered facilities to debug empty state
+watch(facilities, (newFacilities) => {
+  console.log('FacilitiesView: facilities array changed:', newFacilities.length, 'items')
+}, { immediate: true })
+
+watch(filteredFacilities, (newFiltered) => {
+  console.log('FacilitiesView: filteredFacilities changed:', newFiltered.length, 'items')
+  console.log('FacilitiesView: isLoading:', isLoading.value, 'error:', error.value)
+}, { immediate: true })
+
+watch(isLoading, (newLoading) => {
+  console.log('FacilitiesView: isLoading changed to:', newLoading)
+}, { immediate: true })
 
 const startItem = computed(() => {
   if (filteredFacilities.value.length === 0) return 0
@@ -868,15 +875,18 @@ const handleClickOutside = (event: MouseEvent) => {
 // API methods
 const loadFacilities = async () => {
   try {
-    console.log('Starting to load facilities...')
+    console.log('FacilitiesView: Starting to load facilities...')
     isLoading.value = true
     error.value = null
+    
+    // Clear existing facilities to ensure clean state
+    facilities.value = []
 
     const response = await facilityApi.getAllFacilities()
-    console.log('API response received:', response)
+    console.log('FacilitiesView: API response received:', response)
 
     if (response.success && response.data) {
-      console.log('Facilities data:', response.data)
+      console.log('FacilitiesView: Facilities data:', response.data)
       
       // Ensure each facility has a valid ID
       facilities.value = response.data.map(facility => {
@@ -888,19 +898,25 @@ const loadFacilities = async () => {
       })
       
       // Log transformed facilities
-      console.log('Facilities processed and assigned to reactive array:', facilities.value)
-      // Log IDs to verify they exist
-      console.log('Facility IDs:', facilities.value.map(f => f.id))
+      console.log('FacilitiesView: Facilities processed and assigned to reactive array:', facilities.value)
+      console.log('FacilitiesView: Total facilities loaded:', facilities.value.length)
+      console.log('FacilitiesView: Filtered facilities count:', filteredFacilities.value.length)
+      
+      // Force reactivity update
+      await nextTick()
     } else {
-      console.error('API response not successful:', response.message)
+      console.error('FacilitiesView: API response not successful:', response.message)
       error.value = response.message || 'Failed to load facilities'
+      facilities.value = [] // Ensure empty array on failure
     }
   } catch (err) {
-    console.error('Error in loadFacilities:', err)
+    console.error('FacilitiesView: Error in loadFacilities:', err)
     error.value = 'Network error while loading facilities'
+    facilities.value = [] // Ensure empty array on error
   } finally {
     isLoading.value = false
-    console.log('Finished loading facilities, isLoading:', isLoading.value)
+    console.log('FacilitiesView: Finished loading facilities')
+    console.log('FacilitiesView: Final state - isLoading:', isLoading.value, 'facilities count:', facilities.value.length, 'error:', error.value)
   }
 }
 
@@ -991,14 +1007,39 @@ watch(viewMode, () => {
   currentPage.value = 1
 })
 
+// Initialize state before component mounts
+onBeforeMount(() => {
+  console.log('FacilitiesView: onBeforeMount - Initializing state')
+  // Reset state to ensure clean start
+  facilities.value = []
+  isLoading.value = false
+  error.value = null
+  searchQuery.value = ''
+  filters.value.status = ''
+})
+
 // Load facilities on component mount
-onMounted(() => {
-  loadFacilities()
+onMounted(async () => {
+  console.log('FacilitiesView: onMounted - Loading facilities and setting up listeners')
   document.addEventListener('click', handleClickOutside)
+  
+  // Add a small delay to ensure component is fully mounted
+  await nextTick()
+  await loadFacilities()
+})
+
+// Handle route updates (when navigating back to this view)
+onBeforeRouteUpdate(async (to, from) => {
+  console.log('FacilitiesView: Route update detected', { to: to.path, from: from.path })
+  if (to.path === '/facilities' || to.path.startsWith('/facilities')) {
+    console.log('FacilitiesView: Reloading data due to route update')
+    await loadFacilities()
+  }
 })
 
 // Cleanup event listener
 onUnmounted(() => {
+  console.log('FacilitiesView: onUnmounted - Cleaning up listeners')
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
